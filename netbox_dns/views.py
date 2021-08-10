@@ -58,14 +58,10 @@ class ZoneEditView(generic.ObjectEditView):
     model_form = ZoneForm
 
 
-class ZoneDeleteView(PermissionRequiredMixin, DeleteView):
+class ZoneDeleteView(generic.ObjectDeleteView):
     """View for deleting a Zone instance"""
 
-    permission_required = "netbox_dns.delete_zone"
-
-    model = Zone
-    success_url = reverse_lazy("plugins:netbox_dns:zone_list")
-    template_name = "netbox_dns/zone_delete.html"
+    queryset = Zone.objects.all()
 
 
 #
