@@ -1,9 +1,6 @@
 from django.urls import reverse
-from django.test import Client, TestCase, override_settings
-
 from utilities.testing import APITestCase
-
-from netbox_dns.models import Zone
+from netbox_dns.models import NameServer, Zone
 
 
 class ZoneAPITestCase(APITestCase):
@@ -56,9 +53,77 @@ class ZoneAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 204)
 
+    def test_delete_zone_without_permission(self):
+        zone = Zone.objects.create(name="asdf")
+
+        url = reverse("plugins-api:netbox_dns-api:zone-detail", kwargs={"pk": zone.id})
+        response = self.client.delete(
+            f"{url}?format=json", {"name": "Name 1"}, **self.header
+        )
+        self.assertEqual(response.status_code, 403)
+
 
 class NameServerAPITestCase(APITestCase):
     """
-    Tests for API (format=json)
+    Tests for NameServer API (format=json)
     """
-    pass
+
+    def test_list_nameserver_without_permission(self):
+        url = reverse("plugins-api:netbox_dns-api:nameserver-list")
+        response = self.client.get(f"{url}?format=json", **self.header)
+        self.assertEqual(response.status_code, 403)
+
+    def test_list_nameserver_with_permission(self):
+        self.add_permissions("netbox_dns.view_nameserver")
+        url = reverse("plugins-api:netbox_dns-api:nameserver-list")
+        response = self.client.get(f"{url}?format=json", **self.header)
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_nameserver_detail_with_permission(self):
+        self.add_permissions("netbox_dns.view_nameserver")
+
+        nameserver = NameServer.objects.create(name="asdf")
+
+        url = reverse(
+            "plugins-api:netbox_dns-api:nameserver-detail", kwargs={"pk": nameserver.id}
+        )
+        response = self.client.get(f"{url}?format=json", **self.header)
+        self.assertEqual(response.status_code, 200)
+
+    def test_add_nameserver_with_permission(self):
+        self.add_permissions("netbox_dns.add_nameserver")
+        url = reverse("plugins-api:netbox_dns-api:nameserver-list")
+        response = self.client.post(
+            f"{url}?format=json", {"name": "Name 1"}, **self.header
+        )
+        self.assertEqual(response.status_code, 201)
+
+    def test_add_nameserver_without_permission(self):
+        url = reverse("plugins-api:netbox_dns-api:nameserver-list")
+        response = self.client.post(
+            f"{url}?format=json", {"name": "Name 1"}, **self.header
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_nameserver_with_permission(self):
+        self.add_permissions("netbox_dns.delete_nameserver")
+        nameserver = NameServer.objects.create(name="asdf")
+
+        url = reverse(
+            "plugins-api:netbox_dns-api:nameserver-detail", kwargs={"pk": nameserver.id}
+        )
+        response = self.client.delete(
+            f"{url}?format=json", {"name": "Name 1"}, **self.header
+        )
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_nameserver_without_permission(self):
+        nameserver = NameServer.objects.create(name="asdf")
+
+        url = reverse(
+            "plugins-api:netbox_dns-api:nameserver-detail", kwargs={"pk": nameserver.id}
+        )
+        response = self.client.delete(
+            f"{url}?format=json", {"name": "Name 1"}, **self.header
+        )
+        self.assertEqual(response.status_code, 403)
