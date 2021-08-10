@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% load helpers %}
+
+{% block header %}
+<div class="row noprint">
+    <div class="pull-left col-sm-8 col-md-offset-2">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'plugins:netbox_dns:zone_list' %}">Zones</a></li>
+            <li>{{ zone }}</li>
+        </ol>
+    </div>
+</div>
+<div class="pull-left col-sm-8 col-md-offset-2">
+    <div class="pull-right noprint">
+        {% if perms.netbox_dns.change_zone %}
+        <a href="{% url 'plugins:netbox_dns:zone_edit' pk=zone.pk %}" class="btn btn-warning">
+            <span class="{{ icon_classes.pencil }}" aria-hidden="true"></span> Edit
+        </a>
+        {% endif %}
+        {% if perms.netbox_dns.delete_zone %}
+        <a href="{% url 'plugins:netbox_dns:zone_delete' pk=zone.pk %}" class="btn btn-danger">
+            <span class="{{ icon_classes.trash }}" aria-hidden="true"></span> Delete
+        </a>
+        {% endif %}
+    </div>
+</div>
+<div class="pull-left col-sm-8 col-md-offset-2">
+    <h1>{% block title %}{{ zone }}{% endblock %}</h1>
+    <p>
+        <small class="text-muted">Created {{ zone.created }} &middot; Updated <span
+                title="{{ zone.last_updated }}">{{ zone.last_updated|timesince }}</span> ago</small>
+    </p>
+</div>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+    <div class="pull-left col-sm-8 col-md-offset-2">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <strong>Zone</strong>
+            </div>
+            <table class="table table-hover panel-body attr-table">
+                <tr>
+                    <td>Name</td>
+                    <td>{{ zone.name }}</td>
+                </tr>
+                <tr>
+                    <td>Status</td>
+                    <td>{{ zone.status }}</td>
+                </tr>
+                <tr>
+                    <td>Nameservers</td>
+                    <td>
+                        <ul>
+                        {% for nameserver in zone.nameservers.all %}
+                            <li>
+                                <a href="{% url 'plugins:netbox_dns:nameserver' pk=nameserver.pk %}">
+                                    {{ nameserver }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        {% include 'extras/inc/tags_panel.html' with tags=zone.tags.all url='plugins:netbox_dns:zone_list' %}
+    </div>
+</div>
+{% endblock %}
