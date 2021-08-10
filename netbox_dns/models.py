@@ -5,7 +5,7 @@ from utilities.querysets import RestrictedQuerySet
 
 
 class NameServer(PrimaryModel):
-    name = models.CharField(max_length=255)
+    name = models.CharField(unique=True, max_length=255)
 
     objects = RestrictedQuerySet.as_manager()
 
@@ -64,3 +64,12 @@ class Record(PrimaryModel):
     ttl = models.PositiveIntegerField()
 
     objects = RestrictedQuerySet.as_manager()
+
+    class Meta:
+        ordering = ("name", "id")
+
+    def __str__(self):
+        return f"{self.type}:{self.name}"
+
+    def get_absolute_url(self):
+        return reverse("plugins:netbox_dns:record", kwargs={"pk": self.pk})
