@@ -1,5 +1,11 @@
+from django.test import SimpleTestCase
 from netbox_dns import __version__
 
 
-def test_version():
-    assert __version__ == "0.0.1"
+class NetboxDnsTestCase(SimpleTestCase):
+    """
+    Test for netbox_dns package
+    """
+
+    def test_version(self):
+        assert __version__ == "0.0.1"
