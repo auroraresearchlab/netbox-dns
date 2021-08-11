@@ -33,21 +33,7 @@ class ZoneListView(generic.ObjectListView):
 class ZoneView(generic.ObjectView):
     """Display Zone details"""
 
-    permission_required = "netbox_dns.view_zone"
-
     queryset = Zone.objects.all()
-
-    def get(self, request, pk):
-        """Get request."""
-        zone = get_object_or_404(self.queryset, pk=pk)
-
-        return render(
-            request,
-            "netbox_dns/zone.html",
-            {
-                "zone": zone,
-            },
-        )
 
 
 class ZoneEditView(generic.ObjectEditView):

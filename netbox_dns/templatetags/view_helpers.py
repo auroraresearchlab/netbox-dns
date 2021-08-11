@@ -2,6 +2,8 @@ from django import template
 from django.urls import NoReverseMatch, reverse
 from django import template
 
+from utilities.templatetags.buttons import _get_viewname
+
 register = template.Library()
 
 
@@ -27,3 +29,45 @@ def plugin_validated_viewname(model, action):
             return plugin_viewname
         except NoReverseMatch:
             return None
+
+
+@register.filter()
+def plugin_viewname(model, action):
+    """
+    Return the view name for the given model and action. Does not perform any validation.
+    """
+    return f"plugins:{model._meta.app_label}:{model._meta.model_name}_{action}"
+
+
+@register.inclusion_tag("buttons/edit.html")
+def plugin_edit_button(instance):
+    viewname = _get_viewname(instance, "edit")
+    url = reverse(f"plugins:{viewname}", kwargs={"pk": instance.pk})
+
+    return {
+        "url": url,
+    }
+
+
+@register.inclusion_tag("buttons/delete.html")
+def plugin_delete_button(instance):
+    viewname = _get_viewname(instance, "delete")
+    url = reverse(f"plugins:{viewname}", kwargs={"pk": instance.pk})
+
+    return {
+        "url": url,
+    }
+
+
+#
+# List buttons
+#
+
+
+@register.inclusion_tag("buttons/add.html")
+def plugin_add_button(url):
+    url = reverse(f"plugins:{url}")
+
+    return {
+        "add_url": url,
+    }
