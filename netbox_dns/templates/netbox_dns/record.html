@@ -1,0 +1,49 @@
+{% extends 'netbox_dns/object.html' %}
+{% load helpers %}
+{% load plugins %}
+{% load render_table from django_tables2 %}
+{% load view_helpers %}
+{% load perms %}
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'plugins:netbox_dns:zone_list' %}">Zones</a></li>
+  <li>{{ object }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class=" col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <strong>Zone</strong>
+            </div>
+            <table class="table table-hover panel-body attr-table">
+                <tr>
+                    <td>Zone</td>
+                    <td>{{ object.zone }}</td>
+                </tr>
+                <tr>
+                    <td>Type</td>
+                    <td>{{ object.type }}</td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>{{ object.name }}</td>
+                </tr>
+                <tr>
+                    <td>Value</td>
+                    <td>{{ object.value }}</td>
+                </tr>
+                <tr>
+                    <td>TTL</td>
+                    <td>{{ object.ttl }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_dns:zone_list' %}
+    </div>
+</div>
+
+{% endblock %}

@@ -28,4 +28,17 @@ menu_items = (
             ),
         ),
     ),
+    PluginMenuItem(
+        link="plugins:netbox_dns:record_list",
+        link_text="Records",
+        buttons=(
+            PluginMenuButton(
+                "plugins:netbox_dns:record_add",
+                "Record Add",
+                "mdi mdi-plus-thick",
+                ButtonColorChoices.GREEN,
+                permissions=["netbox_dns.add_record"],
+            ),
+        ),
+    ),
 )

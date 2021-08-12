@@ -1,6 +1,6 @@
 import django_tables2 as tables
 from utilities.tables import BaseTable
-from .models import NameServer, Zone
+from .models import NameServer, Record, Zone
 
 
 class ZoneTable(BaseTable):
@@ -29,4 +29,21 @@ class NameServerTable(BaseTable):
         fields = (
             "id",
             "name",
+        )
+
+
+class RecordTable(BaseTable):
+    """Table for displaying Record objects."""
+
+    id = tables.LinkColumn()
+    zone = tables.LinkColumn()
+    name = tables.LinkColumn()
+
+    class Meta(BaseTable.Meta):
+        model = Record
+        fields = (
+            "id",
+            "zone",
+            "name",
+            "value",
         )
