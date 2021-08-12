@@ -12,12 +12,29 @@ class NameServerSerializer(PrimaryModelSerializer):
 class RecordSerializer(PrimaryModelSerializer):
     class Meta:
         model = Record
-        fields = ("id", "zone", "type", "name", "value", "ttl", "tags", "custom_field_data", "created", "last_updated")
+        fields = (
+            "id",
+            "zone",
+            "type",
+            "name",
+            "value",
+            "ttl",
+            "tags",
+            "custom_field_data",
+            "created",
+            "last_updated",
+        )
 
 
 class ZoneSerializer(PrimaryModelSerializer):
-
     class Meta:
         model = Zone
-        fields = ("id", "name", "status", "tags", "custom_field_data", "created", "last_updated")
-
+        fields = (
+            "id",
+            "name",
+            "status",
+            "tags",
+            "custom_field_data",
+            "created",
+            "last_updated",
+        )
