@@ -80,7 +80,3 @@ venv.bak/
 
 # Temp directory
 temp/
-
-# Ignore migretions until version 0.1
-netbox_dns/migrations/*
-!netbox_dns/migrations/__init__.py
