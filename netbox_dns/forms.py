@@ -6,9 +6,10 @@ from utilities.forms import (
     BootstrapMixin,
     DynamicModelMultipleChoiceField,
     TagFilterField,
+    StaticSelect2,
 )
 
-from .models import NameServer, Zone
+from .models import NameServer, Record, Zone
 from .fields import CustomDynamicModelMultipleChoiceField
 
 
@@ -80,4 +81,40 @@ class NameServerFilterForm(BootstrapMixin, forms.ModelForm):
 
     class Meta:
         model = NameServer
+        fields = []
+
+
+class RecordForm(BootstrapMixin, forms.ModelForm):
+    """Form for creating a new Record object."""
+
+    tags = DynamicModelMultipleChoiceField(queryset=Tag.objects.all(), required=False)
+
+    class Meta:
+        model = Record
+        fields = [
+            "zone",
+            "type",
+            "name",
+            "value",
+            "ttl",
+            "tags",
+        ]
+
+        widgets = {"zone": StaticSelect2()}
+
+
+class RecordFilterForm(BootstrapMixin, forms.ModelForm):
+    """Form for filtering Record instances."""
+
+    q = forms.CharField(required=False, label="Search")
+
+    name = forms.CharField(
+        required=False,
+        label="Name",
+    )
+
+    tag = TagFilterField(Record)
+
+    class Meta:
+        model = Record
         fields = []

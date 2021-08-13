@@ -72,4 +72,7 @@ class Record(PrimaryModel):
         return f"{self.type}:{self.name}"
 
     def get_absolute_url(self):
-        return reverse("plugins:netbox_dns:record", kwargs={"pk": self.pk})
+        """
+        Redirect corresponding zone url.
+        """
+        return reverse("plugins:netbox_dns:record", kwargs={"pk": self.id})

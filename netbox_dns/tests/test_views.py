@@ -1,7 +1,7 @@
 from utilities.testing import create_tags
 from utilities.testing import ViewTestCases
 
-from netbox_dns.models import NameServer, Zone
+from netbox_dns.models import NameServer, Record, Zone
 from netbox_dns.core.test import ModelViewTestCase
 
 
@@ -59,6 +59,53 @@ class NameServerTestCase(
 
         cls.form_data = {
             "name": "Name1",
+            "tags": [t.pk for t in tags],
+        }
+
+    maxDiff = None
+
+
+class RecordTestCase(
+    ModelViewTestCase,
+    ViewTestCases.GetObjectViewTestCase,
+    ViewTestCases.CreateObjectViewTestCase,
+    ViewTestCases.EditObjectViewTestCase,
+    ViewTestCases.DeleteObjectViewTestCase,
+    ViewTestCases.ListObjectsViewTestCase,
+):
+    model = Record
+
+    @classmethod
+    def setUpTestData(cls):
+        zone = Zone.objects.create(name="zone.com")
+
+        Record.objects.bulk_create(
+            [
+                Record(
+                    zone=zone,
+                    type=Record.CNAME,
+                    name="name 1",
+                    value="value 1",
+                    ttl=100,
+                ),
+                Record(
+                    zone=zone,
+                    type=Record.A,
+                    name="name 2",
+                    value="value 2",
+                    ttl=200,
+                ),
+            ]
+        )
+
+        tags = create_tags("Alpha", "Bravo", "Charlie")
+
+        cls.form_data = {
+            "zone": zone.id,
+            "type": Record.AAAA,
+            "name": "name 3",
+            "value": "value 300",
+            "ttl": 300,
             "tags": [t.pk for t in tags],
         }
 

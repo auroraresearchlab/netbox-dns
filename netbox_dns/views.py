@@ -1,15 +1,18 @@
 from django.shortcuts import render, get_object_or_404
-from django.urls import reverse_lazy
-from django.views.generic import View, CreateView, DeleteView, UpdateView
-from django_tables2 import RequestConfig
-from django.contrib.auth.mixins import PermissionRequiredMixin
 
 from netbox.views import generic
 
-from .models import Zone, NameServer
-from .tables import NameServerTable, ZoneTable
-from .forms import NameServerFilterForm, NameServerForm, ZoneForm, ZoneFilterForm
-from .filters import NameServerFilter, ZoneFilter
+from netbox_dns.models import Record, Zone, NameServer
+from netbox_dns.tables import NameServerTable, RecordTable, ZoneTable
+from netbox_dns.forms import (
+    NameServerFilterForm,
+    NameServerForm,
+    RecordFilterForm,
+    RecordForm,
+    ZoneForm,
+    ZoneFilterForm,
+)
+from netbox_dns.filters import NameServerFilter, RecordFilter, ZoneFilter
 
 
 #
@@ -34,6 +37,16 @@ class ZoneView(generic.ObjectView):
     """Display Zone details"""
 
     queryset = Zone.objects.all()
+
+    def get_extra_context(self, request, instance):
+        """
+        Return any additional context data for the template.
+
+        request: The current request
+        instance: The object being viewed
+        """
+        records = instance.record_set.all()
+        return {"records": records}
 
 
 class ZoneEditView(generic.ObjectEditView):
@@ -88,10 +101,40 @@ class NameServerView(generic.ObjectView):
 class NameServerEditView(generic.ObjectEditView):
     """View for editing a Name Server instance."""
 
-    permission_required = "netbox_dns.change_nameserver"
     queryset = NameServer.objects.all()
     model_form = NameServerForm
 
 
 class NameServerDeleteView(generic.ObjectDeleteView):
     queryset = NameServer.objects.all()
+
+
+#
+# Record
+#
+
+
+class RecordListView(generic.ObjectListView):
+    queryset = Record.objects.all()
+    filterset = RecordFilter
+    filterset_form = RecordFilterForm
+    table = RecordTable
+    template_name = "netbox_dns/object_list.html"
+    action_buttons = ("add",)
+
+
+class RecordView(generic.ObjectView):
+    """Display Zone details"""
+
+    queryset = Record.objects.all()
+
+
+class RecordEditView(generic.ObjectEditView):
+    """View for editing a Record instance."""
+
+    queryset = Record.objects.all()
+    model_form = RecordForm
+
+
+class RecordDeleteView(generic.ObjectDeleteView):
+    queryset = Record.objects.all()

@@ -11,6 +11,11 @@ from .views import (
     NameServerView,
     NameServerEditView,
     NameServerDeleteView,
+    # record
+    RecordListView,
+    RecordView,
+    RecordEditView,
+    RecordDeleteView,
 )
 
 app_name = "netbox_dns"
@@ -36,4 +41,10 @@ urlpatterns = [
         NameServerDeleteView.as_view(),
         name="nameserver_delete",
     ),
+    # Record urls
+    path("records/", RecordListView.as_view(), name="record_list"),
+    path("records/add/", RecordEditView.as_view(), name="record_add"),
+    path("records/<int:pk>/", RecordView.as_view(), name="record"),
+    path("records/<int:pk>/edit/", RecordEditView.as_view(), name="record_edit"),
+    path("records/<int:pk>/delete/", RecordDeleteView.as_view(), name="record_delete"),
 ]

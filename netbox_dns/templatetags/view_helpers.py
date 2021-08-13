@@ -40,9 +40,9 @@ def plugin_viewname(model, action):
 
 
 @register.inclusion_tag("buttons/edit.html")
-def plugin_edit_button(instance):
+def plugin_edit_button(instance, **kwargs):
     viewname = _get_viewname(instance, "edit")
-    url = reverse(f"plugins:{viewname}", kwargs={"pk": instance.pk})
+    url = reverse(f"plugins:{viewname}", kwargs={"pk": instance.pk, **kwargs})
 
     return {
         "url": url,
@@ -50,9 +50,9 @@ def plugin_edit_button(instance):
 
 
 @register.inclusion_tag("buttons/delete.html")
-def plugin_delete_button(instance):
+def plugin_delete_button(instance, **kwargs):
     viewname = _get_viewname(instance, "delete")
-    url = reverse(f"plugins:{viewname}", kwargs={"pk": instance.pk})
+    url = reverse(f"plugins:{viewname}", kwargs={"pk": instance.pk, **kwargs})
 
     return {
         "url": url,
