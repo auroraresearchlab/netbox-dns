@@ -23,8 +23,6 @@ from netbox_dns.filters import NameServerFilter, RecordFilter, ZoneFilter
 class ZoneListView(generic.ObjectListView):
     """View for listing all existing Zones."""
 
-    permission_required = "netbox_dns.view_zone"
-
     queryset = Zone.objects.all()
     filterset = ZoneFilter
     filterset_form = ZoneFilterForm
@@ -39,12 +37,6 @@ class ZoneView(generic.ObjectView):
     queryset = Zone.objects.all()
 
     def get_extra_context(self, request, instance):
-        """
-        Return any additional context data for the template.
-
-        request: The current request
-        instance: The object being viewed
-        """
         records = instance.record_set.all()
         return {"records": records}
 
@@ -52,7 +44,6 @@ class ZoneView(generic.ObjectView):
 class ZoneEditView(generic.ObjectEditView):
     """View for editing and creating a Zone instance."""
 
-    permission_required = "netbox_dns.change_zone"
     queryset = Zone.objects.all()
     model_form = ZoneForm
 
@@ -81,21 +72,8 @@ class NameServerListView(generic.ObjectListView):
 class NameServerView(generic.ObjectView):
     """Display NameServer details"""
 
-    permission_required = "netbox_dns.view_nameserver"
-
     queryset = NameServer.objects.all()
 
-    def get(self, request, pk):
-        """Get request."""
-        nameserver = get_object_or_404(self.queryset, pk=pk)
-
-        return render(
-            request,
-            "netbox_dns/nameserver.html",
-            {
-                "nameserver": nameserver,
-            },
-        )
 
 
 class NameServerEditView(generic.ObjectEditView):
