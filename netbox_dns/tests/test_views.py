@@ -12,6 +12,7 @@ class ZoneTestCase(
     ViewTestCases.EditObjectViewTestCase,
     ViewTestCases.DeleteObjectViewTestCase,
     ViewTestCases.ListObjectsViewTestCase,
+    ViewTestCases.GetObjectChangelogViewTestCase,
 ):
     model = Zone
 
@@ -42,6 +43,7 @@ class NameServerTestCase(
     ViewTestCases.EditObjectViewTestCase,
     ViewTestCases.DeleteObjectViewTestCase,
     ViewTestCases.ListObjectsViewTestCase,
+    ViewTestCases.GetObjectChangelogViewTestCase,
 ):
     model = NameServer
 
@@ -72,6 +74,7 @@ class RecordTestCase(
     ViewTestCases.EditObjectViewTestCase,
     ViewTestCases.DeleteObjectViewTestCase,
     ViewTestCases.ListObjectsViewTestCase,
+    ViewTestCases.GetObjectChangelogViewTestCase,
 ):
     model = Record
 
