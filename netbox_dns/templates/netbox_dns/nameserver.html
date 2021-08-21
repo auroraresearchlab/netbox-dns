@@ -1,0 +1,30 @@
+{% extends 'netbox_dns/object.html' %}
+{% load helpers %}
+{% load plugins %}
+{% load render_table from django_tables2 %}
+{% load view_helpers %}
+{% load perms %}
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'plugins:netbox_dns:nameserver_list' %}">Name Servers</a></li>
+  <li>{{ object }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="pull-left col-sm-8 col-md-offset-2">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <strong>Name Servers</strong>
+            </div>
+            <table class="table table-hover panel-body attr-table">
+                <tr>
+                    <td>Name</td>
+                    <td>{{ nameserver.name }}</td>
+                </tr>
+            </table>
+        </div>
+        {% include 'extras/inc/tags_panel.html' with tags=nameserver.tags.all url='plugins:netbox_dns:nameserver_list' %}
+    </div>
+</div>
+{% endblock %}
