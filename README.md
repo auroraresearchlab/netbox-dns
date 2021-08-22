@@ -16,11 +16,18 @@
 * Manage zones (domains) you have.
 * Manage nameservers for zones.
 * Manage zone records.
+* Assign tags to zones, nameservers and records.
 
 ## Requirements
 
 * Netbox 2.11
 * python 3.7
+
+## Screenshots
+
+![Zones](media/zones.png)
+
+![Zone Detail](media/zone-detail.png)
 
 ## Contribute
 
