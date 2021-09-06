@@ -6,7 +6,7 @@ from utilities.forms import (
     BootstrapMixin,
     DynamicModelMultipleChoiceField,
     TagFilterField,
-    StaticSelect2,
+    StaticSelect,
 )
 
 from .models import NameServer, Record, Zone
@@ -100,7 +100,7 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
             "tags",
         ]
 
-        widgets = {"zone": StaticSelect2()}
+        widgets = {"zone": StaticSelect()}
 
 
 class RecordFilterForm(BootstrapMixin, forms.ModelForm):

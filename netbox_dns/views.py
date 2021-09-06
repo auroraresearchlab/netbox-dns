@@ -75,7 +75,6 @@ class NameServerView(generic.ObjectView):
     queryset = NameServer.objects.all()
 
 
-
 class NameServerEditView(generic.ObjectEditView):
     """View for editing a Name Server instance."""
 
