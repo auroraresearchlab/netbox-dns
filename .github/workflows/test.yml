@@ -1,0 +1,56 @@
+name: Test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9]
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: netbox
+          POSTGRES_PASSWORD: netbox
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          path: netbox-dns
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Checkout netbox
+        uses: actions/checkout@v2
+        with:
+          repository: "netbox-community/netbox"
+          path: netbox
+
+      - name: install netbox_dns
+        run: |
+          pip install netbox-dns
+
+      - name: Install dependencies & set up configuration
+        working-directory: netbox
+        run: |
+          ln -s $(pwd)/../netbox-dns/media/configuration.testing.py netbox/netbox/configuration.py
+
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+          python netbox/manage.py test netbox_dns.tests
