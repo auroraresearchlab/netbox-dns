@@ -9,6 +9,8 @@ class NameServer(PrimaryModel):
 
     objects = RestrictedQuerySet.as_manager()
 
+    clone_fields = ["name"]
+
     class Meta:
         ordering = ("name", "id")
 
@@ -42,6 +44,8 @@ class Zone(PrimaryModel):
 
     objects = RestrictedQuerySet.as_manager()
 
+    clone_fields = ["name", "status"]
+
     class Meta:
         ordering = ("name", "id")
 
@@ -72,6 +76,8 @@ class Record(PrimaryModel):
     ttl = models.PositiveIntegerField()
 
     objects = RestrictedQuerySet.as_manager()
+
+    clone_fields = ["zone", "type", "name", "value", "ttl"]
 
     class Meta:
         ordering = ("name", "id")
