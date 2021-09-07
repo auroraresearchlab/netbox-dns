@@ -13,6 +13,7 @@ class ZoneTestCase(
     ViewTestCases.DeleteObjectViewTestCase,
     ViewTestCases.ListObjectsViewTestCase,
     ViewTestCases.GetObjectChangelogViewTestCase,
+    ViewTestCases.BulkImportObjectsViewTestCase,
 ):
     model = Zone
 
@@ -33,6 +34,13 @@ class ZoneTestCase(
             "tags": [t.pk for t in tags],
         }
 
+        cls.csv_data = (
+            "name,status",
+            "domain-4.com,active",
+            "domain-5.com,active",
+            "domain-6.com,active",
+        )
+
     maxDiff = None
 
 
@@ -44,6 +52,7 @@ class NameServerTestCase(
     ViewTestCases.DeleteObjectViewTestCase,
     ViewTestCases.ListObjectsViewTestCase,
     ViewTestCases.GetObjectChangelogViewTestCase,
+    ViewTestCases.BulkImportObjectsViewTestCase,
 ):
     model = NameServer
 
@@ -64,6 +73,13 @@ class NameServerTestCase(
             "tags": [t.pk for t in tags],
         }
 
+        cls.csv_data = (
+            "name",
+            "name-server-4.com",
+            "name-server-5.com",
+            "name-server-6.com",
+        )
+
     maxDiff = None
 
 
@@ -75,41 +91,51 @@ class RecordTestCase(
     ViewTestCases.DeleteObjectViewTestCase,
     ViewTestCases.ListObjectsViewTestCase,
     ViewTestCases.GetObjectChangelogViewTestCase,
+    ViewTestCases.BulkImportObjectsViewTestCase,
 ):
     model = Record
 
     @classmethod
     def setUpTestData(cls):
-        zone = Zone.objects.create(name="zone.com")
+        zone1 = Zone.objects.create(name="zone1.com")
+        zone2 = Zone.objects.create(name="zone2.com")
 
-        Record.objects.bulk_create(
-            [
-                Record(
-                    zone=zone,
-                    type=Record.CNAME,
-                    name="name 1",
-                    value="value 1",
-                    ttl=100,
-                ),
-                Record(
-                    zone=zone,
-                    type=Record.A,
-                    name="name 2",
-                    value="value 2",
-                    ttl=200,
-                ),
-            ]
-        )
+        records = [
+            Record(
+                zone=zone1,
+                type=Record.CNAME,
+                name="name 1",
+                value="value 1",
+                ttl=100,
+            ),
+            Record(
+                zone=zone2,
+                type=Record.A,
+                name="name 2",
+                value="value 2",
+                ttl=200,
+            ),
+        ]
+
+        Record.objects.bulk_create(records)
 
         tags = create_tags("Alpha", "Bravo", "Charlie")
 
         cls.form_data = {
-            "zone": zone.id,
+            "zone": zone1.id,
             "type": Record.AAAA,
             "name": "name 3",
             "value": "value 300",
             "ttl": 300,
             "tags": [t.pk for t in tags],
         }
+
+        cls.csv_data = (
+            "zone,type,name,value,ttl",
+            "zone1.com,A,@,10.10.10.10,3600",
+            "zone2.com,AAAA,ipv6sub,[00:00],7200",
+            "zone1.com,CNAME,dns,100.100.100.100,100",
+            "zone2.com,TXT,textname,textvalue,1000",
+        )
 
     maxDiff = None
