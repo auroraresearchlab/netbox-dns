@@ -9,6 +9,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: psf/black@stable
         with:
-          options: "--check --verbose"
+          options: "--check"
           src: "netbox_dns"
           version: "21.8b0"
