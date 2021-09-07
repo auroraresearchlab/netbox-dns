@@ -42,8 +42,9 @@ jobs:
           path: netbox
 
       - name: install netbox_dns
+        working-directory: netbox-dns
         run: |
-          pip install netbox-dns
+          pip install .
 
       - name: Install dependencies & set up configuration
         working-directory: netbox
