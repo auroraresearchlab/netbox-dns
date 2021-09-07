@@ -28,6 +28,11 @@ class Zone(PrimaryModel):
         (STATUS_PASSIVE, "Passive"),
     )
 
+    CSS_CLASSES = {
+        STATUS_PASSIVE: "danger",
+        STATUS_ACTIVE: "success",
+    }
+
     name = models.CharField(unique=True, max_length=255)
     status = models.CharField(
         max_length=50, choices=CHOICES, default=STATUS_ACTIVE, blank=True
@@ -45,6 +50,9 @@ class Zone(PrimaryModel):
 
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:zone", kwargs={"pk": self.pk})
+
+    def get_status_class(self):
+        return self.CSS_CLASSES.get(self.status)
 
 
 class Record(PrimaryModel):

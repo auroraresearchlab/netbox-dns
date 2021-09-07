@@ -19,7 +19,8 @@ class ZoneForm(BootstrapMixin, CustomFieldModelForm):
     tags = DynamicModelMultipleChoiceField(queryset=Tag.objects.all(), required=False)
 
     nameservers = CustomDynamicModelMultipleChoiceField(
-        queryset=NameServer.objects.all(), required=False
+        queryset=NameServer.objects.all(),
+        required=False,
     )
 
     class Meta:
