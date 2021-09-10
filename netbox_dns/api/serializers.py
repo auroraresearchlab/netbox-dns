@@ -6,7 +6,15 @@ from netbox_dns.models import Record, Zone, NameServer
 class NameServerSerializer(PrimaryModelSerializer):
     class Meta:
         model = NameServer
-        fields = ("id", "name", "tags", "custom_field_data", "created", "last_updated")
+        fields = (
+            "id",
+            "display",
+            "name",
+            "tags",
+            "custom_field_data",
+            "created",
+            "last_updated",
+        )
 
 
 class RecordSerializer(PrimaryModelSerializer):
@@ -15,6 +23,7 @@ class RecordSerializer(PrimaryModelSerializer):
         fields = (
             "id",
             "zone",
+            "display",
             "type",
             "name",
             "value",
@@ -32,6 +41,7 @@ class ZoneSerializer(PrimaryModelSerializer):
         fields = (
             "id",
             "name",
+            "display",
             "status",
             "tags",
             "custom_field_data",

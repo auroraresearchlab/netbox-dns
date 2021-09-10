@@ -3,6 +3,7 @@ from django.urls import NoReverseMatch, reverse
 from django import template
 
 from utilities.templatetags.buttons import _get_viewname
+from utilities.utils import prepare_cloned_fields
 
 register = template.Library()
 
@@ -37,6 +38,26 @@ def plugin_viewname(model, action):
     Return the view name for the given model and action. Does not perform any validation.
     """
     return f"plugins:{model._meta.app_label}:{model._meta.model_name}_{action}"
+
+
+#
+# Instance buttons
+#
+
+
+@register.inclusion_tag("buttons/clone.html")
+def plugin_clone_button(instance):
+    viewname = _get_viewname(instance, "add")
+    url = reverse(f"plugins:{viewname}")
+
+    # Populate cloned field values
+    param_string = prepare_cloned_fields(instance)
+    if param_string:
+        url = f"{url}?{param_string}"
+
+    return {
+        "url": url,
+    }
 
 
 @register.inclusion_tag("buttons/edit.html")

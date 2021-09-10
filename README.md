@@ -20,8 +20,14 @@
 
 ## Requirements
 
-* Netbox 2.11
+* Netbox 3.0
 * python 3.7
+
+## Installation
+
+```
+$ pip install netbox-dns
+```
 
 ## Screenshots
 

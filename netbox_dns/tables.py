@@ -1,5 +1,5 @@
 import django_tables2 as tables
-from utilities.tables import BaseTable
+from utilities.tables import BaseTable, ChoiceFieldColumn
 from .models import NameServer, Record, Zone
 
 
@@ -8,6 +8,7 @@ class ZoneTable(BaseTable):
 
     id = tables.LinkColumn()
     name = tables.LinkColumn()
+    status = ChoiceFieldColumn()
 
     class Meta(BaseTable.Meta):
         model = Zone

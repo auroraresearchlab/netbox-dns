@@ -1,12 +1,14 @@
 from django import forms
 
-from extras.forms import CustomFieldModelForm
+from extras.forms import CustomFieldModelForm, CustomFieldModelCSVForm
 from extras.models.tags import Tag
 from utilities.forms import (
     BootstrapMixin,
     DynamicModelMultipleChoiceField,
     TagFilterField,
-    StaticSelect2,
+    StaticSelect,
+    CSVChoiceField,
+    CSVModelChoiceField,
 )
 
 from .models import NameServer, Record, Zone
@@ -19,7 +21,8 @@ class ZoneForm(BootstrapMixin, CustomFieldModelForm):
     tags = DynamicModelMultipleChoiceField(queryset=Tag.objects.all(), required=False)
 
     nameservers = CustomDynamicModelMultipleChoiceField(
-        queryset=NameServer.objects.all(), required=False
+        queryset=NameServer.objects.all(),
+        required=False,
     )
 
     class Meta:
@@ -49,6 +52,16 @@ class ZoneFilterForm(BootstrapMixin, forms.ModelForm):
     class Meta:
         model = Zone
         fields = []
+
+
+class ZoneCSVForm(CustomFieldModelCSVForm):
+    status = CSVChoiceField(
+        choices=Zone.CHOICES, required=True, help_text="Zone status"
+    )
+
+    class Meta:
+        model = Zone
+        fields = ("name", "status")
 
 
 class NameServerForm(BootstrapMixin, forms.ModelForm):
@@ -84,6 +97,12 @@ class NameServerFilterForm(BootstrapMixin, forms.ModelForm):
         fields = []
 
 
+class NameServerCSVForm(CustomFieldModelCSVForm):
+    class Meta:
+        model = NameServer
+        fields = ("name",)
+
+
 class RecordForm(BootstrapMixin, forms.ModelForm):
     """Form for creating a new Record object."""
 
@@ -100,7 +119,7 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
             "tags",
         ]
 
-        widgets = {"zone": StaticSelect2()}
+        widgets = {"zone": StaticSelect()}
 
 
 class RecordFilterForm(BootstrapMixin, forms.ModelForm):
@@ -118,3 +137,20 @@ class RecordFilterForm(BootstrapMixin, forms.ModelForm):
     class Meta:
         model = Record
         fields = []
+
+
+class RecordCSVForm(CustomFieldModelCSVForm):
+    zone = CSVModelChoiceField(
+        queryset=Zone.objects.all(),
+        to_field_name="name",
+        required=True,
+        help_text="Assigned zone",
+    )
+
+    type = CSVChoiceField(
+        choices=Record.CHOICES, required=True, help_text="Record Type"
+    )
+
+    class Meta:
+        model = Record
+        fields = ("zone", "type", "name", "value", "ttl")
