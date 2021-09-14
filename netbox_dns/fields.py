@@ -25,7 +25,7 @@ class CustomDynamicModelMultipleChoiceField(DynamicModelMultipleChoiceField):
             filter = self.filter(field_name=field_name)
             try:
                 self.queryset = filter.filter(self.queryset, data)
-            except TypeError:
+            except (TypeError, ValueError):
                 # Catch any error caused by invalid initial data passed from the user
                 self.queryset = self.queryset.none()
         else:
@@ -40,10 +40,9 @@ class CustomDynamicModelMultipleChoiceField(DynamicModelMultipleChoiceField):
             #
             # Custom url for work with plugin api
             #
-            data_url = (
-                f"{reverse('plugins-api:{}-api:{}-list'.format(app_label, model_name))}"
+            data_url = reverse(
+                "plugins-api:{}-api:{}-list".format(app_label, model_name)
             )
-
             widget.attrs["data-url"] = data_url
 
         return bound_field

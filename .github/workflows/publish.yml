@@ -1,0 +1,37 @@
+name: PyPI Publish
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Install latest version of Poetry
+        run: |
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+      - name: Add Poetry to $PATH
+        run: |
+          echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+      - name: Get Poetry version
+        run: poetry --version
+      - name: Check pyproject.toml validity
+        run: poetry check --no-interaction
+      - name: Install deps
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry install --no-interaction
+      - name: Publish to PyPI
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          poetry config pypi-token.pypi $PYPI_TOKEN
+          poetry publish --build

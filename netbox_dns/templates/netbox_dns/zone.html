@@ -5,90 +5,89 @@
 {% load view_helpers %}
 {% load perms %}
 
-{% block breadcrumbs %}
-  <li><a href="{% url 'plugins:netbox_dns:zone_list' %}">Zones</a></li>
-  <li>{{ object }}</li>
-{% endblock %}
-
-{% block buttons %}
-    <a href="{% url 'plugins:netbox_dns:record_add' %}?zone={{ object.id }}" class="btn btn-primary">
-        <span class="mdi mdi-plus-thick" aria-hidden="true"></span> Add Record
-    </a>
-    {{ block.super }}
+{% block extra_controls %}
+<a href="{% url 'plugins:netbox_dns:record_add' %}?zone={{ object.id }}" class="btn btn-sm btn-primary" role="button">
+    <i class="mdi mdi-plus-thick"></i> Add Record
+</a>
+{{ block.super }}
 {% endblock %}
 
 {% block content %}
 <div class="row">
-    <div class=" col-md-6">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <strong>Zone</strong>
+    <div class="col col-md-6">
+        <div class="card">
+            <div class="card-header">
+                Zone
             </div>
-            <table class="table table-hover panel-body attr-table">
-                <tr>
-                    <td>Name</td>
-                    <td>{{ object.name }}</td>
-                </tr>
-                <tr>
-                    <td>Status</td>
-                    <td>{{ object.status }}</td>
-                </tr>
-                <tr>
-                    <td>Nameservers</td>
-                    <td>
-                        <ul>
-                        {% for nameserver in object.nameservers.all %}
-                            <li>
-                                <a href="{% url 'plugins:netbox_dns:nameserver' pk=nameserver.pk %}">
-                                    {{ nameserver }}
-                                </a>
-                            </li>
-                        {% endfor %}
-                        </ul>
-                    </td>
-                </tr>
-            </table>
+            <div class="card-body">
+                <table class="table table-hover attr-table">
+                    <tr>
+                        <th scope="row">Name</th>
+                        <td>{{ object.name }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Status</th>
+                        <td>{{ object.status }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Nameservers</th>
+                        <td>
+                            <ul>
+                                {% for nameserver in object.nameservers.all %}
+                                <li>
+                                    <a href="{% url 'plugins:netbox_dns:nameserver' pk=nameserver.pk %}">
+                                        {{ nameserver }}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
+        {% include 'inc/custom_fields_panel.html' %}
     </div>
-    <div class="col-md-6">
+    <div class="col col-md-6">
         {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_dns:zone_list' %}
     </div>
 </div>
 <div class="row">
-	<div class="col-md-12">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <strong>Records</strong>
+    <div class="col col-md-12">
+        <div class="card">
+            <h5 class="card-header">Records</h5>
+            <div class="card-body">
+                <table class="table table-hover attr-table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">TYPE</th>
+                            <th scope="col">NAME</th>
+                            <th scope="col">VALUE</th>
+                            <th scope="col">TTL</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td>{{ record.type }}</td>
+                            <td>{{ record.name }}</td>
+                            <td>{{ record.value }}</td>
+                            <td>{{ record.ttl }}</td>
+                            <td class="noprint text-end text-nowrap">
+                                {% if request.user|can_change:object %}
+                                    {% plugin_edit_button record %}
+                                {% endif %}
+                                {% if request.user|can_delete:object %}
+                                    {% plugin_delete_button record %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            <table class="table table-hover panel-body attr-table">
-                <thead>
-                    <th>TYPE</th>
-                    <th>NAME</th>
-                    <th>VALUE</th>
-                    <th>TTL</th>
-                    <th>Actions</th>
-                </thead>
-                <tbody>
-                    {% for record in records %}
-                    <tr>
-                        <td>{{ record.type }}</td>
-                        <td>{{ record.name }}</td>
-                        <td>{{ record.value }}</td>
-                        <td>{{ record.ttl }}</td>
-                        <td>
-                        {% if request.user|can_change:object %}
-                            {% plugin_edit_button record %}
-                        {% endif %}
-                        {% if request.user|can_delete:object %}
-                            {% plugin_delete_button record %}
-                        {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
         </div>
     </div>
 </div>
-
 {% endblock %}

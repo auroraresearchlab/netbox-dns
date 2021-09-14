@@ -5,10 +5,13 @@ from netbox.views import generic
 from netbox_dns.models import Record, Zone, NameServer
 from netbox_dns.tables import NameServerTable, RecordTable, ZoneTable
 from netbox_dns.forms import (
+    NameServerCSVForm,
     NameServerFilterForm,
     NameServerForm,
+    RecordCSVForm,
     RecordFilterForm,
     RecordForm,
+    ZoneCSVForm,
     ZoneForm,
     ZoneFilterForm,
 )
@@ -28,7 +31,7 @@ class ZoneListView(generic.ObjectListView):
     filterset_form = ZoneFilterForm
     table = ZoneTable
     template_name = "netbox_dns/object_list.html"
-    action_buttons = ("add",)
+    action_buttons = ("add", "import")
 
 
 class ZoneView(generic.ObjectView):
@@ -54,6 +57,12 @@ class ZoneDeleteView(generic.ObjectDeleteView):
     queryset = Zone.objects.all()
 
 
+class ZoneBulkImportView(generic.BulkImportView):
+    queryset = Zone.objects.all()
+    model_form = ZoneCSVForm
+    table = ZoneTable
+
+
 #
 # NameServer
 #
@@ -66,14 +75,13 @@ class NameServerListView(generic.ObjectListView):
     table = NameServerTable
     template_name = "netbox_dns/object_list.html"
 
-    action_buttons = ("add",)
+    action_buttons = ("add", "import")
 
 
 class NameServerView(generic.ObjectView):
     """Display NameServer details"""
 
     queryset = NameServer.objects.all()
-
 
 
 class NameServerEditView(generic.ObjectEditView):
@@ -87,6 +95,12 @@ class NameServerDeleteView(generic.ObjectDeleteView):
     queryset = NameServer.objects.all()
 
 
+class NameServerBulkImportView(generic.BulkImportView):
+    queryset = NameServer.objects.all()
+    model_form = NameServerCSVForm
+    table = NameServerTable
+
+
 #
 # Record
 #
@@ -98,7 +112,7 @@ class RecordListView(generic.ObjectListView):
     filterset_form = RecordFilterForm
     table = RecordTable
     template_name = "netbox_dns/object_list.html"
-    action_buttons = ("add",)
+    action_buttons = ("add", "import")
 
 
 class RecordView(generic.ObjectView):
@@ -116,3 +130,9 @@ class RecordEditView(generic.ObjectEditView):
 
 class RecordDeleteView(generic.ObjectDeleteView):
     queryset = Record.objects.all()
+
+
+class RecordBulkImportView(generic.BulkImportView):
+    queryset = Record.objects.all()
+    model_form = RecordCSVForm
+    table = RecordTable
