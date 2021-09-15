@@ -74,6 +74,20 @@ class Record(PrimaryModel):
     DS = "DS"
     SSHFP = "SSHFP"
     TLSA = "TLSA"
+    AFSDB = "AFSDB"
+    APL = "APL"
+    DNSKEY = "DNSKEY"
+    CDNSKEY = "CDNSKEY"
+    CERT = "CERT"
+    DCHID = "DCHID"
+    DNAME = "DNAME"
+    HIP = "HIP"
+    IPSECKEY = "IPSECKEY"
+    LOC = "LOC"
+    NAPTR = "NAPTR"
+    NSEC = "NSEC"
+    RRSIG = "RRSIG"
+    RP = "RP"
 
     CHOICES = (
         (A, A),
@@ -90,6 +104,20 @@ class Record(PrimaryModel):
         (DS, DS),
         (SSHFP, SSHFP),
         (TLSA, TLSA),
+        (AFSDB, AFSDB),
+        (APL, APL),
+        (DNSKEY, DNSKEY),
+        (CDNSKEY, CDNSKEY),
+        (CERT, CERT),
+        (DCHID, DCHID),
+        (DNAME, DNAME),
+        (HIP, HIP),
+        (IPSECKEY, IPSECKEY),
+        (LOC, LOC),
+        (NAPTR, NAPTR),
+        (NSEC, NSEC),
+        (RRSIG, RRSIG),
+        (RP, RP),
     )
 
     zone = models.ForeignKey(Zone, on_delete=models.CASCADE)
