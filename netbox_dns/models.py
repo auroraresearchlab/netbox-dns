@@ -66,8 +66,31 @@ class Record(PrimaryModel):
     MX = "MX"
     TXT = "TXT"
     NS = "NS"
+    SOA = "SOA"
+    SRV = "SRV"
+    PTR = "PTR"
+    SPF = "SPF"
+    CAA = "CAA"
+    DS = "DS"
+    SSHFP = "SSHFP"
+    TLSA = "TLSA"
 
-    CHOICES = ((A, A), (AAAA, AAAA), (CNAME, CNAME), (MX, MX), (TXT, TXT), (NS, NS))
+    CHOICES = (
+        (A, A),
+        (AAAA, AAAA),
+        (CNAME, CNAME),
+        (MX, MX),
+        (TXT, TXT),
+        (NS, NS),
+        (SOA, SOA),
+        (SRV, SRV),
+        (PTR, PTR),
+        (SPF, SPF),
+        (CAA, CAA),
+        (DS, DS),
+        (SSHFP, SSHFP),
+        (TLSA, TLSA),
+    )
 
     zone = models.ForeignKey(Zone, on_delete=models.CASCADE)
     type = models.CharField(choices=CHOICES, max_length=10)
