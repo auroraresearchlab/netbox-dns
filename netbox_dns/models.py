@@ -66,8 +66,59 @@ class Record(PrimaryModel):
     MX = "MX"
     TXT = "TXT"
     NS = "NS"
+    SOA = "SOA"
+    SRV = "SRV"
+    PTR = "PTR"
+    SPF = "SPF"
+    CAA = "CAA"
+    DS = "DS"
+    SSHFP = "SSHFP"
+    TLSA = "TLSA"
+    AFSDB = "AFSDB"
+    APL = "APL"
+    DNSKEY = "DNSKEY"
+    CDNSKEY = "CDNSKEY"
+    CERT = "CERT"
+    DCHID = "DCHID"
+    DNAME = "DNAME"
+    HIP = "HIP"
+    IPSECKEY = "IPSECKEY"
+    LOC = "LOC"
+    NAPTR = "NAPTR"
+    NSEC = "NSEC"
+    RRSIG = "RRSIG"
+    RP = "RP"
 
-    CHOICES = ((A, A), (AAAA, AAAA), (CNAME, CNAME), (MX, MX), (TXT, TXT), (NS, NS))
+    CHOICES = (
+        (A, A),
+        (AAAA, AAAA),
+        (CNAME, CNAME),
+        (MX, MX),
+        (TXT, TXT),
+        (NS, NS),
+        (SOA, SOA),
+        (SRV, SRV),
+        (PTR, PTR),
+        (SPF, SPF),
+        (CAA, CAA),
+        (DS, DS),
+        (SSHFP, SSHFP),
+        (TLSA, TLSA),
+        (AFSDB, AFSDB),
+        (APL, APL),
+        (DNSKEY, DNSKEY),
+        (CDNSKEY, CDNSKEY),
+        (CERT, CERT),
+        (DCHID, DCHID),
+        (DNAME, DNAME),
+        (HIP, HIP),
+        (IPSECKEY, IPSECKEY),
+        (LOC, LOC),
+        (NAPTR, NAPTR),
+        (NSEC, NSEC),
+        (RRSIG, RRSIG),
+        (RP, RP),
+    )
 
     zone = models.ForeignKey(Zone, on_delete=models.CASCADE)
     type = models.CharField(choices=CHOICES, max_length=10)
