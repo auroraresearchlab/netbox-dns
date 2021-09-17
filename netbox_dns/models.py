@@ -35,12 +35,32 @@ class Zone(PrimaryModel):
         STATUS_ACTIVE: "success",
     }
 
-    name = models.CharField(unique=True, max_length=255)
-    status = models.CharField(
-        max_length=50, choices=CHOICES, default=STATUS_ACTIVE, blank=True
+    name = models.CharField(
+        unique=True,
+        max_length=255,
     )
-    nameservers = models.ManyToManyField(NameServer, related_name="zones", blank=True)
-    tags = TaggableManager(through="extras.TaggedItem", blank=True)
+    status = models.CharField(
+        max_length=50,
+        choices=CHOICES,
+        default=STATUS_ACTIVE,
+    )
+    tenant = models.ForeignKey(
+        to="tenancy.Tenant",
+        on_delete=models.PROTECT,
+        related_name="zones",
+        blank=True,
+        null=True,
+    )
+    nameservers = models.ManyToManyField(
+        NameServer,
+        related_name="zones",
+        blank=True,
+    )
+    expire_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Expiration date",
+    )
 
     objects = RestrictedQuerySet.as_manager()
 

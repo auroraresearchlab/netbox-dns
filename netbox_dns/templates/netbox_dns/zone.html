@@ -30,6 +30,10 @@
                         <td>{{ object.status }}</td>
                     </tr>
                     <tr>
+                        <th scope="row">Expire Date</th>
+                        <td>{{ object.expire_date }}</td>
+                    </tr>
+                    <tr>
                         <th scope="row">Nameservers</th>
                         <td>
                             <ul>
@@ -57,35 +61,37 @@
         <div class="card">
             <h5 class="card-header">Records</h5>
             <div class="card-body">
-                <table class="table table-hover attr-table table-striped">
-                    <thead>
-                        <tr>
-                            <th scope="col">TYPE</th>
-                            <th scope="col">NAME</th>
-                            <th scope="col">VALUE</th>
-                            <th scope="col">TTL</th>
-                            <th scope="col">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for record in records %}
-                        <tr>
-                            <td>{{ record.type }}</td>
-                            <td>{{ record.name }}</td>
-                            <td>{{ record.value }}</td>
-                            <td>{{ record.ttl }}</td>
-                            <td class="noprint text-end text-nowrap">
+                <div class="table-responsive">
+                    <table class="table table-hover attr-table table-striped">
+                        <thead>
+                            <tr>
+                                <th>TYPE</th>
+                                <th>NAME</th>
+                                <th>VALUE</th>
+                                <th>TTL</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records %}
+                            <tr>
+                                <td>{{ record.type }}</td>
+                                <td>{{ record.name|truncatechars:32 }}</td>
+                                <td>{{ record.value|truncatechars:64 }}</td>
+                                <td>{{ record.ttl }}</td>
+                                <td class="noprint text-end text-nowrap">
                                 {% if request.user|can_change:object %}
                                     {% plugin_edit_button record %}
-                                {% endif %}
+                                    {% endif %}
                                 {% if request.user|can_delete:object %}
                                     {% plugin_delete_button record %}
                                 {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

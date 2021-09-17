@@ -2,6 +2,7 @@ from django import forms
 
 from extras.forms import CustomFieldModelForm, CustomFieldModelCSVForm
 from extras.models.tags import Tag
+from tenancy.forms import TenancyFilterForm, TenancyForm
 from utilities.forms import (
     BootstrapMixin,
     DynamicModelMultipleChoiceField,
@@ -9,17 +10,20 @@ from utilities.forms import (
     StaticSelect,
     CSVChoiceField,
     CSVModelChoiceField,
+    DatePicker,
 )
 
 from .models import NameServer, Record, Zone
 from .fields import CustomDynamicModelMultipleChoiceField
 
 
-class ZoneForm(BootstrapMixin, CustomFieldModelForm):
+class ZoneForm(BootstrapMixin, TenancyForm, CustomFieldModelForm):
     """Form for creating a new Zone object."""
 
-    tags = DynamicModelMultipleChoiceField(queryset=Tag.objects.all(), required=False)
-
+    tags = DynamicModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        required=False,
+    )
     nameservers = CustomDynamicModelMultipleChoiceField(
         queryset=NameServer.objects.all(),
         required=False,
@@ -30,18 +34,26 @@ class ZoneForm(BootstrapMixin, CustomFieldModelForm):
         fields = [
             "name",
             "status",
-            "tags",
+            "tenant",
+            "expire_date",
             "nameservers",
+            "tags",
         ]
+        widgets = {
+            "expire_date": DatePicker(),
+        }
 
 
-class ZoneFilterForm(BootstrapMixin, forms.ModelForm):
+class ZoneFilterForm(BootstrapMixin, TenancyFilterForm, forms.ModelForm):
     """Form for filtering Zone instances."""
 
-    q = forms.CharField(required=False, label="Search")
-
-    status = forms.ChoiceField(choices=Zone.CHOICES)
-
+    q = forms.CharField(
+        required=False,
+        label="Search",
+    )
+    status = forms.ChoiceField(
+        choices=Zone.CHOICES,
+    )
     name = forms.CharField(
         required=False,
         label="Name",

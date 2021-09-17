@@ -1,5 +1,5 @@
 import django_tables2 as tables
-from utilities.tables import BaseTable, ChoiceFieldColumn
+from utilities.tables import BaseTable, ChoiceFieldColumn, ToggleColumn
 from .models import NameServer, Record, Zone
 
 
@@ -9,6 +9,8 @@ class ZoneTable(BaseTable):
     id = tables.LinkColumn()
     name = tables.LinkColumn()
     status = ChoiceFieldColumn()
+    tenant = tables.Column(linkify=True)
+    expire_date = tables.DateColumn(short=False)
 
     class Meta(BaseTable.Meta):
         model = Zone
@@ -16,6 +18,8 @@ class ZoneTable(BaseTable):
             "id",
             "name",
             "status",
+            "tenant",
+            "expire_date",
         )
 
 
