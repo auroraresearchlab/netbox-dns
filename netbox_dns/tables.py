@@ -1,19 +1,19 @@
 import django_tables2 as tables
-from utilities.tables import BaseTable, ChoiceFieldColumn
+from utilities.tables import BaseTable, ChoiceFieldColumn, ToggleColumn
 from .models import NameServer, Record, Zone
 
 
 class ZoneTable(BaseTable):
     """Table for displaying Zone objects."""
 
-    id = tables.LinkColumn()
+    pk = ToggleColumn()
     name = tables.LinkColumn()
     status = ChoiceFieldColumn()
 
     class Meta(BaseTable.Meta):
         model = Zone
         fields = (
-            "id",
+            "pk",
             "name",
             "status",
         )
@@ -22,13 +22,13 @@ class ZoneTable(BaseTable):
 class NameServerTable(BaseTable):
     """Table for displaying NameServer objects."""
 
-    id = tables.LinkColumn()
+    pk = ToggleColumn()
     name = tables.LinkColumn()
 
     class Meta(BaseTable.Meta):
         model = NameServer
         fields = (
-            "id",
+            "pk",
             "name",
         )
 
@@ -36,14 +36,14 @@ class NameServerTable(BaseTable):
 class RecordTable(BaseTable):
     """Table for displaying Record objects."""
 
-    id = tables.LinkColumn()
+    pk = ToggleColumn()
     zone = tables.LinkColumn()
     name = tables.LinkColumn()
 
     class Meta(BaseTable.Meta):
         model = Record
         fields = (
-            "id",
+            "pk",
             "zone",
             "name",
             "value",
