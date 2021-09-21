@@ -4,6 +4,8 @@ from django.forms import widgets
 from extras.forms import (
     CustomFieldModelForm,
     CustomFieldModelCSVForm,
+    AddRemoveTagsForm,
+    CustomFieldModelBulkEditForm,
     CustomFieldModelFilterForm,
 )
 from extras.models.tags import Tag
@@ -14,6 +16,8 @@ from utilities.forms import (
     StaticSelect,
     CSVChoiceField,
     CSVModelChoiceField,
+    DynamicModelChoiceField,
+    APISelect,
     add_blank_choice,
 )
 
@@ -70,6 +74,21 @@ class ZoneCSVForm(CustomFieldModelCSVForm):
     class Meta:
         model = Zone
         fields = ("name", "status")
+
+
+class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, CustomFieldModelBulkEditForm):
+    pk = forms.ModelMultipleChoiceField(
+        queryset=Zone.objects.all(), widget=forms.MultipleHiddenInput()
+    )
+    status = forms.ChoiceField(
+        choices=add_blank_choice(Zone.CHOICES), required=False, widget=StaticSelect()
+    )
+    nameservers = CustomDynamicModelMultipleChoiceField(
+        queryset=NameServer.objects.all(), required=False
+    )
+
+    class Meta:
+        nullable_fields = []
 
 
 class NameServerForm(BootstrapMixin, forms.ModelForm):
@@ -163,3 +182,20 @@ class RecordCSVForm(CustomFieldModelCSVForm):
     class Meta:
         model = Record
         fields = ("zone", "type", "name", "value", "ttl")
+
+
+class RecordBulkEditForm(
+    BootstrapMixin, AddRemoveTagsForm, CustomFieldModelBulkEditForm
+):
+    pk = forms.ModelMultipleChoiceField(
+        queryset=Record.objects.all(), widget=forms.MultipleHiddenInput()
+    )
+    zone = DynamicModelChoiceField(
+        queryset=Zone.objects.all(),
+        required=False,
+        widget=APISelect(attrs={"data-url": "plugins:netbox_dns-api:zone-list"}),
+    )
+    ttl = forms.IntegerField(required=False)
+
+    class Meta:
+        nullable_fields = []

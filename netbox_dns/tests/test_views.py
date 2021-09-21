@@ -14,6 +14,8 @@ class ZoneTestCase(
     ViewTestCases.ListObjectsViewTestCase,
     ViewTestCases.GetObjectChangelogViewTestCase,
     ViewTestCases.BulkImportObjectsViewTestCase,
+    ViewTestCases.BulkEditObjectsViewTestCase,
+    ViewTestCases.BulkDeleteObjectsViewTestCase,
 ):
     model = Zone
 
@@ -41,6 +43,10 @@ class ZoneTestCase(
             "domain-6.com,active",
         )
 
+        cls.bulk_edit_data = {
+            "status": Zone.STATUS_PASSIVE,
+        }
+
     maxDiff = None
 
 
@@ -53,6 +59,7 @@ class NameServerTestCase(
     ViewTestCases.ListObjectsViewTestCase,
     ViewTestCases.GetObjectChangelogViewTestCase,
     ViewTestCases.BulkImportObjectsViewTestCase,
+    ViewTestCases.BulkDeleteObjectsViewTestCase,
 ):
     model = NameServer
 
@@ -92,6 +99,8 @@ class RecordTestCase(
     ViewTestCases.ListObjectsViewTestCase,
     ViewTestCases.GetObjectChangelogViewTestCase,
     ViewTestCases.BulkImportObjectsViewTestCase,
+    ViewTestCases.BulkEditObjectsViewTestCase,
+    ViewTestCases.BulkDeleteObjectsViewTestCase,
 ):
     model = Record
 
@@ -137,5 +146,10 @@ class RecordTestCase(
             "zone1.com,CNAME,dns,100.100.100.100,100",
             "zone2.com,TXT,textname,textvalue,1000",
         )
+
+        cls.bulk_edit_data = {
+            "zone": zone2.id,
+            "ttl": 999,
+        }
 
     maxDiff = None
