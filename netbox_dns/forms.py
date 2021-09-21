@@ -1,10 +1,12 @@
 from django import forms
+from django.forms import widgets
 
 from extras.forms import (
     CustomFieldModelForm,
     CustomFieldModelCSVForm,
     AddRemoveTagsForm,
     CustomFieldModelBulkEditForm,
+    CustomFieldModelFilterForm,
 )
 from extras.models.tags import Tag
 from utilities.forms import (
@@ -26,46 +28,48 @@ from .fields import CustomDynamicModelMultipleChoiceField
 class ZoneForm(BootstrapMixin, CustomFieldModelForm):
     """Form for creating a new Zone object."""
 
-    tags = DynamicModelMultipleChoiceField(queryset=Tag.objects.all(), required=False)
-
     nameservers = CustomDynamicModelMultipleChoiceField(
         queryset=NameServer.objects.all(),
         required=False,
     )
+    tags = DynamicModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        required=False,
+    )
 
     class Meta:
         model = Zone
-        fields = [
-            "name",
-            "status",
-            "tags",
-            "nameservers",
-        ]
+        fields = ("name", "status", "tags", "nameservers")
+
+        widgets = {
+            "status": StaticSelect(),
+        }
 
 
-class ZoneFilterForm(BootstrapMixin, forms.ModelForm):
+class ZoneFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
     """Form for filtering Zone instances."""
 
+    model = Zone
+
     q = forms.CharField(required=False, label="Search")
-
-    status = forms.ChoiceField(choices=Zone.CHOICES)
-
+    status = forms.ChoiceField(
+        choices=add_blank_choice(Zone.CHOICES),
+        required=False,
+        widget=StaticSelect(),
+    )
     name = forms.CharField(
         required=False,
         label="Name",
     )
-
+    nameservers = CustomDynamicModelMultipleChoiceField(
+        queryset=NameServer.objects.all(),
+        required=False,
+    )
     tag = TagFilterField(Zone)
-
-    class Meta:
-        model = Zone
-        fields = []
 
 
 class ZoneCSVForm(CustomFieldModelCSVForm):
-    status = CSVChoiceField(
-        choices=Zone.CHOICES, required=True, help_text="Zone status"
-    )
+    status = CSVChoiceField(choices=Zone.CHOICES, help_text="Zone status")
 
     class Meta:
         model = Zone
@@ -90,34 +94,30 @@ class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, CustomFieldModelBulkEd
 class NameServerForm(BootstrapMixin, forms.ModelForm):
     """Form for creating a new NameServer object."""
 
-    tags = DynamicModelMultipleChoiceField(queryset=Tag.objects.all(), required=False)
+    tags = DynamicModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        required=False,
+    )
 
     class Meta:
         model = NameServer
-        fields = [
-            "name",
-            "tags",
-        ]
-
-    def clean(self):
-        cleaned_data = super().clean()
+        fields = ("name", "tags")
 
 
-class NameServerFilterForm(BootstrapMixin, forms.ModelForm):
+class NameServerFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
     """Form for filtering NameServer instances."""
 
-    q = forms.CharField(required=False, label="Search")
+    model = NameServer
 
+    q = forms.CharField(
+        required=False,
+        label="Search",
+    )
     name = forms.CharField(
         required=False,
         label="Name",
     )
-
     tag = TagFilterField(NameServer)
-
-    class Meta:
-        model = NameServer
-        fields = []
 
 
 class NameServerCSVForm(CustomFieldModelCSVForm):
@@ -129,37 +129,41 @@ class NameServerCSVForm(CustomFieldModelCSVForm):
 class RecordForm(BootstrapMixin, forms.ModelForm):
     """Form for creating a new Record object."""
 
-    tags = DynamicModelMultipleChoiceField(queryset=Tag.objects.all(), required=False)
+    tags = DynamicModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        required=False,
+    )
 
     class Meta:
         model = Record
-        fields = [
-            "zone",
-            "type",
-            "name",
-            "value",
-            "ttl",
-            "tags",
-        ]
+        fields = ("zone", "type", "name", "value", "ttl", "tags")
 
-        widgets = {"zone": StaticSelect()}
+        widgets = {
+            "zone": StaticSelect(),
+            "type": StaticSelect(),
+        }
 
 
-class RecordFilterForm(BootstrapMixin, forms.ModelForm):
+class RecordFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
     """Form for filtering Record instances."""
 
-    q = forms.CharField(required=False, label="Search")
+    model = Record
 
+    q = forms.CharField(required=False, label="Search")
+    type = forms.ChoiceField(
+        choices=add_blank_choice(Record.CHOICES),
+        required=False,
+        widget=StaticSelect(),
+    )
     name = forms.CharField(
         required=False,
         label="Name",
     )
-
+    value = forms.CharField(
+        required=False,
+        label="Name",
+    )
     tag = TagFilterField(Record)
-
-    class Meta:
-        model = Record
-        fields = []
 
 
 class RecordCSVForm(CustomFieldModelCSVForm):
@@ -169,9 +173,10 @@ class RecordCSVForm(CustomFieldModelCSVForm):
         required=True,
         help_text="Assigned zone",
     )
-
     type = CSVChoiceField(
-        choices=Record.CHOICES, required=True, help_text="Record Type"
+        choices=Record.CHOICES,
+        required=True,
+        help_text="Record Type",
     )
 
     class Meta:
