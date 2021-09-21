@@ -8,9 +8,16 @@ menu_items = (
         buttons=(
             PluginMenuButton(
                 "plugins:netbox_dns:zone_add",
-                "Zones Add",
+                "Add",
                 "mdi mdi-plus-thick",
                 ButtonColorChoices.GREEN,
+                permissions=["netbox_dns.add_zone"],
+            ),
+            PluginMenuButton(
+                "plugins:netbox_dns:zone_import",
+                "Import",
+                "mdi mdi-upload",
+                ButtonColorChoices.CYAN,
                 permissions=["netbox_dns.add_zone"],
             ),
         ),
@@ -21,9 +28,16 @@ menu_items = (
         buttons=(
             PluginMenuButton(
                 "plugins:netbox_dns:nameserver_add",
-                "Nameserver Add",
+                "Add",
                 "mdi mdi-plus-thick",
                 ButtonColorChoices.GREEN,
+                permissions=["netbox_dns.add_nameserver"],
+            ),
+            PluginMenuButton(
+                "plugins:netbox_dns:nameserver_import",
+                "Import",
+                "mdi mdi-upload",
+                ButtonColorChoices.CYAN,
                 permissions=["netbox_dns.add_nameserver"],
             ),
         ),
@@ -34,9 +48,16 @@ menu_items = (
         buttons=(
             PluginMenuButton(
                 "plugins:netbox_dns:record_add",
-                "Record Add",
+                "Add",
                 "mdi mdi-plus-thick",
                 ButtonColorChoices.GREEN,
+                permissions=["netbox_dns.add_record"],
+            ),
+            PluginMenuButton(
+                "plugins:netbox_dns:record_import",
+                "Import",
+                "mdi mdi-upload",
+                ButtonColorChoices.CYAN,
                 permissions=["netbox_dns.add_record"],
             ),
         ),
