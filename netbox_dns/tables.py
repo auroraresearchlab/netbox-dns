@@ -6,7 +6,7 @@ from .models import NameServer, Record, Zone
 class ZoneTable(BaseTable):
     """Table for displaying Zone objects."""
 
-    id = tables.LinkColumn()
+    pk = ToggleColumn()
     name = tables.LinkColumn()
     status = ChoiceFieldColumn()
     tenant = tables.Column(linkify=True)
@@ -15,7 +15,7 @@ class ZoneTable(BaseTable):
     class Meta(BaseTable.Meta):
         model = Zone
         fields = (
-            "id",
+            "pk",
             "name",
             "status",
             "tenant",
@@ -26,13 +26,13 @@ class ZoneTable(BaseTable):
 class NameServerTable(BaseTable):
     """Table for displaying NameServer objects."""
 
-    id = tables.LinkColumn()
+    pk = ToggleColumn()
     name = tables.LinkColumn()
 
     class Meta(BaseTable.Meta):
         model = NameServer
         fields = (
-            "id",
+            "pk",
             "name",
         )
 
@@ -40,14 +40,14 @@ class NameServerTable(BaseTable):
 class RecordTable(BaseTable):
     """Table for displaying Record objects."""
 
-    id = tables.LinkColumn()
+    pk = ToggleColumn()
     zone = tables.LinkColumn()
     name = tables.LinkColumn()
 
     class Meta(BaseTable.Meta):
         model = Record
         fields = (
-            "id",
+            "pk",
             "zone",
             "name",
             "value",

@@ -103,7 +103,7 @@
 
         {# Form buttons #}
         {% if permissions.change or permissions.delete %}
-          {% with bulk_edit_url=content_type.model_class|validated_viewname:"bulk_edit" bulk_delete_url=content_type.model_class|validated_viewname:"bulk_delete" %}
+          {% with bulk_edit_url=content_type.model_class|plugin_validated_viewname:"bulk_edit" bulk_delete_url=content_type.model_class|plugin_validated_viewname:"bulk_delete" %}
             <div class="noprint bulk-buttons">
               <div class="bulk-button-group">
                 {% block bulk_buttons %}{% endblock %}

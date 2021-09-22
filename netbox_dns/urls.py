@@ -9,18 +9,23 @@ from .views import (
     ZoneDeleteView,
     ZoneEditView,
     ZoneBulkImportView,
+    ZoneBulkEditView,
+    ZoneBulkDeleteView,
     # nameserver
     NameServerListView,
     NameServerView,
     NameServerEditView,
     NameServerDeleteView,
     NameServerBulkImportView,
+    NameServerBulkDeleteView,
     # record
     RecordListView,
     RecordView,
     RecordEditView,
     RecordDeleteView,
     RecordBulkImportView,
+    RecordBulkEditView,
+    RecordBulkDeleteView,
 )
 
 app_name = "netbox_dns"
@@ -32,6 +37,8 @@ urlpatterns = [
     path("zones/", ZoneListView.as_view(), name="zone_list"),
     path("zones/add/", ZoneEditView.as_view(), name="zone_add"),
     path("zones/import/", ZoneBulkImportView.as_view(), name="zone_import"),
+    path("zones/edit/", ZoneBulkEditView.as_view(), name="zone_bulk_edit"),
+    path("zones/delete/", ZoneBulkDeleteView.as_view(), name="zone_bulk_delete"),
     path("zones/<int:pk>/", ZoneView.as_view(), name="zone"),
     path("zones/<int:pk>/delete/", ZoneDeleteView.as_view(), name="zone_delete"),
     path("zones/<int:pk>/edit/", ZoneEditView.as_view(), name="zone_edit"),
@@ -50,6 +57,11 @@ urlpatterns = [
         "nameservers/import/",
         NameServerBulkImportView.as_view(),
         name="nameserver_import",
+    ),
+    path(
+        "nameservers/delete/",
+        NameServerBulkDeleteView.as_view(),
+        name="nameserver_bulk_delete",
     ),
     path("nameservers/<int:pk>/", NameServerView.as_view(), name="nameserver"),
     path(
@@ -74,6 +86,8 @@ urlpatterns = [
     path("records/", RecordListView.as_view(), name="record_list"),
     path("records/add/", RecordEditView.as_view(), name="record_add"),
     path("records/import/", RecordBulkImportView.as_view(), name="record_import"),
+    path("records/edit/", RecordBulkEditView.as_view(), name="record_bulk_edit"),
+    path("records/delete/", RecordBulkDeleteView.as_view(), name="record_bulk_delete"),
     path("records/<int:pk>/", RecordView.as_view(), name="record"),
     path("records/<int:pk>/edit/", RecordEditView.as_view(), name="record_edit"),
     path("records/<int:pk>/delete/", RecordDeleteView.as_view(), name="record_delete"),
