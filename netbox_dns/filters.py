@@ -12,19 +12,17 @@ class ZoneFilter(PrimaryModelFilterSet):
         method="search",
         label="Search",
     )
-
-    django_filters.ChoiceFilter(choices=Zone.CHOICES)
-
     name = django_filters.CharFilter(
         lookup_expr="icontains",
     )
-
+    status = django_filters.ChoiceFilter(
+        choices=Zone.CHOICES,
+    )
     tag = TagFilter()
 
     class Meta:
         model = Zone
-
-        fields = ["name", "status", "nameservers", "tag"]
+        fields = ("name", "status", "nameservers", "tag")
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -41,17 +39,14 @@ class NameServerFilter(PrimaryModelFilterSet):
         method="search",
         label="Search",
     )
-
     name = django_filters.CharFilter(
         lookup_expr="icontains",
     )
-
     tag = TagFilter()
 
     class Meta:
         model = NameServer
-
-        fields = ["name", "tag"]
+        fields = ("name", "tag")
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -68,17 +63,21 @@ class RecordFilter(PrimaryModelFilterSet):
         method="search",
         label="Search",
     )
-
+    type = django_filters.MultipleChoiceFilter(
+        choices=Record.CHOICES,
+        null_value=None,
+    )
     name = django_filters.CharFilter(
         lookup_expr="icontains",
     )
-
+    value = django_filters.CharFilter(
+        lookup_expr="icontains",
+    )
     tag = TagFilter()
 
     class Meta:
         model = Record
-
-        fields = ["name", "value", "ttl", "tag"]
+        fields = ("type", "name", "value", "tag")
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""

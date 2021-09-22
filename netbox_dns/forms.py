@@ -18,6 +18,7 @@ from utilities.forms import (
     CSVModelChoiceField,
     DynamicModelChoiceField,
     APISelect,
+    StaticSelectMultiple,
     add_blank_choice,
 )
 
@@ -69,7 +70,10 @@ class ZoneFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
 
 
 class ZoneCSVForm(CustomFieldModelCSVForm):
-    status = CSVChoiceField(choices=Zone.CHOICES, help_text="Zone status")
+    status = CSVChoiceField(
+        choices=Zone.CHOICES,
+        help_text="Zone status",
+    )
 
     class Meta:
         model = Zone
@@ -78,13 +82,17 @@ class ZoneCSVForm(CustomFieldModelCSVForm):
 
 class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, CustomFieldModelBulkEditForm):
     pk = forms.ModelMultipleChoiceField(
-        queryset=Zone.objects.all(), widget=forms.MultipleHiddenInput()
+        queryset=Zone.objects.all(),
+        widget=forms.MultipleHiddenInput(),
     )
     status = forms.ChoiceField(
-        choices=add_blank_choice(Zone.CHOICES), required=False, widget=StaticSelect()
+        choices=add_blank_choice(Zone.CHOICES),
+        required=False,
+        widget=StaticSelect(),
     )
     nameservers = CustomDynamicModelMultipleChoiceField(
-        queryset=NameServer.objects.all(), required=False
+        queryset=NameServer.objects.all(),
+        required=False,
     )
 
     class Meta:
@@ -149,11 +157,14 @@ class RecordFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
 
     model = Record
 
-    q = forms.CharField(required=False, label="Search")
-    type = forms.ChoiceField(
+    q = forms.CharField(
+        required=False,
+        label="Search",
+    )
+    type = forms.MultipleChoiceField(
         choices=add_blank_choice(Record.CHOICES),
         required=False,
-        widget=StaticSelect(),
+        widget=StaticSelectMultiple(),
     )
     name = forms.CharField(
         required=False,
@@ -161,7 +172,7 @@ class RecordFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
     )
     value = forms.CharField(
         required=False,
-        label="Name",
+        label="Value",
     )
     tag = TagFilterField(Record)
 
