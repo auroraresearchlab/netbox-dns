@@ -57,4 +57,4 @@ jobs:
       - name: Run tests
         working-directory: netbox
         run: |
-          python netbox/manage.py test netbox_dns.tests
+          python netbox/manage.py test netbox_dns.tests -v 2
