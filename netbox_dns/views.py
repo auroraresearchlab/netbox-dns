@@ -159,7 +159,7 @@ class RecordBulkImportView(generic.BulkImportView):
 
 class RecordBulkEditView(generic.BulkEditView):
     queryset = Record.objects.all()
-    # filterset = filtersets.RoleFilterSet
+    filterset = RecordFilter
     table = RecordTable
     form = RecordBulkEditForm
 

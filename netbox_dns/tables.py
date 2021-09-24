@@ -38,6 +38,7 @@ class RecordTable(BaseTable):
 
     pk = ToggleColumn()
     zone = tables.LinkColumn()
+    type = tables.LinkColumn()
     name = tables.LinkColumn()
 
     class Meta(BaseTable.Meta):
@@ -45,6 +46,7 @@ class RecordTable(BaseTable):
         fields = (
             "pk",
             "zone",
+            "type",
             "name",
             "value",
         )
