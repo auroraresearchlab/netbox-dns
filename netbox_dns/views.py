@@ -11,9 +11,11 @@ from netbox_dns.forms import (
     RecordCSVForm,
     RecordFilterForm,
     RecordForm,
+    RecordBulkEditForm,
     ZoneCSVForm,
     ZoneForm,
     ZoneFilterForm,
+    ZoneBulkEditForm,
 )
 from netbox_dns.filters import NameServerFilter, RecordFilter, ZoneFilter
 
@@ -63,6 +65,18 @@ class ZoneBulkImportView(generic.BulkImportView):
     table = ZoneTable
 
 
+class ZoneBulkEditView(generic.BulkEditView):
+    queryset = Zone.objects.all()
+    filterset = ZoneFilter
+    table = ZoneTable
+    form = ZoneBulkEditForm
+
+
+class ZoneBulkDeleteView(generic.BulkDeleteView):
+    queryset = Zone.objects.all()
+    table = ZoneTable
+
+
 #
 # NameServer
 #
@@ -101,6 +115,11 @@ class NameServerBulkImportView(generic.BulkImportView):
     table = NameServerTable
 
 
+class NameServerBulkDeleteView(generic.BulkDeleteView):
+    queryset = NameServer.objects.all()
+    table = NameServerTable
+
+
 #
 # Record
 #
@@ -135,4 +154,16 @@ class RecordDeleteView(generic.ObjectDeleteView):
 class RecordBulkImportView(generic.BulkImportView):
     queryset = Record.objects.all()
     model_form = RecordCSVForm
+    table = RecordTable
+
+
+class RecordBulkEditView(generic.BulkEditView):
+    queryset = Record.objects.all()
+    filterset = RecordFilter
+    table = RecordTable
+    form = RecordBulkEditForm
+
+
+class RecordBulkDeleteView(generic.BulkDeleteView):
+    queryset = Record.objects.all()
     table = RecordTable

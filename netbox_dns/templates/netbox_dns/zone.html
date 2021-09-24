@@ -71,8 +71,8 @@
                         {% for record in records %}
                         <tr>
                             <td>{{ record.type }}</td>
-                            <td>{{ record.name }}</td>
-                            <td>{{ record.value }}</td>
+                            <td>{{ record.name|truncatechars:32 }}</td>
+                            <td>{{ record.value|truncatechars:64 }}</td>
                             <td>{{ record.ttl }}</td>
                             <td class="noprint text-end text-nowrap">
                                 {% if request.user|can_change:object %}
