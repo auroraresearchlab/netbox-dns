@@ -44,6 +44,8 @@ jobs:
       - name: install netbox_dns
         working-directory: netbox-dns
         run: |
+          # include tests directory for test
+          sed -i 's/exclude/#exclude/g' pyproject.toml
           pip install .
 
       - name: Install dependencies & set up configuration
@@ -57,4 +59,4 @@ jobs:
       - name: Run tests
         working-directory: netbox
         run: |
-          python netbox/manage.py test netbox_dns.tests
+          python netbox/manage.py test netbox_dns.tests -v 2

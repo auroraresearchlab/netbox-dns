@@ -5,7 +5,10 @@ from utilities.querysets import RestrictedQuerySet
 
 
 class NameServer(PrimaryModel):
-    name = models.CharField(unique=True, max_length=255)
+    name = models.CharField(
+        unique=True,
+        max_length=255,
+    )
 
     objects = RestrictedQuerySet.as_manager()
 
@@ -43,6 +46,7 @@ class Zone(PrimaryModel):
         max_length=50,
         choices=CHOICES,
         default=STATUS_ACTIVE,
+        blank=True,
     )
     tenant = models.ForeignKey(
         to="tenancy.Tenant",
@@ -60,6 +64,10 @@ class Zone(PrimaryModel):
         null=True,
         blank=True,
         verbose_name="Expiration date",
+    )
+    tags = TaggableManager(
+        through="extras.TaggedItem",
+        blank=True,
     )
 
     objects = RestrictedQuerySet.as_manager()
@@ -140,10 +148,20 @@ class Record(PrimaryModel):
         (RP, RP),
     )
 
-    zone = models.ForeignKey(Zone, on_delete=models.CASCADE)
-    type = models.CharField(choices=CHOICES, max_length=10)
-    name = models.CharField(max_length=255)
-    value = models.CharField(max_length=1000)
+    zone = models.ForeignKey(
+        Zone,
+        on_delete=models.CASCADE,
+    )
+    type = models.CharField(
+        choices=CHOICES,
+        max_length=10,
+    )
+    name = models.CharField(
+        max_length=255,
+    )
+    value = models.CharField(
+        max_length=1000,
+    )
     ttl = models.PositiveIntegerField()
 
     objects = RestrictedQuerySet.as_manager()
@@ -157,7 +175,4 @@ class Record(PrimaryModel):
         return f"{self.type}:{self.name}"
 
     def get_absolute_url(self):
-        """
-        Redirect corresponding zone url.
-        """
         return reverse("plugins:netbox_dns:record", kwargs={"pk": self.id})
