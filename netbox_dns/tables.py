@@ -10,7 +10,7 @@ class ZoneTable(BaseTable):
     name = tables.LinkColumn()
     status = ChoiceFieldColumn()
     tags = TagColumn(
-        url_name='plugins:netbox_dns:zone_list'
+        url_name="plugins:netbox_dns:zone_list",
     )
 
     class Meta(BaseTable.Meta):
@@ -29,7 +29,7 @@ class NameServerTable(BaseTable):
     pk = ToggleColumn()
     name = tables.LinkColumn()
     tags = TagColumn(
-        url_name='plugins:netbox_dns:nameserver_list'
+        url_name="plugins:netbox_dns:nameserver_list",
     )
 
     class Meta(BaseTable.Meta):
@@ -49,7 +49,7 @@ class RecordTable(BaseTable):
     type = tables.LinkColumn()
     name = tables.LinkColumn()
     tags = TagColumn(
-        url_name='plugins:netbox_dns:record_list'
+        url_name="plugins:netbox_dns:record_list",
     )
 
     class Meta(BaseTable.Meta):
