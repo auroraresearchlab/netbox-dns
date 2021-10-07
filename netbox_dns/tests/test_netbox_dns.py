@@ -8,4 +8,4 @@ class NetboxDnsTestCase(SimpleTestCase):
     """
 
     def test_version(self):
-        assert __version__ == "0.3.0"
+        assert __version__ == "0.4.0"
