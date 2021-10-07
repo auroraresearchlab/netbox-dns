@@ -33,7 +33,6 @@ class ZoneListView(generic.ObjectListView):
     filterset_form = ZoneFilterForm
     table = ZoneTable
     template_name = "netbox_dns/object_list.html"
-    action_buttons = ("add", "import")
 
 
 class ZoneView(generic.ObjectView):
@@ -89,8 +88,6 @@ class NameServerListView(generic.ObjectListView):
     table = NameServerTable
     template_name = "netbox_dns/object_list.html"
 
-    action_buttons = ("add", "import")
-
 
 class NameServerView(generic.ObjectView):
     """Display NameServer details"""
@@ -131,7 +128,6 @@ class RecordListView(generic.ObjectListView):
     filterset_form = RecordFilterForm
     table = RecordTable
     template_name = "netbox_dns/object_list.html"
-    action_buttons = ("add", "import")
 
 
 class RecordView(generic.ObjectView):
