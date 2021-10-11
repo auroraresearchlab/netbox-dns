@@ -2,8 +2,10 @@ from django.db import models
 from django.urls import reverse
 from netbox.models import PrimaryModel, TaggableManager
 from utilities.querysets import RestrictedQuerySet
+from extras.utils import extras_features
 
 
+@extras_features("custom_fields", "custom_links", "export_templates", "webhooks")
 class NameServer(PrimaryModel):
     name = models.CharField(
         unique=True,
@@ -24,6 +26,7 @@ class NameServer(PrimaryModel):
         return reverse("plugins:netbox_dns:nameserver", kwargs={"pk": self.pk})
 
 
+@extras_features("custom_fields", "custom_links", "export_templates", "webhooks")
 class Zone(PrimaryModel):
     STATUS_ACTIVE = "active"
     STATUS_PASSIVE = "passive"
@@ -87,6 +90,7 @@ class Zone(PrimaryModel):
         return self.CSS_CLASSES.get(self.status)
 
 
+@extras_features("custom_fields", "custom_links", "export_templates", "webhooks")
 class Record(PrimaryModel):
     A = "A"
     AAAA = "AAAA"

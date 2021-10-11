@@ -3,6 +3,7 @@
 <p align="center"><i>Netbox Dns is a netbox plugin for managing zone, nameserver and record inventory.</i></p>
 
 <div align="center">
+<a href="https://pypi.org/project/netbox-dns/"><img src="https://img.shields.io/pypi/v/netbox-dns" alt="PyPi"/></a>
 <a href="https://github.com/auroraresearchlab/netbox-dns/stargazers"><img src="https://img.shields.io/github/stars/auroraresearchlab/netbox-dns" alt="Stars Badge"/></a>
 <a href="https://github.com/auroraresearchlab/netbox-dns/network/members"><img src="https://img.shields.io/github/forks/auroraresearchlab/netbox-dns" alt="Forks Badge"/></a>
 <a href="https://github.com/auroraresearchlab/netbox-dns/pulls"><img src="https://img.shields.io/github/issues-pr/auroraresearchlab/netbox-dns" alt="Pull Requests Badge"/></a>
@@ -23,17 +24,32 @@
 * Netbox 3.0
 * python 3.7
 
-## Installation
+## Installation & Configuration
+
+### Installation
 
 ```
-$ pip install netbox-dns
+$ source /opt/netbox/venv/bin/activate
+(venv) $ pip install netbox-dns
 ```
+
+### Configuration
+
+Add the plugin to the NetBox config. `~/netbox/configuration.py`
+
+```python
+PLUGINS = [
+    "netbox_dns",
+]
+```
+
+Full reference: [Using Plugins - NetBox Documentation](https://netbox.readthedocs.io/en/stable/plugins/)
 
 ## Screenshots
 
-![Zones](media/zones.png)
+![Zones](https://raw.githubusercontent.com/auroraresearchlab/netbox-dns/main/media/zones.png)
 
-![Zone Detail](media/zone-detail.png)
+![Zone Detail](https://raw.githubusercontent.com/auroraresearchlab/netbox-dns/main/media/zone-detail.png)
 
 ## Contribute
 
