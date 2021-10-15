@@ -49,22 +49,25 @@ class ZoneForm(BootstrapMixin, TenancyForm, CustomFieldModelForm):
         fields = [
             "name",
             "status",
-            "tenant",
+            "auto_renew",
             "expire_date",
+            "ssl_expire_date",
             "nameservers",
             "tags",
         ]
-        widgets = {
-            "expire_date": DatePicker(),
-        }
-
+        fieldsets = (
+            ("Zone", ("name", "status", "nameservers", "tags")),
+            ("Date", ("auto_renew", "expire_date")),
+            ("SSL", ("ssl_expire_date",)),
+            ("Tenancy", ("tenant_group", "tenant")),
+        )
         widgets = {
             "status": StaticSelect(),
             "expire_date": DatePicker(),
         }
 
 
-class ZoneFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
+class ZoneFilterForm(BootstrapMixin, TenancyFilterForm, CustomFieldModelFilterForm):
     """Form for filtering Zone instances."""
 
     model = Zone

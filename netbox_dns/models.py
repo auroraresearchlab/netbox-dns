@@ -58,15 +58,23 @@ class Zone(PrimaryModel):
         blank=True,
         null=True,
     )
+    expire_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Expire date",
+    )
+    auto_renew = models.BooleanField(
+        default=False,
+    )
+    ssl_expire_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="SSL expiration date",
+    )
     nameservers = models.ManyToManyField(
         NameServer,
         related_name="zones",
         blank=True,
-    )
-    expire_date = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name="Expiration date",
     )
     tags = TaggableManager(
         through="extras.TaggedItem",
@@ -75,7 +83,14 @@ class Zone(PrimaryModel):
 
     objects = RestrictedQuerySet.as_manager()
 
-    clone_fields = ["name", "status"]
+    clone_fields = [
+        "name",
+        "status",
+        "tenant",
+        "expire_date",
+        "auto_renew",
+        "ssl_expire_date",
+    ]
 
     class Meta:
         ordering = ("name", "id")
