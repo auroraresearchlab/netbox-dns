@@ -65,6 +65,7 @@ class Zone(PrimaryModel):
     )
     auto_renew = models.BooleanField(
         default=False,
+        null=True,
     )
     ssl_expire_date = models.DateField(
         null=True,

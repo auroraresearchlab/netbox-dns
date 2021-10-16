@@ -22,6 +22,7 @@ from utilities.forms import (
     APISelect,
     StaticSelectMultiple,
     add_blank_choice,
+    BOOLEAN_WITH_BLANK_CHOICES,
 )
 
 from .models import NameServer, Record, Zone
@@ -53,6 +54,8 @@ class ZoneForm(BootstrapMixin, TenancyForm, CustomFieldModelForm):
             "expire_date",
             "ssl_expire_date",
             "nameservers",
+            "tenant_group",
+            "tenant",
             "tags",
         ]
         fieldsets = (
@@ -64,6 +67,7 @@ class ZoneForm(BootstrapMixin, TenancyForm, CustomFieldModelForm):
         widgets = {
             "status": StaticSelect(),
             "expire_date": DatePicker(),
+            "ssl_expire_date": DatePicker(),
         }
 
 
@@ -71,8 +75,16 @@ class ZoneFilterForm(BootstrapMixin, TenancyFilterForm, CustomFieldModelFilterFo
     """Form for filtering Zone instances."""
 
     model = Zone
+    field_groups = [
+        ["q", "tag"],
+        ["name", "status", "auto_renew", "expire_date", "ssl_expire_date"],
+        ["tenant_group_id", "tenant_id"],
+    ]
 
-    q = forms.CharField(required=False, label="Search")
+    q = forms.CharField(
+        required=False,
+        label="Search",
+    )
     status = forms.ChoiceField(
         choices=add_blank_choice(Zone.CHOICES),
         required=False,
@@ -81,6 +93,20 @@ class ZoneFilterForm(BootstrapMixin, TenancyFilterForm, CustomFieldModelFilterFo
     name = forms.CharField(
         required=False,
         label="Name",
+    )
+    auto_renew = forms.NullBooleanField(
+        required=False,
+        widget=StaticSelect(
+            choices=BOOLEAN_WITH_BLANK_CHOICES,
+        ),
+    )
+    expire_date = forms.DateTimeField(
+        required=False,
+        widget=DatePicker(),
+    )
+    ssl_expire_date = forms.DateTimeField(
+        required=False,
+        widget=DatePicker(),
     )
     nameservers = CustomDynamicModelMultipleChoiceField(
         queryset=NameServer.objects.all(),

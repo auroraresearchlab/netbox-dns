@@ -9,8 +9,16 @@ class ZoneTable(BaseTable):
     pk = ToggleColumn()
     name = tables.LinkColumn()
     status = ChoiceFieldColumn()
-    tenant = tables.Column(linkify=True)
-    expire_date = tables.DateColumn(short=False)
+    tenant = tables.Column(
+        linkify=True,
+    )
+    auto_renew = tables.BooleanColumn()
+    expire_date = tables.DateColumn(
+        short=False,
+    )
+    ssl_expire_date = tables.DateColumn(
+        short=False,
+    )
     tags = TagColumn(
         url_name="plugins:netbox_dns:zone_list",
     )
@@ -22,6 +30,16 @@ class ZoneTable(BaseTable):
             "name",
             "status",
             "tenant",
+            "auto_renew",
+            "expire_date",
+            "ssl_expire_date",
+            "tags",
+        )
+        default_columns = (
+            "pk",
+            "name",
+            "status",
+            "auto_renew",
             "expire_date",
             "tags",
         )

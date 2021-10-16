@@ -2,10 +2,11 @@ import django_filters
 from django.db.models import Q
 from extras.filters import TagFilter
 from netbox.filtersets import PrimaryModelFilterSet
+from tenancy.filtersets import TenancyFilterSet
 from .models import NameServer, Record, Zone
 
 
-class ZoneFilter(PrimaryModelFilterSet):
+class ZoneFilter(PrimaryModelFilterSet, TenancyFilterSet):
     """Filter capabilities for Zone instances."""
 
     q = django_filters.CharFilter(
@@ -22,7 +23,7 @@ class ZoneFilter(PrimaryModelFilterSet):
 
     class Meta:
         model = Zone
-        fields = ("name", "status", "nameservers", "tag")
+        fields = ("name", "status", "nameservers", "tag", "auto_renew", "expire_date")
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
