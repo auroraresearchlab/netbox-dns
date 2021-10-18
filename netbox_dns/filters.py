@@ -23,7 +23,15 @@ class ZoneFilter(PrimaryModelFilterSet, TenancyFilterSet):
 
     class Meta:
         model = Zone
-        fields = ("name", "status", "nameservers", "tag", "auto_renew", "expire_date")
+        fields = (
+            "name",
+            "status",
+            "nameservers",
+            "tag",
+            "auto_renew",
+            "expire_date",
+            "ssl_expire_date",
+        )
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""

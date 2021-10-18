@@ -21,6 +21,7 @@ from utilities.forms import (
     DynamicModelChoiceField,
     APISelect,
     StaticSelectMultiple,
+    CommentField,
     add_blank_choice,
     BOOLEAN_WITH_BLANK_CHOICES,
 )
@@ -40,6 +41,7 @@ class ZoneForm(BootstrapMixin, TenancyForm, CustomFieldModelForm):
         queryset=NameServer.objects.all(),
         required=False,
     )
+    comments = CommentField()
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False,
@@ -56,6 +58,7 @@ class ZoneForm(BootstrapMixin, TenancyForm, CustomFieldModelForm):
             "nameservers",
             "tenant_group",
             "tenant",
+            "comments",
             "tags",
         ]
         fieldsets = (

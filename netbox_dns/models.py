@@ -77,6 +77,9 @@ class Zone(PrimaryModel):
         related_name="zones",
         blank=True,
     )
+    comments = models.TextField(
+        blank=True,
+    )
     tags = TaggableManager(
         through="extras.TaggedItem",
         blank=True,

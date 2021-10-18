@@ -75,6 +75,7 @@
     </div>
     <div class="col col-md-6">
         {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_dns:zone_list' %}
+        {% include 'inc/comments_panel.html' %}
     </div>
 </div>
 <div class="row">
