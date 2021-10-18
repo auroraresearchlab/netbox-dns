@@ -1,7 +1,15 @@
-from rest_framework import routers
-from netbox_dns.api.views import ZoneViewSet, NameServerViewSet, RecordViewSet
+from netbox.api import OrderedDefaultRouter
+from netbox_dns.api.views import (
+    NetboxDNSRootView,
+    ZoneViewSet,
+    NameServerViewSet,
+    RecordViewSet,
+)
 
-router = routers.DefaultRouter()
+
+router = OrderedDefaultRouter()
+router.APIRootView = NetboxDNSRootView
+
 router.register("zones", ZoneViewSet)
 router.register("nameservers", NameServerViewSet)
 router.register("records", RecordViewSet)
