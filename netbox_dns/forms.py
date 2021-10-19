@@ -205,9 +205,22 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
                 f"A valid IPv{ip_version} address is required for record type {type}."
             )
 
+    def clean_ttl(self):
+        ttl = self.cleaned_data["ttl"]
+        if ttl is not None:
+            if ttl <= 0:
+                raise ValidationError("TTL must be greater than zero")
+            return ttl
+        else:
+            return self.cleaned_data["zone"].default_ttl
+
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False,
+    )
+    ttl = forms.IntegerField(
+        required=False,
+        label="TTL",
     )
 
     class Meta:
@@ -257,6 +270,19 @@ class RecordCSVForm(CustomFieldModelCSVForm):
         required=True,
         help_text="Record Type",
     )
+    ttl = IntegerField(
+        required=False,
+        help_text="TTL",
+    )
+
+    def clean_ttl(self):
+        ttl = self.cleaned_data["ttl"]
+        if ttl is not None:
+            if ttl <= 0:
+                raise ValidationError("TTL must be greater than zero")
+            return ttl
+        elif "zone" in self.cleaned_data:
+            return self.cleaned_data["zone"].default_ttl
 
     class Meta:
         model = Record
@@ -274,7 +300,19 @@ class RecordBulkEditForm(
         required=False,
         widget=APISelect(attrs={"data-url": "plugins:netbox_dns-api:zone-list"}),
     )
-    ttl = forms.IntegerField(required=False)
+    ttl = IntegerField(
+        required=False,
+        help_text="TTL",
+    )
+
+    def clean_ttl(self):
+        ttl = self.cleaned_data["ttl"]
+        if ttl is not None:
+            if ttl <= 0:
+                raise ValidationError("TTL must be greater than zero")
+            return ttl
+        else:
+            return self.cleaned_data["zone"].default_ttl
 
     class Meta:
         nullable_fields = []
