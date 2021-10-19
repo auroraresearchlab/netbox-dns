@@ -13,7 +13,11 @@ class DNSConfig(PluginConfig):
     author = "Aurora Research Lab"
     author_email = "info@aurorabilisim.com"
     required_settings = []
-    default_settings = {"loud": False}
+    default_settings = {
+        "zone": {
+            "default_ttl": 86400,
+        },
+    }
 
 
 config = DNSConfig

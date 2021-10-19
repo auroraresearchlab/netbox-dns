@@ -60,6 +60,9 @@ class Zone(PrimaryModel):
         through="extras.TaggedItem",
         blank=True,
     )
+    default_ttl = models.PositiveIntegerField(
+        blank=True,
+    )
 
     objects = RestrictedQuerySet.as_manager()
 
