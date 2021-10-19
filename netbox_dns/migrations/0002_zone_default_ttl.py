@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('netbox_dns', '0001_initial'),
+        ("netbox_dns", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='zone',
-            name='default_ttl',
+            model_name="zone",
+            name="default_ttl",
             field=models.PositiveIntegerField(blank=True, default=86400),
             preserve_default=False,
         ),

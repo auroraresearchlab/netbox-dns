@@ -33,9 +33,11 @@ class ZoneForm(BootstrapMixin, CustomFieldModelForm):
     """Form for creating a new Zone object."""
 
     def __init__(self, *args, **kwargs):
-        ''' Override the __init__ method in order to provide the initial value for the default_ttl field '''
+        """Override the __init__ method in order to provide the initial value for the default_ttl field"""
         super().__init__(*args, **kwargs)
-        self.initial["default_ttl"] = settings.PLUGINS_CONFIG.get("netbox_dns").get("zone").get("default_ttl")
+        self.initial["default_ttl"] = (
+            settings.PLUGINS_CONFIG.get("netbox_dns").get("zone").get("default_ttl")
+        )
 
     def clean_default_ttl(self):
         if self.cleaned_data["default_ttl"]:
@@ -104,7 +106,9 @@ class ZoneCSVForm(CustomFieldModelCSVForm):
             if default_ttl <= 0:
                 raise ValidationError("Default TTL must be greater than zero")
         else:
-            default_ttl = settings.PLUGINS_CONFIG.get("netbox_dns").get("zone").get("default_ttl")
+            default_ttl = (
+                settings.PLUGINS_CONFIG.get("netbox_dns").get("zone").get("default_ttl")
+            )
 
         return default_ttl
 
