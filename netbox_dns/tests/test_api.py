@@ -32,14 +32,14 @@ class ZoneAPITestCase(APITestCase):
         self.add_permissions("netbox_dns.add_zone")
         url = reverse("plugins-api:netbox_dns-api:zone-list")
         response = self.client.post(
-            f"{url}?format=json", {"name": "Name 1"}, **self.header
+            f"{url}?format=json", {"name": "zone7.example.com"}, **self.header
         )
         self.assertEqual(response.status_code, 201)
 
     def test_add_zone_without_permission(self):
         url = reverse("plugins-api:netbox_dns-api:zone-list")
         response = self.client.post(
-            f"{url}?format=json", {"name": "Name 1"}, **self.header
+            f"{url}?format=json", {"name": "zone8.example.com"}, **self.header
         )
         self.assertEqual(response.status_code, 403)
 
@@ -49,7 +49,7 @@ class ZoneAPITestCase(APITestCase):
 
         url = reverse("plugins-api:netbox_dns-api:zone-detail", kwargs={"pk": zone.id})
         response = self.client.delete(
-            f"{url}?format=json", {"name": "Name 1"}, **self.header
+            f"{url}?format=json", {"name": "zone7.example.com"}, **self.header
         )
         self.assertEqual(response.status_code, 204)
 
@@ -58,7 +58,7 @@ class ZoneAPITestCase(APITestCase):
 
         url = reverse("plugins-api:netbox_dns-api:zone-detail", kwargs={"pk": zone.id})
         response = self.client.delete(
-            f"{url}?format=json", {"name": "Name 1"}, **self.header
+            f"{url}?format=json", {"name": "zone7.example.com"}, **self.header
         )
         self.assertEqual(response.status_code, 403)
 
@@ -146,12 +146,12 @@ class RecordAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_record_detail_without_permission(self):
-        zone = Zone.objects.create(name="zone.com")
+        zone = Zone.objects.create(name="zone.example.com")
         record = Record.objects.create(
             zone=zone,
             type=Record.A,
-            name="Record 1",
-            value="Value 1",
+            name="name1",
+            value="192.168.1.1",
             ttl=100,
         )
 
@@ -164,12 +164,12 @@ class RecordAPITestCase(APITestCase):
     def test_view_record_detail_with_permission(self):
         self.add_permissions("netbox_dns.view_record")
 
-        zone = Zone.objects.create(name="zone.com")
+        zone = Zone.objects.create(name="zone.example.com")
         record = Record.objects.create(
             zone=zone,
             type=Record.A,
-            name="Record 1",
-            value="Value 1",
+            name="name1",
+            value="192.168.1.1",
             ttl=100,
         )
 
