@@ -1,5 +1,7 @@
 from django import forms
 from django.forms import widgets
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_ipv6_address, validate_ipv4_address
 
 from extras.forms import (
     CustomFieldModelForm,
@@ -136,6 +138,30 @@ class NameServerCSVForm(CustomFieldModelCSVForm):
 
 class RecordForm(BootstrapMixin, forms.ModelForm):
     """Form for creating a new Record object."""
+
+    def clean(self):
+        """
+        For A and AAA records, verify that a valid IPv4 or IPv6 was passed as
+        value and raise a ValidationError exception otherwise.
+        """
+        cleaned_data = super().clean()
+
+        type = cleaned_data.get("type")
+        if type not in (Record.A, Record.AAAA):
+            return
+
+        value = cleaned_data.get("value")
+        try:
+            ip_version = "4" if type == Record.A else "6"
+            if type == Record.A:
+                validate_ipv4_address(value)
+            else:
+                validate_ipv6_address(value)
+
+        except ValidationError:
+            raise ValidationError(
+                f"A valid IPv{ip_version} address is required for record type {type}."
+            )
 
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
