@@ -1,0 +1,53 @@
+{% extends 'netbox_dns/zone_base.html' %}
+{% load helpers %}
+{% load render_table from django_tables2 %}
+{% load perms %}
+
+{% block controls %}
+{% endblock controls %}
+
+{% block content-wrapper %}
+  <div class="tab-content">
+
+    {# Object list #}
+    <div class="tab-pane show active" id="object-list" role="tabpanel" aria-labelledby="object-list-tab">
+
+      {# Applied filters #}
+      {% if filter_form %}
+        {% applied_filters filter_form request.GET %}
+      {% endif %}
+
+      {# Object table controls #}
+      {% include 'inc/table_controls.html' with table_modal="ZoneManagedRecordTable_config" %}
+
+      <form method="post" class="form form-horizontal">
+        {% csrf_token %}
+        <input type="hidden" name="return_url" value="{% if return_url %}{{ return_url }}{% else %}{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}{% endif %}" />
+
+        {# Object table #}
+        <div class="card">
+          <div class="card-body">
+            <div class="table-responsive">
+              {% render_table table 'inc/table.html' %}
+            </div>
+          </div>
+        </div>
+
+      </form>
+
+      {# Paginator #}
+      {% include 'inc/paginator.html' with paginator=table.paginator page=table.page %}
+    </div>
+
+    {# Filter form #}
+    {% if filter_form %}
+      <div class="tab-pane show" id="filters-form" role="tabpanel" aria-labelledby="filters-form-tab">
+        {% include 'inc/filter_list.html' %}
+      </div>
+    {% endif %}
+  </div>
+
+  {# Table config form #}
+  {% table_config_form table table_name="ZoneManagedRecordTable" %}
+
+{% endblock %}

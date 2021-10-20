@@ -21,6 +21,8 @@ class ZoneTable(BaseTable):
             "name",
             "default_ttl",
             "tags",
+            "soa_mname",
+            "soa_rname",
         )
         default_columns = (
             "pk",
@@ -53,8 +55,11 @@ class RecordTable(BaseTable):
 
     pk = ToggleColumn()
     zone = tables.LinkColumn()
-    type = tables.LinkColumn()
+    type = tables.Column()
     name = tables.LinkColumn()
+    ttl = tables.Column(
+        verbose_name="TTL",
+    )
     tags = TagColumn(
         url_name="plugins:netbox_dns:record_list",
     )
@@ -64,8 +69,56 @@ class RecordTable(BaseTable):
         fields = (
             "pk",
             "zone",
-            "type",
             "name",
+            "type",
+            "value",
+            "ttl",
+            "tags",
+        )
+
+
+class ZoneRecordTable(BaseTable):
+    """Table for displaying Record objects for a given zone."""
+
+    pk = ToggleColumn()
+    type = tables.Column()
+    name = tables.LinkColumn()
+    ttl = tables.Column(
+        verbose_name="TTL",
+    )
+    tags = TagColumn(
+        url_name="plugins:netbox_dns:record_list",
+    )
+
+    class Meta(BaseTable.Meta):
+        model = Record
+        fields = (
+            "pk",
+            "name",
+            "ttl",
+            "type",
             "value",
             "tags",
+        )
+
+
+class ZoneManagedRecordTable(BaseTable):
+    """Table for displaying managed Record objects for a given zone."""
+
+    type = tables.Column()
+    name = tables.LinkColumn(
+        "plugins:netbox_dns:record",
+        args=[tables.A("pk")],
+    )
+    ttl = tables.Column(
+        verbose_name="TTL",
+    )
+
+    class Meta(BaseTable.Meta):
+        model = Record
+        fields = (
+            "name",
+            "ttl",
+            "type",
+            "value",
         )

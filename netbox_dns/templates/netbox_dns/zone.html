@@ -1,24 +1,14 @@
-{% extends 'netbox_dns/object.html' %}
+{% extends 'netbox_dns/zone_base.html' %}
 {% load helpers %}
-{% load plugins %}
 {% load render_table from django_tables2 %}
-{% load view_helpers %}
-{% load perms %}
-
-{% block extra_controls %}
-<a href="{% url 'plugins:netbox_dns:record_add' %}?zone={{ object.id }}" class="btn btn-sm btn-primary" role="button">
-    <i class="mdi mdi-plus-thick"></i> Add Record
-</a>
-{{ block.super }}
-{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col col-md-6">
         <div class="card">
-            <div class="card-header">
+            <h5 class="card-header">
                 Zone
-            </div>
+            </h5>
             <div class="card-body">
                 <table class="table table-hover attr-table">
                     <tr>
@@ -50,45 +40,46 @@
                 </table>
             </div>
         </div>
+        {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_dns:zone_list' %}
         {% include 'inc/custom_fields_panel.html' %}
     </div>
     <div class="col col-md-6">
-        {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_dns:zone_list' %}
-    </div>
-</div>
-<div class="row">
-    <div class="col col-md-12">
         <div class="card">
-            <h5 class="card-header">Records</h5>
+            <h5 class="card-header">Zone SOA</h5>
             <div class="card-body">
-                <table class="table table-hover attr-table table-striped">
-                    <thead>
-                        <tr>
-                            <th scope="col">TYPE</th>
-                            <th scope="col">NAME</th>
-                            <th scope="col">VALUE</th>
-                            <th scope="col">TTL</th>
-                            <th scope="col">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for record in records %}
-                        <tr>
-                            <td>{{ record.type }}</td>
-                            <td>{{ record.name|truncatechars:32 }}</td>
-                            <td>{{ record.value|truncatechars:64 }}</td>
-                            <td>{{ record.ttl }}</td>
-                            <td class="noprint text-end text-nowrap">
-                                {% if request.user|can_change:object %}
-                                    {% plugin_edit_button record %}
-                                {% endif %}
-                                {% if request.user|can_delete:object %}
-                                    {% plugin_delete_button record %}
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
+                <table class="table table-hover soa-table">
+                    <tr>
+                        <th scope="row">TTL</th>
+                        <td>{{ object.soa_ttl }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Primary Nameserver</th>
+                        <td><a href="{% url 'plugins:netbox_dns:nameserver' pk=object.soa_mname.pk %}">{{ object.soa_mname }}</a></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Responsible</th>
+                        <td>{{ object.soa_rname }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Serial</th>
+                        <td>{{ object.soa_serial }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Refresh</th>
+                        <td>{{ object.soa_refresh }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Retry</th>
+                        <td>{{ object.soa_retry }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Expire</th>
+                        <td>{{ object.soa_expire }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Minimum TTL</th>
+                        <td>{{ object.soa_minimum }}</td>
+                    </tr>
                 </table>
             </div>
         </div>

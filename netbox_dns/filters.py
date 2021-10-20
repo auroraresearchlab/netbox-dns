@@ -74,10 +74,11 @@ class RecordFilter(PrimaryModelFilterSet):
         lookup_expr="icontains",
     )
     tag = TagFilter()
+    managed = django_filters.BooleanFilter()
 
     class Meta:
         model = Record
-        fields = ("type", "name", "value", "tag")
+        fields = ("type", "name", "value", "tag", "managed")
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""

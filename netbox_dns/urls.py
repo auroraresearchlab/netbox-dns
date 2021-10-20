@@ -11,6 +11,8 @@ from .views import (
     ZoneBulkImportView,
     ZoneBulkEditView,
     ZoneBulkDeleteView,
+    ZoneRecordListView,
+    ZoneManagedRecordListView,
     # nameserver
     NameServerListView,
     NameServerView,
@@ -47,6 +49,14 @@ urlpatterns = [
         ObjectChangeLogView.as_view(),
         name="zone_changelog",
         kwargs={"model": Zone},
+    ),
+    path(
+        "zones/<int:pk>/records/", ZoneRecordListView.as_view(), name="zone_record_list"
+    ),
+    path(
+        "zones/<int:pk>/managedrecords/",
+        ZoneManagedRecordListView.as_view(),
+        name="zone_managed_record_list",
     ),
     #
     # NameServer urls

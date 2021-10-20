@@ -14,9 +14,12 @@ class DNSConfig(PluginConfig):
     author_email = "info@aurorabilisim.com"
     required_settings = []
     default_settings = {
-        "zone": {
-            "default_ttl": 86400,
-        },
+        "zone_default_ttl": 86400,
+        "zone_soa_serial": 1,
+        "zone_soa_refresh": 172800,
+        "zone_soa_retry": 7200,
+        "zone_soa_expire": 2592000,
+        "zone_soa_minimum": 3600,
     }
 
 
