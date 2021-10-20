@@ -24,8 +24,8 @@ class ZoneTestCase(
         Zone.objects.bulk_create(
             [
                 Zone(name="zone1.example.com", default_ttl="86400"),
-                Zone(name="zone2.example.com", default_ttl="86400"),
-                Zone(name="zone3.example.com", default_ttl="86400"),
+                Zone(name="zone2.example.com", default_ttl="43200"),
+                Zone(name="zone3.example.com", default_ttl="21600"),
             ]
         )
 
