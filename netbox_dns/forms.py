@@ -159,7 +159,9 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
                 validate_ipv6_address(value)
 
         except ValidationError:
-            raise ValidationError(f"A valid IPv{ip_version} address is required for record type {type}.")
+            raise ValidationError(
+                f"A valid IPv{ip_version} address is required for record type {type}."
+            )
 
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
