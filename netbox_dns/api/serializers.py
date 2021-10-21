@@ -67,4 +67,5 @@ class ZoneSerializer(PrimaryModelSerializer):
             "custom_field_data",
             "created",
             "last_updated",
+            "default_ttl",
         )
