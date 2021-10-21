@@ -86,7 +86,7 @@ class RecordTest(
     brief_fields = ["display", "id", "name", "ttl", "type", "url", "value"]
     bulk_update_data = {
         "value": "2.2.2.2",
-        "ttl": 4800
+        "ttl": 4800,
     }
 
     @classmethod
