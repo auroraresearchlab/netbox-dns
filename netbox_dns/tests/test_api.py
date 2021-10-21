@@ -22,7 +22,7 @@ class ZoneAPITestCase(APITestCase):
     def test_view_zone_detail_with_permission(self):
         self.add_permissions("netbox_dns.view_zone")
 
-        zone = Zone.objects.create(name="asdf")
+        zone = Zone.objects.create(name="asdf", default_ttl=86400)
 
         url = reverse("plugins-api:netbox_dns-api:zone-detail", kwargs={"pk": zone.id})
         response = self.client.get(f"{url}?format=json", **self.header)
@@ -32,20 +32,24 @@ class ZoneAPITestCase(APITestCase):
         self.add_permissions("netbox_dns.add_zone")
         url = reverse("plugins-api:netbox_dns-api:zone-list")
         response = self.client.post(
-            f"{url}?format=json", {"name": "zone7.example.com"}, **self.header
+            f"{url}?format=json",
+            {"name": "zone7.example.com", "default_ttl": 86400},
+            **self.header,
         )
         self.assertEqual(response.status_code, 201)
 
     def test_add_zone_without_permission(self):
         url = reverse("plugins-api:netbox_dns-api:zone-list")
         response = self.client.post(
-            f"{url}?format=json", {"name": "zone8.example.com"}, **self.header
+            f"{url}?format=json",
+            {"name": "zone8.example.com", "default_ttl": 86400},
+            **self.header,
         )
         self.assertEqual(response.status_code, 403)
 
     def test_delete_zone_with_permission(self):
         self.add_permissions("netbox_dns.delete_zone")
-        zone = Zone.objects.create(name="asdf")
+        zone = Zone.objects.create(name="asdf", default_ttl=9600)
 
         url = reverse("plugins-api:netbox_dns-api:zone-detail", kwargs={"pk": zone.id})
         response = self.client.delete(
@@ -54,7 +58,7 @@ class ZoneAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 204)
 
     def test_delete_zone_without_permission(self):
-        zone = Zone.objects.create(name="asdf")
+        zone = Zone.objects.create(name="asdf", default_ttl=9600)
 
         url = reverse("plugins-api:netbox_dns-api:zone-detail", kwargs={"pk": zone.id})
         response = self.client.delete(
@@ -146,7 +150,7 @@ class RecordAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_view_record_detail_without_permission(self):
-        zone = Zone.objects.create(name="zone.example.com")
+        zone = Zone.objects.create(name="zone.example.com", default_ttl=9600)
         record = Record.objects.create(
             zone=zone,
             type=Record.A,
@@ -164,7 +168,7 @@ class RecordAPITestCase(APITestCase):
     def test_view_record_detail_with_permission(self):
         self.add_permissions("netbox_dns.view_record")
 
-        zone = Zone.objects.create(name="zone.example.com")
+        zone = Zone.objects.create(name="zone.example.com", default_ttl=9600)
         record = Record.objects.create(
             zone=zone,
             type=Record.A,
@@ -181,7 +185,7 @@ class RecordAPITestCase(APITestCase):
 
     def test_add_record_with_permission(self):
         self.add_permissions("netbox_dns.add_record")
-        zone = Zone.objects.create(name="zone.com")
+        zone = Zone.objects.create(name="zone.com", default_ttl=9600)
 
         url = reverse("plugins-api:netbox_dns-api:record-list")
         data = {
@@ -195,7 +199,7 @@ class RecordAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 201)
 
     def test_add_zone_without_permission(self):
-        zone = Zone.objects.create(name="zone.com")
+        zone = Zone.objects.create(name="zone.com", default_ttl=9600)
 
         url = reverse("plugins-api:netbox_dns-api:record-list")
         data = {
@@ -210,7 +214,7 @@ class RecordAPITestCase(APITestCase):
 
     def test_delete_record_with_permission(self):
         self.add_permissions("netbox_dns.delete_record")
-        zone = Zone.objects.create(name="zone.com")
+        zone = Zone.objects.create(name="zone.com", default_ttl=9600)
         record = Record.objects.create(
             zone=zone,
             type=Record.A,
@@ -228,7 +232,7 @@ class RecordAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 204)
 
     def test_delete_zone_without_permission(self):
-        zone = Zone.objects.create(name="zone.com")
+        zone = Zone.objects.create(name="zone.com", default_ttl=9600)
         record = Record.objects.create(
             zone=zone,
             type=Record.A,

@@ -17,8 +17,15 @@ class ZoneTable(BaseTable):
         model = Zone
         fields = (
             "pk",
-            "name",
             "status",
+            "name",
+            "default_ttl",
+            "tags",
+        )
+        default_columns = (
+            "pk",
+            "status",
+            "name",
             "tags",
         )
 

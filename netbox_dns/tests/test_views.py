@@ -23,9 +23,9 @@ class ZoneTestCase(
     def setUpTestData(cls):
         Zone.objects.bulk_create(
             [
-                Zone(name="zone1.example.com"),
-                Zone(name="zone2.example.com"),
-                Zone(name="zone3.example.com"),
+                Zone(name="zone1.example.com", default_ttl="86400"),
+                Zone(name="zone2.example.com", default_ttl="43200"),
+                Zone(name="zone3.example.com", default_ttl="21600"),
             ]
         )
 
@@ -33,14 +33,15 @@ class ZoneTestCase(
 
         cls.form_data = {
             "name": "zone4.example.com",
+            "default_ttl": 7200,
             "tags": [t.pk for t in tags],
         }
 
         cls.csv_data = (
-            "name,status",
-            "zone5.example.com,active",
-            "zone6.example.com,active",
-            "zone7.example.com,active",
+            "name,status,default_ttl",
+            "zone5.example.com,active,86400",
+            "zone6.example.com,active,86400",
+            "zone7.example.com,active,86400",
         )
 
         cls.bulk_edit_data = {
@@ -106,8 +107,8 @@ class RecordTestCase(
 
     @classmethod
     def setUpTestData(cls):
-        zone1 = Zone.objects.create(name="zone1.example.com")
-        zone2 = Zone.objects.create(name="zone2.example.com")
+        zone1 = Zone.objects.create(name="zone1.example.com", default_ttl="86400")
+        zone2 = Zone.objects.create(name="zone2.example.com", default_ttl="86400")
 
         records = [
             Record(
