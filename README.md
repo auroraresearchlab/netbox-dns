@@ -43,6 +43,12 @@ PLUGINS = [
 ]
 ```
 
+To permanently mount the plugin when updating netbox.
+
+```
+echo netbox-dns >> ~/netbox/local_requirements.txt
+```
+
 Full reference: [Using Plugins - NetBox Documentation](https://netbox.readthedocs.io/en/stable/plugins/)
 
 ## Screenshots
