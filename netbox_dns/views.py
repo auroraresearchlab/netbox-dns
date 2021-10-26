@@ -94,6 +94,10 @@ class NameServerView(generic.ObjectView):
 
     queryset = NameServer.objects.all()
 
+    def get_extra_context(self, request, instance):
+        zones = instance.zones.all()
+        return {"zones": zones}
+
 
 class NameServerEditView(generic.ObjectEditView):
     """View for editing a Name Server instance."""
