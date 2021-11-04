@@ -29,6 +29,7 @@ class ZoneTable(BaseTable):
             "pk",
             "name",
             "status",
+            "default_ttl",
             "tenant",
             "auto_renew",
             "expire_date",

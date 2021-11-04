@@ -23,24 +23,25 @@ class ZoneTestCase(
     def setUpTestData(cls):
         Zone.objects.bulk_create(
             [
-                Zone(name="Zone 1"),
-                Zone(name="Zone 2"),
-                Zone(name="Zone 3"),
+                Zone(name="zone1.example.com", default_ttl="86400"),
+                Zone(name="zone2.example.com", default_ttl="43200"),
+                Zone(name="zone3.example.com", default_ttl="21600"),
             ]
         )
 
         tags = create_tags("Alpha", "Bravo", "Charlie")
 
         cls.form_data = {
-            "name": "Name1",
+            "name": "zone4.example.com",
+            "default_ttl": 7200,
             "tags": [t.pk for t in tags],
         }
 
         cls.csv_data = (
-            "name,status",
-            "domain-4.com,active",
-            "domain-5.com,active",
-            "domain-6.com,active",
+            "name,status,default_ttl",
+            "zone5.example.com,active,86400",
+            "zone6.example.com,active,86400",
+            "zone7.example.com,active,86400",
         )
 
         cls.bulk_edit_data = {
@@ -67,24 +68,24 @@ class NameServerTestCase(
     def setUpTestData(cls):
         NameServer.objects.bulk_create(
             [
-                NameServer(name="Name Server 1"),
-                NameServer(name="Name Server 2"),
-                NameServer(name="Name Server 3"),
+                NameServer(name="ns1.example.com"),
+                NameServer(name="ns2.example.com"),
+                NameServer(name="ns3.example.com"),
             ]
         )
 
         tags = create_tags("Alpha", "Bravo", "Charlie")
 
         cls.form_data = {
-            "name": "Name1",
+            "name": "ns4.example.com",
             "tags": [t.pk for t in tags],
         }
 
         cls.csv_data = (
             "name",
-            "name-server-4.com",
-            "name-server-5.com",
-            "name-server-6.com",
+            "ns5.example.com",
+            "ns6.example.com",
+            "ns7.example.com",
         )
 
     maxDiff = None
@@ -106,22 +107,22 @@ class RecordTestCase(
 
     @classmethod
     def setUpTestData(cls):
-        zone1 = Zone.objects.create(name="zone1.com")
-        zone2 = Zone.objects.create(name="zone2.com")
+        zone1 = Zone.objects.create(name="zone1.example.com", default_ttl="86400")
+        zone2 = Zone.objects.create(name="zone2.example.com", default_ttl="86400")
 
         records = [
             Record(
                 zone=zone1,
                 type=Record.CNAME,
-                name="name 1",
-                value="value 1",
+                name="name1",
+                value="test1.example.com",
                 ttl=100,
             ),
             Record(
                 zone=zone2,
                 type=Record.A,
-                name="name 2",
-                value="value 2",
+                name="name2",
+                value="192.168.1.1",
                 ttl=200,
             ),
         ]
@@ -133,18 +134,18 @@ class RecordTestCase(
         cls.form_data = {
             "zone": zone1.id,
             "type": Record.AAAA,
-            "name": "name 3",
-            "value": "value 300",
+            "name": "name3",
+            "value": "fe80::dead:beef",
             "ttl": 300,
             "tags": [t.pk for t in tags],
         }
 
         cls.csv_data = (
             "zone,type,name,value,ttl",
-            "zone1.com,A,@,10.10.10.10,3600",
-            "zone2.com,AAAA,ipv6sub,[00:00],7200",
-            "zone1.com,CNAME,dns,100.100.100.100,100",
-            "zone2.com,TXT,textname,textvalue,1000",
+            "zone1.example.com,A,@,10.10.10.10,3600",
+            "zone2.example.com,AAAA,name4,[fe80::dead:beef],7200",
+            "zone1.example.com,CNAME,dns,name1.zone2.example.com,100",
+            "zone2.example.com,TXT,textname,textvalue,1000",
         )
 
         cls.bulk_edit_data = {

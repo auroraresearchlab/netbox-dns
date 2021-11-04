@@ -25,4 +25,38 @@
         {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_dns:nameserver_list' %}
     </div>
 </div>
+<div class="row">
+    <div class="col col-md-12">
+        <div class="card">
+            <h5 class="card-header">Zones</h5>
+            <div class="card-body">
+                <table class="table table-hover attr-table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for zone in zones %}
+                        <tr>
+                            <td>{{ zone.name }}</td>
+                            <td>{{ zone.status }}</td>
+                            <td class="noprint text-end text-nowrap">
+                                {% if request.user|can_change:object %}
+                                    {% plugin_edit_button zone %}
+                                {% endif %}
+                                {% if request.user|can_delete:object %}
+                                    {% plugin_delete_button zone %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

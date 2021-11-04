@@ -1,6 +1,6 @@
 from extras.plugins import PluginConfig
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 
 class DNSConfig(PluginConfig):
@@ -13,7 +13,11 @@ class DNSConfig(PluginConfig):
     author = "Aurora Research Lab"
     author_email = "info@aurorabilisim.com"
     required_settings = []
-    default_settings = {"loud": False}
+    default_settings = {
+        "zone": {
+            "default_ttl": 86400,
+        },
+    }
 
 
 config = DNSConfig
