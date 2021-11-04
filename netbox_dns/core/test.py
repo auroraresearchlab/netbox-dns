@@ -1,6 +1,7 @@
 from django.urls import reverse
 
 from utilities.testing.views import ModelViewTestCase as NetBoxModelViewTestCase
+from utilities.testing.api import APITestCase as NetBoxAPITestCase
 
 
 class ModelViewTestCase(NetBoxModelViewTestCase):
@@ -30,3 +31,13 @@ class ModelViewTestCase(NetBoxModelViewTestCase):
             return reverse(url_format.format(action))
 
         return reverse(url_format.format(action), kwargs={"pk": instance.pk})
+
+
+class APITestCase(NetBoxAPITestCase):
+    def _get_detail_url(self, instance):
+        viewname = f"plugins-api:{self._get_view_namespace()}:{instance._meta.model_name}-detail"
+        return reverse(viewname, kwargs={"pk": instance.pk})
+
+    def _get_list_url(self):
+        viewname = f"plugins-api:{self._get_view_namespace()}:{self.model._meta.model_name}-list"
+        return reverse(viewname)

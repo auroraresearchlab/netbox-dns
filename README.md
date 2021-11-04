@@ -59,7 +59,7 @@ Full reference: [Using Plugins - NetBox Documentation](https://netbox.readthedoc
 
 ## Contribute
 
-Contributions are always welcome!
+Contributions are always welcome! Please see: [contributing guide](CONTRIBUTING.md)
 
 ## License
 
