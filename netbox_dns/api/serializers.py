@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from netbox.api.serializers import PrimaryModelSerializer
+from netbox.api.serializers import PrimaryModelSerializer, WritableNestedSerializer
 from netbox_dns.models import Record, Zone, NameServer
 from netbox_dns.api.nested_serializers import (
     NestedZoneSerializer,
@@ -54,6 +54,9 @@ class ZoneSerializer(PrimaryModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="plugins-api:netbox_dns-api:zone-detail"
     )
+    nameservers = NestedNameServerSerializer(
+        many=True, read_only=False, required=False, help_text="Nameservers for the zone"
+    )
 
     class Meta:
         model = Zone
@@ -63,6 +66,7 @@ class ZoneSerializer(PrimaryModelSerializer):
             "name",
             "display",
             "status",
+            "nameservers",
             "tags",
             "custom_field_data",
             "created",

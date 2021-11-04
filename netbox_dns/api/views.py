@@ -46,6 +46,12 @@ class NameServerViewSet(CustomFieldModelViewSet):
     serializer_class = NameServerSerializer
     filterset_class = NameServerFilter
 
+    @action(detail=True, methods=["get"])
+    def zones(self, request, pk=None):
+        zones = Zone.objects.filter(nameservers__id=pk)
+        serializer = ZoneSerializer(zones, many=True, context={"request": request})
+        return Response(serializer.data)
+
 
 class RecordViewSet(CustomFieldModelViewSet):
     queryset = Record.objects.all()
