@@ -1,17 +1,17 @@
-# Welcome to NetboxDNS Contributing Guide
+# Welcome to NetBoxDNS Contributing Guide
 
 Thank you for investing your time in contributing to our project!
 
 ## Issues
 
-If you spot a problem with the NetboxDNS, search if an issue already exists. If a related issue doesn't exist, you can open a new one.
+If you spot a problem with the NetBoxDNS, search if an issue already exists. If a related issue doesn't exist, you can open a new one.
 
 Include the following information in your post:
 
 * Describe what you expected to happen.
 * If possible, include a [minimal reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) to help us identify the issue.
 * Describe what actually happened. Include the full traceback if there was an exception.
-* List your Python and Netbox versions. If possible, check if this issue is already fixed in the latest releases or the latest code in the repository.
+* List your Python and NetBox versions. If possible, check if this issue is already fixed in the latest releases or the latest code in the repository.
 
 ## Submitting Pull Requests
 
@@ -34,7 +34,7 @@ $ git config --global user.name 'your name'
 $ git config --global user.email 'your email'
 ```
 
-* Fork netbox-dns to your GitHub account by clicking the __Fork__ button.
+* Fork `netbox-dns` to your GitHub account by clicking the __Fork__ button.
 * Clone the your forked repository locally.
 
 ```
@@ -48,9 +48,9 @@ $ cd netbox-dns
 $ git remote add upstream https://github.com/auroraresearchlab/netbox-dns.git
 ```
 
-* Install Netbox. Please see [Netbox Installation](https://github.com/netbox-community/netbox#installation)
-* Activate Netbox virtual environment: `source netbox/.venv/bin/activate`
-* Install netbox-dns
+* Install NetBox. Please see [NetBox Installation](https://github.com/netbox-community/netbox#installation)
+* Activate NetBox virtual environment: `source netbox/.venv/bin/activate`
+* Install `netbox-dns`
 
 ```
 $ poetry install
@@ -68,7 +68,7 @@ PLUGINS = [
 
 ## Running the Tests
 
-Go to netbox directory and run
+Go to the NetBox directory and run
 
 ```
 $ python manage.py test netbox_dns.tests
