@@ -67,5 +67,13 @@ class RecordTable(BaseTable):
             "type",
             "name",
             "value",
+            "ttl",
             "tags",
+        )
+        default_columns = (
+            "pk",
+            "zone",
+            "type",
+            "name",
+            "value",
         )
