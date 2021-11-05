@@ -62,4 +62,8 @@ menu_items = (
             ),
         ),
     ),
+    PluginMenuItem(
+        link="plugins:netbox_dns:managed_record_list",
+        link_text="Managed Records",
+    ),
 )

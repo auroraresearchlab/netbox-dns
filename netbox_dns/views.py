@@ -8,6 +8,7 @@ from netbox_dns.models import Record, Zone, NameServer
 from netbox_dns.tables import (
     NameServerTable,
     RecordTable,
+    ManagedRecordTable,
     ZoneTable,
     ZoneManagedRecordTable,
     ZoneRecordTable,
@@ -183,7 +184,15 @@ class RecordListView(generic.ObjectListView):
     filterset = RecordFilter
     filterset_form = RecordFilterForm
     table = RecordTable
-    template_name = "netbox_dns/object_list.html"
+    template_name = "netbox_dns/record_list.html"
+
+
+class ManagedRecordListView(generic.ObjectListView):
+    queryset = Record.objects.filter(managed=True)
+    filterset = RecordFilter
+    filterset_form = RecordFilterForm
+    table = ManagedRecordTable
+    template_name = "netbox_dns/managed_record_list.html"
 
 
 class RecordView(generic.ObjectView):
