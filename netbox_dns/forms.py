@@ -1,4 +1,5 @@
 from django import forms
+from django.urls import reverse_lazy
 from django.forms import IntegerField, ValidationError, widgets
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -302,7 +303,9 @@ class RecordBulkEditForm(
     zone = DynamicModelChoiceField(
         queryset=Zone.objects.all(),
         required=False,
-        widget=APISelect(attrs={"data-url": "plugins:netbox_dns-api:zone-list"}),
+        widget=APISelect(
+            attrs={"data-url": reverse_lazy("plugins-api:netbox_dns-api:zone-list")}
+        ),
     )
     ttl = IntegerField(
         required=False,
