@@ -41,33 +41,26 @@ class ZoneForm(BootstrapMixin, CustomFieldModelForm):
         super().__init__(*args, **kwargs)
 
         defaults = settings.PLUGINS_CONFIG.get("netbox_dns")
-        self.initial["default_ttl"] = self.initial.get(
-            "default_ttl", defaults.get("zone_default_ttl")
-        )
-        self.initial["soa_ttl"] = self.initial.get(
-            "soa_ttl", defaults.get("zone_soa_ttl")
-        )
-        self.initial["soa_mname"] = self.initial.get(
-            "soa_mname", defaults.get("zone_soa_mname")
-        )
-        self.initial["soa_rname"] = self.initial.get(
-            "soa_rname", defaults.get("zone_soa_rname")
-        )
-        self.initial["soa_serial"] = self.initial.get(
-            "soa_serial", defaults.get("zone_soa_serial")
-        )
-        self.initial["soa_refresh"] = self.initial.get(
-            "soa_refresh", defaults.get("zone_soa_refresh")
-        )
-        self.initial["soa_retry"] = self.initial.get(
-            "soa_retry", defaults.get("zone_soa_retry")
-        )
-        self.initial["soa_expire"] = self.initial.get(
-            "soa_expire", defaults.get("zone_soa_expire")
-        )
-        self.initial["soa_minimum"] = self.initial.get(
-            "soa_minimum", defaults.get("zone_soa_minimum")
-        )
+
+        def _initialize(initial, setting):
+            if not initial.get(setting, None):
+                initial[setting] = defaults.get(f"zone_{setting}", None)
+
+        for setting in (
+            "default_ttl",
+            "soa_ttl",
+            "soa_mname",
+            "soa_rname",
+            "soa_serial",
+            "soa_refresh",
+            "soa_retry",
+            "soa_expire",
+            "soa_minimum",
+        ):
+            _initialize(self.initial, setting)
+
+        if self.initial.get("soa_ttl", None) is None:
+            self.initial["soa_ttl"] = self.initial.get("default_ttl", None)
 
     def clean_default_ttl(self):
         return (
