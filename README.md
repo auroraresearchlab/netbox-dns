@@ -49,6 +49,12 @@ To permanently mount the plugin when updating netbox.
 echo netbox-dns >> ~/netbox/local_requirements.txt
 ```
 
+To add the required netbox-dns tables to your database run the following from your netbox directory:
+
+```
+./manage.py migrate
+```
+
 Full reference: [Using Plugins - NetBox Documentation](https://netbox.readthedocs.io/en/stable/plugins/)
 
 ## Screenshots
