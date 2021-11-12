@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from utilities.tables import paginate_table
 
 from netbox.views import generic
 
@@ -96,7 +97,23 @@ class NameServerView(generic.ObjectView):
 
     def get_extra_context(self, request, instance):
         zones = instance.zones.all()
-        return {"zones": zones}
+        zone_table = ZoneTable(list(zones), user=request.user)
+
+        change_zone = request.user.has_perm("netbox_dns.change_zone")
+        delete_zone = request.user.has_perm("netbox_dns.delete_zone")
+
+        if change_zone or delete_zone:
+            zone_table.columns.show("pk")
+        paginate_table(zone_table, request)
+
+        return {
+            "zone_table": zone_table,
+            "permissions": {
+                "change": change_zone,
+                "delete": delete_zone,
+            },
+            "model": Zone,
+        }
 
 
 class NameServerEditView(generic.ObjectEditView):
