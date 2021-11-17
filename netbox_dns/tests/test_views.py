@@ -1,8 +1,7 @@
-from utilities.testing import create_tags
-from utilities.testing import ViewTestCases
-
-from netbox_dns.models import NameServer, Record, Zone
 from netbox_dns.core.test import ModelViewTestCase
+from netbox_dns.models import NameServer, Record, Zone
+from utilities.testing import ViewTestCases
+from utilities.testing import create_tags
 
 
 class ZoneTestCase(

@@ -1,6 +1,5 @@
 from django import template
 from django.urls import NoReverseMatch, reverse
-from django import template
 
 from utilities.templatetags.buttons import _get_viewname
 from utilities.utils import prepare_cloned_fields

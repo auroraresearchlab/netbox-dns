@@ -1,12 +1,11 @@
 from rest_framework import serializers
 
-from netbox.api.serializers import PrimaryModelSerializer, WritableNestedSerializer
-from netbox_dns.models import Record, Zone, NameServer
+from netbox.api.serializers import PrimaryModelSerializer
 from netbox_dns.api.nested_serializers import (
-    NestedZoneSerializer,
     NestedRecordSerializer,
     NestedNameServerSerializer,
 )
+from netbox_dns.models import Record, Zone, NameServer
 
 
 class NameServerSerializer(PrimaryModelSerializer):

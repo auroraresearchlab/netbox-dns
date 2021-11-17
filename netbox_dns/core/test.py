@@ -1,7 +1,7 @@
 from django.urls import reverse
 
-from utilities.testing.views import ModelViewTestCase as NetBoxModelViewTestCase
 from utilities.testing.api import APITestCase as NetBoxAPITestCase
+from utilities.testing.views import ModelViewTestCase as NetBoxModelViewTestCase
 
 
 class ModelViewTestCase(NetBoxModelViewTestCase):

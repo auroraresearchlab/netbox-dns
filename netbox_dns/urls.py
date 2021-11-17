@@ -1,7 +1,7 @@
 from django.urls import path
+
 from extras.views import ObjectChangeLogView
 from netbox_dns.models import Zone, Record, NameServer
-
 from .views import (
     # zone
     ZoneListView,

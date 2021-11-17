@@ -1,12 +1,14 @@
 import ipaddress
+
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.functions import Length
 from django.urls import reverse
-from django.core.validators import MinValueValidator, MaxValueValidator
+
+from extras.utils import extras_features
 from netbox.models import PrimaryModel, TaggableManager
 from utilities.querysets import RestrictedQuerySet
-from extras.utils import extras_features
 
 
 @extras_features("custom_fields", "custom_links", "export_templates", "webhooks")
