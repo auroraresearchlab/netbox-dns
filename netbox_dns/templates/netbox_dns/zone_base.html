@@ -1,0 +1,25 @@
+{% extends 'netbox_dns/object.html' %}
+{% load helpers %}
+{% load plugins %}
+{% load render_table from django_tables2 %}
+{% load view_helpers %}
+{% load perms %}
+
+{% block extra_controls %}
+<a href="{% url 'plugins:netbox_dns:record_add' %}?zone={{ object.id }}" class="btn btn-sm btn-primary" role="button">
+    <i class="mdi mdi-plus-thick"></i> Add Record
+</a>
+{{ block.super }}
+{% endblock %}
+
+{% block tab_items %}
+<li class="nav-item" role="presentation">
+    <a class="nav-link{% if not active_tab %} active{% endif %}" href="{{ object.get_absolute_url }}">Zone</a>
+</li>
+<li class="nav-item" role="presentation">
+    <a class="nav-link{% if active_tab == 'record_list' %} active{% endif %}" href="{% url 'plugins:netbox_dns:zone_record_list' pk=object.pk %}">Records</a>
+</li>
+<li class="nav-item" role="presentation">
+    <a class="nav-link{% if active_tab == 'managed_record_list' %} active{% endif %}" href="{% url 'plugins:netbox_dns:zone_managed_record_list' pk=object.pk %}">Managed Records</a>
+</li>
+{% endblock tab_items %}

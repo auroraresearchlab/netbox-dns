@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework.routers import APIRootView
 from extras.api.views import CustomFieldModelViewSet
 
+from rest_framework import serializers
+
 from netbox_dns.models import Zone, NameServer, Record
 from netbox_dns.api.serializers import (
     ZoneSerializer,
@@ -57,3 +59,19 @@ class RecordViewSet(CustomFieldModelViewSet):
     queryset = Record.objects.all()
     serializer_class = RecordSerializer
     filterset_class = RecordFilter
+
+    def destroy(self, request, *args, **kwargs):
+        v_object = self.get_object()
+        if v_object.managed:
+            raise serializers.ValidationError(
+                f"{v_object} is managed, refusing deletion"
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        v_object = self.get_object()
+        if v_object.managed:
+            raise serializers.ValidationError(f"{v_object} is managed, refusing update")
+
+        return super().update(request, *args, **kwargs)

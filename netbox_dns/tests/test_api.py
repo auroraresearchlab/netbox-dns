@@ -23,23 +23,52 @@ class ZoneTest(
 ):
     model = Zone
     brief_fields = ["display", "id", "name", "status", "url"]
-    create_data = [
-        {"name": "zone1.com", "status": "passive", "default_ttl": 86400},
-        {"name": "zone2.com", "status": "passive", "default_ttl": 86400},
-        {"name": "zone3.com", "status": "passive", "default_ttl": 9600},
-    ]
     bulk_update_data = {
         "status": "active",
     }
 
+    zone_data = {
+        "default_ttl": 86400,
+        "soa_rname": "hostmaster.example.com",
+        "soa_serial": 2021110401,
+        "soa_refresh": 172800,
+        "soa_retry": 7200,
+        "soa_expire": 2592000,
+        "soa_ttl": 86400,
+        "soa_minimum": 3600,
+    }
+
     @classmethod
     def setUpTestData(cls):
+        ns1 = NameServer.objects.create(name="ns1.example.com")
+
         zones = (
-            Zone(name="zone4.com", default_ttl=86400),
-            Zone(name="zone5.com", default_ttl=86400),
-            Zone(name="zone6.com", default_ttl=86400),
+            Zone(name="zone1.example.com", **cls.zone_data, soa_mname=ns1),
+            Zone(name="zone2.example.com", **cls.zone_data, soa_mname=ns1),
+            Zone(name="zone3.example.com", **cls.zone_data, soa_mname=ns1),
         )
         Zone.objects.bulk_create(zones)
+
+        cls.create_data = [
+            {
+                "name": "zone4.example.com",
+                "status": "passive",
+                **cls.zone_data,
+                "soa_mname": ns1.pk,
+            },
+            {
+                "name": "zone5.example.com",
+                "status": "passive",
+                **cls.zone_data,
+                "soa_mname": ns1.pk,
+            },
+            {
+                "name": "zone6.example.com",
+                "status": "passive",
+                **cls.zone_data,
+                "soa_mname": ns1.pk,
+            },
+        ]
 
 
 class NameServerTest(
@@ -53,15 +82,9 @@ class NameServerTest(
     model = NameServer
     brief_fields = ["display", "id", "name", "url"]
     create_data = [
-        {
-            "name": "ns1.example.com",
-        },
-        {
-            "name": "ns2.example.com",
-        },
-        {
-            "name": "ns3.example.com",
-        },
+        {"name": "ns1.example.com"},
+        {"name": "ns2.example.com"},
+        {"name": "ns3.example.com"},
     ]
 
     @classmethod
@@ -85,16 +108,28 @@ class RecordTest(
     model = Record
     brief_fields = ["display", "id", "name", "ttl", "type", "url", "value"]
     bulk_update_data = {
-        "value": "2.2.2.2",
-        "ttl": 4800,
+        "ttl": 19200,
     }
 
     @classmethod
     def setUpTestData(cls):
+        ns1 = NameServer.objects.create(name="ns1.example.com")
+
+        zone_data = {
+            "default_ttl": 86400,
+            "soa_rname": "hostmaster.example.com",
+            "soa_serial": 2021110401,
+            "soa_refresh": 172800,
+            "soa_retry": 7200,
+            "soa_expire": 2592000,
+            "soa_ttl": 86400,
+            "soa_minimum": 3600,
+        }
+
         zones = (
-            Zone(name="zone.com", default_ttl=86400),
-            Zone(name="zone2.com", default_ttl=9600),
-            Zone(name="zone3.com", default_ttl=86400),
+            Zone(name="zone1.example.com", **zone_data, soa_mname=ns1),
+            Zone(name="zone2.example.com", **zone_data, soa_mname=ns1),
+            Zone(name="zone3.example.com", **zone_data, soa_mname=ns1),
         )
         Zone.objects.bulk_create(zones)
 
@@ -110,7 +145,7 @@ class RecordTest(
                 zone=zones[1],
                 type=Record.AAAA,
                 name="example2",
-                value="[fe80::dead:beef]",
+                value="fe80::dead:beef",
                 ttl=6000,
             ),
             Record(
@@ -127,21 +162,22 @@ class RecordTest(
             {
                 "zone": zones[0].pk,
                 "type": Record.A,
-                "name": "name3",
+                "name": "example4",
                 "value": "1.1.1.1",
                 "ttl": 9600,
             },
             {
                 "zone": zones[1].pk,
                 "type": Record.AAAA,
-                "name": "name4",
+                "name": "example5",
                 "value": "fe80::dead:beef",
+                "disable_ptr": True,
                 "ttl": 9600,
             },
             {
                 "zone": zones[2].pk,
                 "type": Record.TXT,
-                "name": "name5",
+                "name": "example6",
                 "value": "TXT Record",
                 "ttl": 9600,
             },

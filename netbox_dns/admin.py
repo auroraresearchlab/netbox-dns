@@ -14,4 +14,4 @@ class NameServerAdmin(admin.ModelAdmin):
 
 @admin.register(Record)
 class RecordAdmin(admin.ModelAdmin):
-    list_display = ("zone", "type", "name", "value", "ttl")
+    list_display = ("zone", "type", "name", "value", "ttl", "managed")

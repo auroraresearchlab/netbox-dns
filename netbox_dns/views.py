@@ -1,10 +1,19 @@
 from django.shortcuts import render, get_object_or_404
 from utilities.tables import paginate_table
 
+from utilities.tables import paginate_table
+
 from netbox.views import generic
 
 from netbox_dns.models import Record, Zone, NameServer
-from netbox_dns.tables import NameServerTable, RecordTable, ZoneTable
+from netbox_dns.tables import (
+    NameServerTable,
+    RecordTable,
+    ManagedRecordTable,
+    ZoneTable,
+    ZoneManagedRecordTable,
+    ZoneRecordTable,
+)
 from netbox_dns.forms import (
     NameServerCSVForm,
     NameServerFilterForm,
@@ -41,10 +50,6 @@ class ZoneView(generic.ObjectView):
 
     queryset = Zone.objects.all()
 
-    def get_extra_context(self, request, instance):
-        records = instance.record_set.all()
-        return {"records": records}
-
 
 class ZoneEditView(generic.ObjectEditView):
     """View for editing and creating a Zone instance."""
@@ -75,6 +80,54 @@ class ZoneBulkEditView(generic.BulkEditView):
 class ZoneBulkDeleteView(generic.BulkDeleteView):
     queryset = Zone.objects.all()
     table = ZoneTable
+
+
+class ZoneRecordListView(generic.ObjectView):
+    queryset = Zone.objects.all()
+    filterset = RecordFilter
+    filterset_form = RecordFilterForm
+    template_name = "netbox_dns/zone_record.html"
+
+    def get_extra_context(self, request, instance):
+        zone_records = Record.objects.filter(managed=False, zone_id=instance.pk)
+
+        table = ZoneRecordTable(list(zone_records), user=request.user)
+        if request.user.has_perm("netbox_dns.change_record") or request.user.has_perm(
+            "netbox_dns.delete_record"
+        ):
+            table.columns.show("pk")
+        paginate_table(table, request)
+
+        permissions = {
+            "change": request.user.has_perm("netbox_dns.change_record"),
+            "delete": request.user.has_perm("netbox_dns.delete_record"),
+        }
+        bulk_querystring = f"zone_id={instance.pk}"
+
+        return {
+            "active_tab": "record_list",
+            "table": table,
+            "permissions": permissions,
+            "bulk_querystring": bulk_querystring,
+        }
+
+
+class ZoneManagedRecordListView(generic.ObjectView):
+    queryset = Zone.objects.all()
+    filterset = RecordFilter
+    filterset_form = RecordFilterForm
+    template_name = "netbox_dns/zone_managed_record.html"
+
+    def get_extra_context(self, request, instance):
+        zone_records = Record.objects.filter(managed=True, zone_id=instance.pk)
+
+        table = ZoneManagedRecordTable(list(zone_records), user=request.user)
+        paginate_table(table, request)
+
+        return {
+            "active_tab": "managed_record_list",
+            "table": table,
+        }
 
 
 #
@@ -144,11 +197,19 @@ class NameServerBulkDeleteView(generic.BulkDeleteView):
 
 
 class RecordListView(generic.ObjectListView):
-    queryset = Record.objects.all()
+    queryset = Record.objects.filter(managed=False)
     filterset = RecordFilter
     filterset_form = RecordFilterForm
     table = RecordTable
-    template_name = "netbox_dns/object_list.html"
+    template_name = "netbox_dns/record_list.html"
+
+
+class ManagedRecordListView(generic.ObjectListView):
+    queryset = Record.objects.filter(managed=True)
+    filterset = RecordFilter
+    filterset_form = RecordFilterForm
+    table = ManagedRecordTable
+    template_name = "netbox_dns/managed_record_list.html"
 
 
 class RecordView(generic.ObjectView):
@@ -160,27 +221,27 @@ class RecordView(generic.ObjectView):
 class RecordEditView(generic.ObjectEditView):
     """View for editing a Record instance."""
 
-    queryset = Record.objects.all()
+    queryset = Record.objects.filter(managed=False)
     model_form = RecordForm
 
 
 class RecordDeleteView(generic.ObjectDeleteView):
-    queryset = Record.objects.all()
+    queryset = Record.objects.filter(managed=False)
 
 
 class RecordBulkImportView(generic.BulkImportView):
-    queryset = Record.objects.all()
+    queryset = Record.objects.filter(managed=False)
     model_form = RecordCSVForm
     table = RecordTable
 
 
 class RecordBulkEditView(generic.BulkEditView):
-    queryset = Record.objects.all()
+    queryset = Record.objects.filter(managed=False)
     filterset = RecordFilter
     table = RecordTable
     form = RecordBulkEditForm
 
 
 class RecordBulkDeleteView(generic.BulkDeleteView):
-    queryset = Record.objects.all()
+    queryset = Record.objects.filter(managed=False)
     table = RecordTable

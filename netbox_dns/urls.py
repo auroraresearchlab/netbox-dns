@@ -11,6 +11,8 @@ from .views import (
     ZoneBulkImportView,
     ZoneBulkEditView,
     ZoneBulkDeleteView,
+    ZoneRecordListView,
+    ZoneManagedRecordListView,
     # nameserver
     NameServerListView,
     NameServerView,
@@ -26,6 +28,8 @@ from .views import (
     RecordBulkImportView,
     RecordBulkEditView,
     RecordBulkDeleteView,
+    # managed record
+    ManagedRecordListView,
 )
 
 app_name = "netbox_dns"
@@ -47,6 +51,14 @@ urlpatterns = [
         ObjectChangeLogView.as_view(),
         name="zone_changelog",
         kwargs={"model": Zone},
+    ),
+    path(
+        "zones/<int:pk>/records/", ZoneRecordListView.as_view(), name="zone_record_list"
+    ),
+    path(
+        "zones/<int:pk>/managedrecords/",
+        ZoneManagedRecordListView.as_view(),
+        name="zone_managed_record_list",
     ),
     #
     # NameServer urls
@@ -96,5 +108,8 @@ urlpatterns = [
         ObjectChangeLogView.as_view(),
         name="record_changelog",
         kwargs={"model": Record},
+    ),
+    path(
+        "managedrecords/", ManagedRecordListView.as_view(), name="managed_record_list"
     ),
 ]
