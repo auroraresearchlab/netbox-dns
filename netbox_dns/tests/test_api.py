@@ -1,8 +1,8 @@
 from django.urls import reverse
+from utilities.testing import APIViewTestCases
 
 from netbox_dns.core.test import APITestCase
 from netbox_dns.models import NameServer, Record, Zone
-from utilities.testing import APIViewTestCases
 
 
 class AppTest(APITestCase):
@@ -22,7 +22,10 @@ class ZoneTest(
     APIViewTestCases.DeleteObjectViewTestCase,
 ):
     model = Zone
-    brief_fields = ["display", "id", "name", "status", "url"]
+    brief_fields = ["created", "custom_field_data", "default_ttl", "display", "id", "last_updated", "name",
+                    "nameservers", "soa_expire", "soa_minimum", "soa_mname", "soa_refresh", "soa_retry", "soa_rname",
+                    "soa_serial", "soa_ttl", "status", "tags", "url"]
+
     bulk_update_data = {
         "status": "active",
     }
