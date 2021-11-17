@@ -30,12 +30,16 @@
     {% if object.managed %}
     <div class="col col-md-12">
     {% else %}
-    <div class="col col-md-6">
+    <div class="col col-md-8">
     {% endif %}
         <div class="card">
             <h5 class="card-header">Record</h5>
             <div class="card-body">
                 <table class="table table-hover attr-table">
+                    <tr>
+                        <th scope="row">Name</th>
+                        <td style="word-break:break-all;">{{ object.name }}</td>
+                    </tr>
                     <tr>
                         <th scope="row">Zone</th>
                         {% if object.managed %}
@@ -49,10 +53,6 @@
                         <td>{{ object.type }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">Name</th>
-                        <td style="word-break:break-all;">{{ object.name }}</td>
-                    </tr>
-                    <tr>
                         <th scope="row">Value</th>
                         <td style="word-break:break-all;">{{ object.value }}</td>
                     </tr>
@@ -60,13 +60,31 @@
                         <th scope="row">TTL</th>
                         <td>{{ object.ttl }}</td>
                     </tr>
+                    {% if object.type == 'A' or object.type == 'AAAA' %}
+                    <tr>
+                        <th scope="row">Disable PTR</th>
+                        <td>{{ object.disable_ptr }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if object.ptr_record %}
+                    <tr>
+                        <th scope="row">PTR Record</th>
+                        <td><a href="{% url 'plugins:netbox_dns:record' pk=object.ptr_record.pk %}">{{ object.ptr_record }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if object.address_record %}
+                    <tr>
+                        <th scope="row">Address Record</th>
+                        <td><a href="{% url 'plugins:netbox_dns:record' pk=object.address_record.pk %}">{{ object.address_record }}</td>
+                    </tr>
+                    {% endif %}
                 </table>
             </div>
             {% include 'inc/custom_fields_panel.html' %}
         </div>
     </div>
     {% if not object.managed %}
-    <div class="col col-md-6">
+    <div class="col col-md-4">
         {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_dns:zone_list' %}
     </div>
     {% endif %}

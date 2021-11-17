@@ -1,0 +1,76 @@
+{% extends 'base/layout.html' %}
+{% load buttons %}
+{% load helpers %}
+{% load render_table from django_tables2 %}
+{% load static %}
+{% load view_helpers %}
+
+{% block controls %}
+  <div class="controls">
+    <div class="control-group">
+      {% if 'export' in action_buttons %}
+          {% export_button content_type %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock controls %}
+
+{% block tabs %}
+  <ul class="nav nav-tabs px-3">
+    {% block tab_items %}
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="object-list-tab" data-bs-toggle="tab" data-bs-target="#object-list" type="button" role="tab" aria-controls="object-list" aria-selected="true">
+          {% block title %}Managed Records{% endblock %}
+          {% badge table.page.paginator.count %}
+        </button>
+      </li>
+      {% if filter_form %}
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="filters-form-tab" data-bs-toggle="tab" data-bs-target="#filters-form" type="button" role="tab" aria-controls="object-list" aria-selected="false">
+            Filters
+            {% if filter_form %}{% badge filter_form.changed_data|length bg_class="primary" %}{% endif %}
+          </button>
+        </li>
+      {% endif %}
+    {% endblock tab_items %}
+  </ul>
+{% endblock tabs %}
+
+{% block content-wrapper %}
+  <div class="tab-content">
+
+    {# Object list #}
+    <div class="tab-pane show active" id="object-list" role="tabpanel" aria-labelledby="object-list-tab">
+
+      {# Applied filters #}
+      {% if filter_form %}
+        {% applied_filters filter_form request.GET %}
+      {% endif %}
+
+      {# Object table controls #}
+      {% include 'inc/table_controls.html' with table_modal="ManagedRecordTable_config" %}
+
+      {# Object table #}
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            {% render_table table 'inc/table.html' %}
+          </div>
+        </div>
+      </div>
+
+      {# Paginator #}
+      {% include 'inc/paginator.html' with paginator=table.paginator page=table.page %}
+    </div>
+
+    {# Filter form #}
+    {% if filter_form %}
+      <div class="tab-pane show" id="filters-form" role="tabpanel" aria-labelledby="filters-form-tab">
+        {% include 'inc/filter_list.html' %}
+      </div>
+    {% endif %}
+  </div>
+
+  {# Table config form #}
+  {% table_config_form table table_name="ManagedRecordTable" %}
+{% endblock content-wrapper %}

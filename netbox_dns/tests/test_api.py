@@ -171,6 +171,7 @@ class RecordTest(
                 "type": Record.AAAA,
                 "name": "example5",
                 "value": "fe80::dead:beef",
+                "disable_ptr": True,
                 "ttl": 9600,
             },
             {

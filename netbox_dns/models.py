@@ -1,4 +1,7 @@
-from django.db import models
+import ipaddress
+from django.db import models, transaction
+from django.db.models import Q
+from django.db.models.functions import Length
 from django.urls import reverse
 from django.core.validators import MinValueValidator, MaxValueValidator
 from netbox.models import PrimaryModel, TaggableManager
@@ -22,7 +25,7 @@ class NameServer(PrimaryModel):
     clone_fields = ["name"]
 
     class Meta:
-        ordering = ("name", "id")
+        ordering = ("name",)
 
     def __str__(self):
         return self.name
@@ -123,10 +126,22 @@ class Zone(PrimaryModel):
 
     objects = RestrictedQuerySet.as_manager()
 
-    clone_fields = ["name", "status"]
+    clone_fields = [
+        "name",
+        "status",
+        "nameservers",
+        "default_ttl",
+        "soa_ttl",
+        "soa_mname",
+        "soa_rname",
+        "soa_refresh",
+        "soa_retry",
+        "soa_expire",
+        "soa_minimum",
+    ]
 
     class Meta:
-        ordering = ("name", "id")
+        ordering = ("name",)
 
     def __str__(self):
         return self.name
@@ -146,10 +161,9 @@ class Zone(PrimaryModel):
             f" {self.soa_minimum})"
         )
 
-        old_soa_records = Record.objects.filter(
-            zone_id=self.id, type=Record.SOA, name=soa_name
-        )
-        if old_soa_records:
+        old_soa_records = self.record_set.filter(type=Record.SOA, name=soa_name)
+
+        if len(old_soa_records):
             for index, record in enumerate(old_soa_records):
                 if index > 0:
                     record.delete()
@@ -162,7 +176,7 @@ class Zone(PrimaryModel):
                     record.save()
         else:
             Record.objects.create(
-                zone_id=self.id,
+                zone_id=self.pk,
                 type=Record.SOA,
                 name=soa_name,
                 ttl=soa_ttl,
@@ -171,8 +185,41 @@ class Zone(PrimaryModel):
             )
 
     def save(self, *args, **kwargs):
+        new_zone = self.pk is None
+        if not new_zone:
+            renamed_zone = Zone.objects.get(pk=self.pk).name != self.name
+        else:
+            renamed_zone = False
+
         super().save(*args, **kwargs)
+
+        if (new_zone or renamed_zone) and self.name.endswith(".arpa"):
+            address_records = Record.objects.filter(
+                type__in=(Record.A, Record.AAAA)
+            ).exclude(disable_ptr=True)
+            for record in address_records:
+                record.update_ptr_record()
+
+        elif renamed_zone:
+            for record in self.record_set.filter(ptr_record__isnull=False):
+                record.update_ptr_record()
+
         self.update_soa_record()
+
+    def delete(self, *args, **kwargs):
+        with transaction.atomic():
+            address_records = list(self.record_set.filter(ptr_record__isnull=False))
+            ptr_records = self.record_set.filter(address_record__isnull=False)
+
+            for record in address_records:
+                record.ptr_record.delete()
+
+            address_records.extend(record.address_record for record in ptr_records)
+
+            super().delete(*args, **kwargs)
+
+        for record in address_records:
+            record.update_ptr_record()
 
 
 @extras_features("custom_fields", "custom_links", "export_templates", "webhooks")
@@ -237,6 +284,8 @@ class Record(PrimaryModel):
         (RP, RP),
     )
 
+    unique_ptr_qs = Q(Q(disable_ptr=False), Q(Q(type="A") | Q(type="AAAA")))
+
     zone = models.ForeignKey(
         Zone,
         on_delete=models.CASCADE,
@@ -251,7 +300,9 @@ class Record(PrimaryModel):
     value = models.CharField(
         max_length=1000,
     )
-    ttl = models.PositiveIntegerField()
+    ttl = models.PositiveIntegerField(
+        verbose_name="TTL",
+    )
     tags = TaggableManager(
         through="extras.TaggedItem",
         blank=True,
@@ -260,16 +311,122 @@ class Record(PrimaryModel):
         null=False,
         default=False,
     )
+    ptr_record = models.OneToOneField(
+        "self",
+        on_delete=models.SET_NULL,
+        related_name="address_record",
+        verbose_name="PTR record",
+        null=True,
+        blank=True,
+    )
+    disable_ptr = models.BooleanField(
+        verbose_name="Disable PTR",
+        help_text="Disable PTR record creation",
+        default=False,
+    )
 
     objects = RestrictedQuerySet.as_manager()
 
-    clone_fields = ["zone", "type", "name", "value", "ttl"]
+    clone_fields = ["zone", "type", "name", "value", "ttl", "disable_ptr"]
 
     class Meta:
-        ordering = ("name", "id")
+        ordering = ("zone", "name", "type", "value")
+        constraints = (
+            models.UniqueConstraint(
+                name="unique_pointer_for_address",
+                fields=["type", "value"],
+                condition=(
+                    models.Q(
+                        models.Q(disable_ptr=False),
+                        models.Q(type="A") | models.Q(type="AAAA"),
+                    )
+                ),
+            ),
+        )
 
     def __str__(self):
-        return f"{self.type}:{self.name}"
+        if self.name.endswith("."):
+            return f"{self.name} [{self.type}]"
+        else:
+            return f"{self.name}.{self.zone.name} [{self.type}]"
 
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:record", kwargs={"pk": self.id})
+
+    def fqdn(self):
+        return f"{self.name}.{self.zone.name}."
+
+    def ptr_zone(self):
+        address = ipaddress.ip_address(self.value)
+        if address.version == 4:
+            lengths = range(1, 4)
+        else:
+            lengths = range(16, 32)
+
+        zone_names = [
+            ".".join(address.reverse_pointer.split(".")[length:]) for length in lengths
+        ]
+
+        ptr_zones = Zone.objects.filter(Q(name__in=zone_names)).order_by(
+            Length("name").desc()
+        )
+        if len(ptr_zones):
+            return ptr_zones[0]
+
+    def update_ptr_record(self):
+        ptr_zone = self.ptr_zone()
+
+        if ptr_zone is None or self.disable_ptr:
+            if self.ptr_record is not None:
+                with transaction.atomic():
+                    self.ptr_record.delete()
+                    self.ptr_record = None
+            return
+
+        ptr_name = ipaddress.ip_address(self.value).reverse_pointer.replace(
+            f".{ptr_zone.name}", ""
+        )
+        ptr_value = self.fqdn()
+        ptr_record = self.ptr_record
+
+        with transaction.atomic():
+            if ptr_record is not None:
+                if ptr_record.zone.pk != ptr_zone.pk:
+                    ptr_record.delete()
+                    ptr_record = None
+
+                else:
+                    if (
+                        ptr_record.name != ptr_name
+                        or ptr_record.value != ptr_value
+                        or ptr_record.ttl != self.ttl
+                    ):
+                        ptr_record.name = ptr_name
+                        ptr_record.value = ptr_value
+                        ptr_record.ttl = self.ttl
+                        ptr_record.save()
+
+            if ptr_record is None:
+                ptr_record = Record.objects.create(
+                    zone_id=ptr_zone.pk,
+                    type=Record.PTR,
+                    name=ptr_name,
+                    ttl=self.ttl,
+                    value=ptr_value,
+                    managed=True,
+                )
+
+        self.ptr_record = ptr_record
+        super().save()
+
+    def save(self, *args, **kwargs):
+        if self.type in (self.A, self.AAAA):
+            self.update_ptr_record()
+
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.ptr_record:
+            self.ptr_record.delete()
+
+        super().delete(*args, **kwargs)

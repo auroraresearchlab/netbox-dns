@@ -1,6 +1,6 @@
 from django import forms
-from django.urls import reverse_lazy
-from django.forms import IntegerField, ValidationError, widgets
+from django.forms import CharField, IntegerField, ValidationError, widgets
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import (
@@ -19,6 +19,7 @@ from extras.forms import (
 from extras.models.tags import Tag
 from utilities.forms import (
     BootstrapMixin,
+    BulkEditNullBooleanSelect,
     DynamicModelMultipleChoiceField,
     TagFilterField,
     StaticSelect,
@@ -419,8 +420,24 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
                 validate_ipv6_address(value)
 
         except ValidationError:
-            raise ValidationError(
-                f"A valid IPv{ip_version} address is required for record type {type}."
+            raise forms.ValidationError(
+                {
+                    "value": f"A valid IPv{ip_version} address is required for record type {type}."
+                }
+            )
+
+        if cleaned_data.get("disable_ptr"):
+            return
+
+        pk = cleaned_data.get("pk")
+        conflicts = Record.objects.filter(value=value, type=type, disable_ptr=False)
+        if self.instance.pk:
+            conflicts = conflicts.exclude(pk=self.instance.pk)
+        if len(conflicts):
+            raise forms.ValidationError(
+                {
+                    "value": f"There is already an {type} record with value {value} and PTR enabled."
+                }
             )
 
     def clean_ttl(self):
@@ -431,6 +448,11 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
             return ttl
         else:
             return self.cleaned_data["zone"].default_ttl
+
+    disable_ptr = forms.BooleanField(
+        label="Disable PTR",
+        required=False,
+    )
 
     tags = DynamicModelMultipleChoiceField(
         queryset=Tag.objects.all(),
@@ -443,7 +465,7 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
 
     class Meta:
         model = Record
-        fields = ("zone", "type", "name", "value", "ttl", "tags")
+        fields = ("zone", "type", "disable_ptr", "name", "value", "ttl", "tags")
 
         widgets = {
             "zone": StaticSelect(),
@@ -493,6 +515,43 @@ class RecordCSVForm(CustomFieldModelCSVForm):
         help_text="TTL",
     )
 
+    def clean(self):
+        """
+        For A and AAA records, verify that a valid IPv4 or IPv6 was passed as
+        value and raise a ValidationError exception otherwise.
+        """
+        cleaned_data = super().clean()
+
+        type = cleaned_data.get("type")
+        if type not in (Record.A, Record.AAAA):
+            return
+
+        value = cleaned_data.get("value")
+        try:
+            ip_version = "4" if type == Record.A else "6"
+            if type == Record.A:
+                validate_ipv4_address(value)
+            else:
+                validate_ipv6_address(value)
+
+        except ValidationError:
+            raise forms.ValidationError(
+                {
+                    "value": f"A valid IPv{ip_version} address is required for record type {type}."
+                }
+            )
+
+        if cleaned_data.get("disable_ptr"):
+            return
+
+        conflicts = Record.objects.filter(value=value, type=type, disable_ptr=False)
+        if len(conflicts):
+            raise forms.ValidationError(
+                {
+                    "value": f"There is already an {type} record with value {value} and PTR enabled."
+                }
+            )
+
     def clean_ttl(self):
         ttl = self.cleaned_data["ttl"]
         if ttl is not None:
@@ -510,6 +569,7 @@ class RecordCSVForm(CustomFieldModelCSVForm):
 class RecordBulkEditForm(
     BootstrapMixin, AddRemoveTagsForm, CustomFieldModelBulkEditForm
 ):
+
     pk = forms.ModelMultipleChoiceField(
         queryset=Record.objects.all(), widget=forms.MultipleHiddenInput()
     )
@@ -520,10 +580,37 @@ class RecordBulkEditForm(
             attrs={"data-url": reverse_lazy("plugins-api:netbox_dns-api:zone-list")}
         ),
     )
+    disable_ptr = forms.NullBooleanField(
+        required=False, widget=BulkEditNullBooleanSelect(), label="Disable PTR"
+    )
     ttl = IntegerField(
         required=False,
-        help_text="TTL",
+        label="TTL",
     )
+
+    def clean(self):
+        """
+        For A and AAA records, verify that a valid IPv4 or IPv6 was passed as
+        value and raise a ValidationError exception otherwise.
+        """
+        cleaned_data = super().clean()
+
+        disable_ptr = cleaned_data.get("disable_ptr")
+        if disable_ptr is None or disable_ptr:
+            return
+
+        for record in cleaned_data.get("pk"):
+            conflicts = (
+                Record.objects.filter(Record.unique_ptr_qs)
+                .filter(value=record.value)
+                .exclude(pk=record.pk)
+            )
+            if len(conflicts):
+                raise forms.ValidationError(
+                    {
+                        "disable_ptr": f"Multiple {record.type} records with value {record.value} and PTR enabled."
+                    }
+                )
 
     def clean_ttl(self):
         ttl = self.cleaned_data["ttl"]
@@ -531,8 +618,12 @@ class RecordBulkEditForm(
             if ttl <= 0:
                 raise ValidationError("TTL must be greater than zero")
             return ttl
-        else:
-            return self.cleaned_data["zone"].default_ttl
 
     class Meta:
+        model = Record
+        fields = ("zone", "ttl", "disable_ptr", "tags")
         nullable_fields = []
+
+        widgets = {
+            "zone": StaticSelect(),
+        }

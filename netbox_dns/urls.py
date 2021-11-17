@@ -28,6 +28,8 @@ from .views import (
     RecordBulkImportView,
     RecordBulkEditView,
     RecordBulkDeleteView,
+    # managed record
+    ManagedRecordListView,
 )
 
 app_name = "netbox_dns"
@@ -106,5 +108,8 @@ urlpatterns = [
         ObjectChangeLogView.as_view(),
         name="record_changelog",
         kwargs={"model": Record},
+    ),
+    path(
+        "managedrecords/", ManagedRecordListView.as_view(), name="managed_record_list"
     ),
 ]

@@ -32,6 +32,18 @@ class RecordSerializer(PrimaryModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="plugins-api:netbox_dns-api:record-detail"
     )
+    ptr_record = NestedRecordSerializer(
+        many=False,
+        read_only=True,
+        required=False,
+        help_text="PTR record generated from an address",
+    )
+    address_record = NestedRecordSerializer(
+        many=False,
+        read_only=True,
+        required=False,
+        help_text="Address record defining the PTR",
+    )
 
     class Meta:
         model = Record
@@ -49,6 +61,9 @@ class RecordSerializer(PrimaryModelSerializer):
             "created",
             "last_updated",
             "managed",
+            "disable_ptr",
+            "ptr_record",
+            "address_record",
         )
 
 
@@ -58,6 +73,12 @@ class ZoneSerializer(PrimaryModelSerializer):
     )
     nameservers = NestedNameServerSerializer(
         many=True, read_only=False, required=False, help_text="Nameservers for the zone"
+    )
+    soa_mname = NestedNameServerSerializer(
+        many=False,
+        read_only=False,
+        required=False,
+        help_text="Primary nameserver for the zone",
     )
 
     class Meta:
