@@ -1,6 +1,4 @@
 from django import forms
-from django.forms import CharField, IntegerField, ValidationError, widgets
-
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import (
@@ -8,8 +6,8 @@ from django.core.validators import (
     validate_ipv6_address,
     validate_ipv4_address,
 )
+from django.forms import CharField, IntegerField
 from django.urls import reverse_lazy
-
 
 from extras.forms import (
     CustomFieldModelForm,
@@ -32,9 +30,8 @@ from utilities.forms import (
     StaticSelectMultiple,
     add_blank_choice,
 )
-
-from .models import NameServer, Record, Zone
 from .fields import CustomDynamicModelMultipleChoiceField
+from .models import NameServer, Record, Zone
 
 
 class ZoneForm(BootstrapMixin, CustomFieldModelForm):
@@ -571,7 +568,6 @@ class RecordCSVForm(CustomFieldModelCSVForm):
 class RecordBulkEditForm(
     BootstrapMixin, AddRemoveTagsForm, CustomFieldModelBulkEditForm
 ):
-
     pk = forms.ModelMultipleChoiceField(
         queryset=Record.objects.all(), widget=forms.MultipleHiddenInput()
     )
@@ -604,8 +600,8 @@ class RecordBulkEditForm(
         for record in cleaned_data.get("pk"):
             conflicts = (
                 Record.objects.filter(Record.unique_ptr_qs)
-                .filter(value=record.value)
-                .exclude(pk=record.pk)
+                    .filter(value=record.value)
+                    .exclude(pk=record.pk)
             )
             if len(conflicts):
                 raise forms.ValidationError(

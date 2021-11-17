@@ -1,6 +1,7 @@
-from utilities.forms import DynamicModelMultipleChoiceField
-from django.urls import reverse
 from django.forms import BoundField
+from django.urls import reverse
+
+from utilities.forms import DynamicModelMultipleChoiceField
 
 
 class CustomDynamicModelMultipleChoiceField(DynamicModelMultipleChoiceField):

@@ -1,17 +1,16 @@
+from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.routers import APIRootView
+
 from extras.api.views import CustomFieldModelViewSet
-
-from rest_framework import serializers
-
-from netbox_dns.models import Zone, NameServer, Record
 from netbox_dns.api.serializers import (
     ZoneSerializer,
     NameServerSerializer,
     RecordSerializer,
 )
 from netbox_dns.filters import ZoneFilter, NameServerFilter, RecordFilter
+from netbox_dns.models import Zone, NameServer, Record
 
 
 class NetboxDNSRootView(APIRootView):

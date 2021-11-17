@@ -1,19 +1,5 @@
-from django.shortcuts import render, get_object_or_404
-from utilities.tables import paginate_table
-
-from utilities.tables import paginate_table
-
 from netbox.views import generic
-
-from netbox_dns.models import Record, Zone, NameServer
-from netbox_dns.tables import (
-    NameServerTable,
-    RecordTable,
-    ManagedRecordTable,
-    ZoneTable,
-    ZoneManagedRecordTable,
-    ZoneRecordTable,
-)
+from netbox_dns.filters import NameServerFilter, RecordFilter, ZoneFilter
 from netbox_dns.forms import (
     NameServerCSVForm,
     NameServerFilterForm,
@@ -27,7 +13,16 @@ from netbox_dns.forms import (
     ZoneFilterForm,
     ZoneBulkEditForm,
 )
-from netbox_dns.filters import NameServerFilter, RecordFilter, ZoneFilter
+from netbox_dns.models import Record, Zone, NameServer
+from netbox_dns.tables import (
+    NameServerTable,
+    RecordTable,
+    ManagedRecordTable,
+    ZoneTable,
+    ZoneManagedRecordTable,
+    ZoneRecordTable,
+)
+from utilities.tables import paginate_table
 
 
 #

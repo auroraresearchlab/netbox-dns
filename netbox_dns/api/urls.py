@@ -6,7 +6,6 @@ from netbox_dns.api.views import (
     RecordViewSet,
 )
 
-
 router = OrderedDefaultRouter()
 router.APIRootView = NetboxDNSRootView
 

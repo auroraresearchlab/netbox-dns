@@ -1,12 +1,12 @@
 from django.urls import reverse
-from utilities.testing import APIViewTestCases
-from netbox_dns.models import NameServer, Record, Zone
+
 from netbox_dns.core.test import APITestCase
+from netbox_dns.models import NameServer, Record, Zone
+from utilities.testing import APIViewTestCases
 
 
 class AppTest(APITestCase):
     def test_root(self):
-
         url = reverse("plugins-api:netbox_dns-api:api-root")
         response = self.client.get("{}?format=api".format(url), **self.header)
 

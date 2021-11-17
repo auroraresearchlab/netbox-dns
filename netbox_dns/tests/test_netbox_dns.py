@@ -1,4 +1,5 @@
 from django.test import SimpleTestCase
+
 from netbox_dns import __version__
 
 
