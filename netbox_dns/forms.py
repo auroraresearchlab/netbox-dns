@@ -1,8 +1,12 @@
 from django import forms
-from django.forms import IntegerField, ValidationError, widgets
+from django.forms import CharField, IntegerField, widgets
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import validate_ipv6_address, validate_ipv4_address
+from django.core.validators import (
+    MinValueValidator,
+    validate_ipv6_address,
+    validate_ipv4_address,
+)
 
 from extras.forms import (
     CustomFieldModelForm,
@@ -35,15 +39,35 @@ class ZoneForm(BootstrapMixin, CustomFieldModelForm):
     def __init__(self, *args, **kwargs):
         """Override the __init__ method in order to provide the initial value for the default_ttl field"""
         super().__init__(*args, **kwargs)
-        self.initial["default_ttl"] = (
-            settings.PLUGINS_CONFIG.get("netbox_dns").get("zone").get("default_ttl")
-        )
+
+        defaults = settings.PLUGINS_CONFIG.get("netbox_dns")
+
+        def _initialize(initial, setting):
+            if not initial.get(setting, None):
+                initial[setting] = defaults.get(f"zone_{setting}", None)
+
+        for setting in (
+            "default_ttl",
+            "soa_ttl",
+            "soa_mname",
+            "soa_rname",
+            "soa_serial",
+            "soa_refresh",
+            "soa_retry",
+            "soa_expire",
+            "soa_minimum",
+        ):
+            _initialize(self.initial, setting)
+
+        if self.initial.get("soa_ttl", None) is None:
+            self.initial["soa_ttl"] = self.initial.get("default_ttl", None)
 
     def clean_default_ttl(self):
-        if self.cleaned_data["default_ttl"]:
-            return self.cleaned_data["default_ttl"]
-        else:
-            return self.initial["default_ttl"]
+        return (
+            self.cleaned_data["default_ttl"]
+            if self.cleaned_data["default_ttl"]
+            else self.initial["default_ttl"]
+        )
 
     nameservers = CustomDynamicModelMultipleChoiceField(
         queryset=NameServer.objects.all(),
@@ -53,18 +77,75 @@ class ZoneForm(BootstrapMixin, CustomFieldModelForm):
         queryset=Tag.objects.all(),
         required=False,
     )
-    default_ttl = forms.IntegerField(
+    default_ttl = IntegerField(
         required=False,
         label="Default TTL",
         help_text="Default TTL for new records in this zone",
+        validators=[MinValueValidator(1)],
+    )
+    soa_ttl = IntegerField(
+        required=True,
+        label="SOA TTL",
+        help_text="TTL for the SOA record of the zone",
+        validators=[MinValueValidator(1)],
+    )
+    soa_rname = CharField(
+        required=True,
+        label="SOA Responsible",
+        help_text="Mailbox of the zone's administrator",
+    )
+    soa_serial = IntegerField(
+        required=True,
+        label="SOA Serial",
+        help_text="Serial number of the current zone data version",
+        validators=[MinValueValidator(1)],
+    )
+    soa_refresh = IntegerField(
+        required=True,
+        label="SOA Refresh",
+        help_text="Refresh interval for secondary name servers",
+        validators=[MinValueValidator(1)],
+    )
+    soa_retry = IntegerField(
+        required=True,
+        label="SOA Retry",
+        help_text="Retry interval for secondary name servers",
+        validators=[MinValueValidator(1)],
+    )
+    soa_expire = IntegerField(
+        required=True,
+        label="SOA Expire",
+        help_text="Expire time after which the zone is considered unavailable",
+        validators=[MinValueValidator(1)],
+    )
+    soa_minimum = IntegerField(
+        required=True,
+        label="SOA Minimum TTL",
+        help_text="Minimum TTL for negative results, e.g. NXRRSET",
+        validators=[MinValueValidator(1)],
     )
 
     class Meta:
         model = Zone
-        fields = ("name", "status", "nameservers", "default_ttl", "tags")
+        fields = (
+            "name",
+            "status",
+            "nameservers",
+            "default_ttl",
+            "tags",
+            "soa_ttl",
+            "soa_mname",
+            "soa_rname",
+            "soa_serial",
+            "soa_refresh",
+            "soa_retry",
+            "soa_expire",
+            "soa_minimum",
+        )
 
         widgets = {
             "status": StaticSelect(),
+            "soa_mname": StaticSelect(),
         }
 
 
@@ -73,13 +154,13 @@ class ZoneFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
 
     model = Zone
 
-    q = forms.CharField(required=False, label="Search")
+    q = CharField(required=False, label="Search")
     status = forms.ChoiceField(
         choices=add_blank_choice(Zone.CHOICES),
         required=False,
         widget=StaticSelect(),
     )
-    name = forms.CharField(
+    name = CharField(
         required=False,
         label="Name",
     )
@@ -95,26 +176,111 @@ class ZoneCSVForm(CustomFieldModelCSVForm):
         choices=Zone.CHOICES,
         help_text="Zone status",
     )
+
     default_ttl = IntegerField(
-        help_text="Default TTL",
         required=False,
+        help_text="Default TTL",
+    )
+    soa_ttl = IntegerField(
+        required=False,
+        help_text="TTL for the SOA record of the zone",
+    )
+    soa_mname = CSVModelChoiceField(
+        queryset=NameServer.objects.all(),
+        required=False,
+        to_field_name="name",
+        help_text="Primary name server for the zone",
+        error_messages={
+            "invalid_choice": "Nameserver not found.",
+        },
+    )
+    soa_rname = CharField(
+        required=False,
+        help_text="Mailbox of the zone's administrator",
+    )
+    soa_serial = IntegerField(
+        required=False,
+        help_text="Serial number of the current zone data version",
+    )
+    soa_refresh = IntegerField(
+        required=False,
+        help_text="Refresh interval for secondary name servers",
+    )
+    soa_retry = IntegerField(
+        required=False,
+        help_text="Retry interval for secondary name servers",
+    )
+    soa_expire = IntegerField(
+        required=False,
+        help_text="Expire time after which the zone is considered unavailable",
+    )
+    soa_minimum = IntegerField(
+        required=False,
+        help_text="Minimum TTL for negative results, e.g. NXRRSET",
     )
 
-    def clean_default_ttl(self):
-        default_ttl = self.cleaned_data.get("default_ttl", 0)
-        if default_ttl is not None:
-            if default_ttl <= 0:
-                raise ValidationError("Default TTL must be greater than zero")
-        else:
-            default_ttl = (
-                settings.PLUGINS_CONFIG.get("netbox_dns").get("zone").get("default_ttl")
+    def _get_default_value(self, field):
+        _default_values = settings.PLUGINS_CONFIG.get("netbox_dns", dict())
+        if _default_values.get("zone_soa_ttl", None) is None:
+            _default_values["zone_soa_ttl"] = _default_values.get(
+                "zone_default_ttl", None
             )
 
-        return default_ttl
+        return _default_values.get(f"zone_{field}", None)
+
+    def _clean_field_with_defaults(self, field):
+        if self.cleaned_data[field]:
+            value = self.cleaned_data[field]
+        else:
+            value = self._get_default_value(field)
+
+        if value is None:
+            raise ValidationError(f"{field} not set and no default value available")
+
+        return value
+
+    def clean_default_ttl(self):
+        return self._clean_field_with_defaults("default_ttl")
+
+    def clean_soa_ttl(self):
+        return self._clean_field_with_defaults("soa_ttl")
+
+    def clean_soa_mname(self):
+        return self._clean_field_with_defaults("soa_mname")
+
+    def clean_soa_rname(self):
+        return self._clean_field_with_defaults("soa_rname")
+
+    def clean_soa_serial(self):
+        return self._clean_field_with_defaults("soa_serial")
+
+    def clean_soa_refresh(self):
+        return self._clean_field_with_defaults("soa_refresh")
+
+    def clean_soa_retry(self):
+        return self._clean_field_with_defaults("soa_retry")
+
+    def clean_soa_expire(self):
+        return self._clean_field_with_defaults("soa_expire")
+
+    def clean_soa_minimum(self):
+        return self._clean_field_with_defaults("soa_minimum")
 
     class Meta:
         model = Zone
-        fields = ("name", "status", "default_ttl")
+        fields = (
+            "name",
+            "status",
+            "default_ttl",
+            "soa_ttl",
+            "soa_mname",
+            "soa_rname",
+            "soa_serial",
+            "soa_refresh",
+            "soa_retry",
+            "soa_expire",
+            "soa_minimum",
+        )
 
 
 class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, CustomFieldModelBulkEditForm):
@@ -131,20 +297,67 @@ class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, CustomFieldModelBulkEd
         queryset=NameServer.objects.all(),
         required=False,
     )
-    default_ttl = forms.IntegerField(
+    default_ttl = IntegerField(
         required=False,
         label="Default TTL",
+        validators=[MinValueValidator(1)],
     )
-
-    def clean_default_ttl(self):
-        default_ttl = self.cleaned_data.get("default_ttl")
-        if default_ttl is not None and default_ttl <= 0:
-            raise ValidationError("Default TTL must be greater than zero")
-
-        return default_ttl
+    soa_ttl = IntegerField(
+        required=False,
+        label="SOA TTL",
+        validators=[MinValueValidator(1)],
+    )
+    soa_rname = CharField(
+        required=False,
+        label="SOA Responsible",
+    )
+    soa_serial = IntegerField(
+        required=False,
+        label="SOA Serial",
+        validators=[MinValueValidator(1)],
+    )
+    soa_refresh = IntegerField(
+        required=False,
+        label="SOA Refresh",
+        validators=[MinValueValidator(1)],
+    )
+    soa_retry = IntegerField(
+        required=False,
+        label="SOA Retry",
+        validators=[MinValueValidator(1)],
+    )
+    soa_expire = IntegerField(
+        required=False,
+        label="SOA Expire",
+        validators=[MinValueValidator(1)],
+    )
+    soa_minimum = IntegerField(
+        required=False,
+        label="SOA Minimum TTL",
+        validators=[MinValueValidator(1)],
+    )
 
     class Meta:
         nullable_fields = []
+
+        model = Zone
+        fields = (
+            "name",
+            "status",
+            "nameservers",
+            "default_ttl",
+            "tags",
+            "soa_ttl",
+            "soa_rname",
+            "soa_serial",
+            "soa_refresh",
+            "soa_retry",
+            "soa_expire",
+            "soa_minimum",
+        )
+        widgets = {
+            "status": StaticSelect(),
+        }
 
 
 class NameServerForm(BootstrapMixin, forms.ModelForm):
@@ -165,11 +378,11 @@ class NameServerFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
 
     model = NameServer
 
-    q = forms.CharField(
+    q = CharField(
         required=False,
         label="Search",
     )
-    name = forms.CharField(
+    name = CharField(
         required=False,
         label="Name",
     )
@@ -222,7 +435,7 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
         queryset=Tag.objects.all(),
         required=False,
     )
-    ttl = forms.IntegerField(
+    ttl = IntegerField(
         required=False,
         label="TTL",
     )
@@ -242,7 +455,7 @@ class RecordFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
 
     model = Record
 
-    q = forms.CharField(
+    q = CharField(
         required=False,
         label="Search",
     )
@@ -251,11 +464,11 @@ class RecordFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
         required=False,
         widget=StaticSelectMultiple(),
     )
-    name = forms.CharField(
+    name = CharField(
         required=False,
         label="Name",
     )
-    value = forms.CharField(
+    value = CharField(
         required=False,
         label="Value",
     )
