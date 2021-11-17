@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from netbox.api.serializers import PrimaryModelSerializer, WritableNestedSerializer
 from netbox_dns.models import Record, Zone, NameServer
 from netbox_dns.api.nested_serializers import (
@@ -47,6 +48,7 @@ class RecordSerializer(PrimaryModelSerializer):
             "custom_field_data",
             "created",
             "last_updated",
+            "managed",
         )
 
 
@@ -65,6 +67,7 @@ class ZoneSerializer(PrimaryModelSerializer):
             "url",
             "name",
             "display",
+            "nameservers",
             "status",
             "nameservers",
             "tags",
@@ -72,4 +75,12 @@ class ZoneSerializer(PrimaryModelSerializer):
             "created",
             "last_updated",
             "default_ttl",
+            "soa_ttl",
+            "soa_mname",
+            "soa_rname",
+            "soa_serial",
+            "soa_refresh",
+            "soa_retry",
+            "soa_expire",
+            "soa_minimum",
         )
