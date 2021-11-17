@@ -18,22 +18,25 @@ class ZoneTable(BaseTable):
     tags = TagColumn(
         url_name="plugins:netbox_dns:zone_list",
     )
+    default_ttl = tables.Column(
+        verbose_name="Default TTL",
+    )
 
     class Meta(BaseTable.Meta):
         model = Zone
         fields = (
             "pk",
-            "status",
             "name",
-            "default_ttl",
+            "status",
             "tags",
+            "default_ttl",
             "soa_mname",
             "soa_rname",
         )
         default_columns = (
             "pk",
-            "status",
             "name",
+            "status",
             "tags",
         )
 
