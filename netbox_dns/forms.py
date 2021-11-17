@@ -600,8 +600,8 @@ class RecordBulkEditForm(
         for record in cleaned_data.get("pk"):
             conflicts = (
                 Record.objects.filter(Record.unique_ptr_qs)
-                    .filter(value=record.value)
-                    .exclude(pk=record.pk)
+                .filter(value=record.value)
+                .exclude(pk=record.pk)
             )
             if len(conflicts):
                 raise forms.ValidationError(
