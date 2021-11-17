@@ -22,9 +22,27 @@ class ZoneTest(
     APIViewTestCases.DeleteObjectViewTestCase,
 ):
     model = Zone
-    brief_fields = ["created", "custom_field_data", "default_ttl", "display", "id", "last_updated", "name",
-                    "nameservers", "soa_expire", "soa_minimum", "soa_mname", "soa_refresh", "soa_retry", "soa_rname",
-                    "soa_serial", "soa_ttl", "status", "tags", "url"]
+    brief_fields = [
+        "created",
+        "custom_field_data",
+        "default_ttl",
+        "display",
+        "id",
+        "last_updated",
+        "name",
+        "nameservers",
+        "soa_expire",
+        "soa_minimum",
+        "soa_mname",
+        "soa_refresh",
+        "soa_retry",
+        "soa_rname",
+        "soa_serial",
+        "soa_ttl",
+        "status",
+        "tags",
+        "url",
+    ]
 
     bulk_update_data = {
         "status": "active",
