@@ -198,7 +198,6 @@ class Zone(PrimaryModel):
                 managed=True,
             )
 
-<<<<<<< HEAD
     def update_ns_records(self, nameservers):
         ns_name = "@"
         ns_ttl = self.default_ttl
