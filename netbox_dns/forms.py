@@ -494,6 +494,11 @@ class RecordFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
         required=False,
         label="Value",
     )
+    zone_id = CustomDynamicModelMultipleChoiceField(
+        queryset=Zone.objects.all(),
+        required=False,
+        label="Zone",
+    )
     tag = TagFilterField(Record)
 
 
