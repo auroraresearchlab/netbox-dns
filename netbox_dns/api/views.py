@@ -3,7 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.routers import APIRootView
 
-from extras.api.views import CustomFieldModelViewSet
+from netbox.api.views import ModelViewSet
+
 from netbox_dns.api.serializers import (
     ZoneSerializer,
     NameServerSerializer,
@@ -22,7 +23,7 @@ class NetboxDNSRootView(APIRootView):
         return "NetboxDNS"
 
 
-class ZoneViewSet(CustomFieldModelViewSet):
+class ZoneViewSet(ModelViewSet):
     queryset = Zone.objects.all()
     serializer_class = ZoneSerializer
     filterset_class = ZoneFilter
@@ -42,7 +43,7 @@ class ZoneViewSet(CustomFieldModelViewSet):
         return Response(serializer.data)
 
 
-class NameServerViewSet(CustomFieldModelViewSet):
+class NameServerViewSet(ModelViewSet):
     queryset = NameServer.objects.all()
     serializer_class = NameServerSerializer
     filterset_class = NameServerFilter
@@ -54,7 +55,7 @@ class NameServerViewSet(CustomFieldModelViewSet):
         return Response(serializer.data)
 
 
-class RecordViewSet(CustomFieldModelViewSet):
+class RecordViewSet(ModelViewSet):
     queryset = Record.objects.all()
     serializer_class = RecordSerializer
     filterset_class = RecordFilter

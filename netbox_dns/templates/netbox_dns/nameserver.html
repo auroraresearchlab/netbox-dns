@@ -19,7 +19,6 @@
                     </table>
                 </div>
             </div>
-            {% include 'inc/custom_fields_panel.html' %}
         </div>
         <div class="col col-md-6">
             {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_dns:nameserver_list' %}

@@ -21,7 +21,6 @@ class NameServerSerializer(PrimaryModelSerializer):
             "display",
             "name",
             "tags",
-            "custom_field_data",
             "created",
             "last_updated",
         )
@@ -56,7 +55,6 @@ class RecordSerializer(PrimaryModelSerializer):
             "value",
             "ttl",
             "tags",
-            "custom_field_data",
             "created",
             "last_updated",
             "managed",
@@ -91,7 +89,6 @@ class ZoneSerializer(PrimaryModelSerializer):
             "status",
             "nameservers",
             "tags",
-            "custom_field_data",
             "created",
             "last_updated",
             "default_ttl",
