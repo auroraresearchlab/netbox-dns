@@ -308,6 +308,16 @@ class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, CustomFieldModelBulkEd
         label="SOA TTL",
         validators=[MinValueValidator(1)],
     )
+    soa_mname = DynamicModelChoiceField(
+        queryset=NameServer.objects.all(),
+        required=False,
+        label="SOA Primary Nameserver",
+        widget=APISelect(
+            attrs={
+                "data-url": reverse_lazy("plugins-api:netbox_dns-api:nameserver-list")
+            }
+        ),
+    )
     soa_rname = CharField(
         required=False,
         label="SOA Responsible",
@@ -494,6 +504,11 @@ class RecordFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
         required=False,
         label="Value",
     )
+    zone_id = CustomDynamicModelMultipleChoiceField(
+        queryset=Zone.objects.all(),
+        required=False,
+        label="Zone",
+    )
     tag = TagFilterField(Record)
 
 
@@ -512,6 +527,11 @@ class RecordCSVForm(CustomFieldModelCSVForm):
     ttl = IntegerField(
         required=False,
         help_text="TTL",
+    )
+    disable_ptr = forms.BooleanField(
+        required=False,
+        label="Disable PTR",
+        help_text="Disable generation of a PTR record",
     )
 
     def clean(self):
@@ -562,7 +582,7 @@ class RecordCSVForm(CustomFieldModelCSVForm):
 
     class Meta:
         model = Record
-        fields = ("zone", "type", "name", "value", "ttl")
+        fields = ("zone", "type", "name", "value", "ttl", "disable_ptr")
 
 
 class RecordBulkEditForm(
