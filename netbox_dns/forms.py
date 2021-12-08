@@ -528,6 +528,11 @@ class RecordCSVForm(CustomFieldModelCSVForm):
         required=False,
         help_text="TTL",
     )
+    disable_ptr = forms.BooleanField(
+        required=False,
+        label="Disable PTR",
+        help_text="Disable generation of a PTR record",
+    )
 
     def clean(self):
         """
@@ -577,7 +582,7 @@ class RecordCSVForm(CustomFieldModelCSVForm):
 
     class Meta:
         model = Record
-        fields = ("zone", "type", "name", "value", "ttl")
+        fields = ("zone", "type", "name", "value", "ttl", "disable_ptr")
 
 
 class RecordBulkEditForm(
