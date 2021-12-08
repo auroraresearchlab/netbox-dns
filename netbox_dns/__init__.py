@@ -21,6 +21,7 @@ class DNSConfig(PluginConfig):
         "zone_soa_expire": 2592000,
         "zone_soa_minimum": 3600,
     }
+    base_url = "netbox-dns"
 
 
 config = DNSConfig
