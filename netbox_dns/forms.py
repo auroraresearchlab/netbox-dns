@@ -14,7 +14,6 @@ from extras.models.tags import Tag
 
 from utilities.forms import (
     CSVModelForm,
-    BulkEditForm,
     BootstrapMixin,
     BulkEditNullBooleanSelect,
     DynamicModelMultipleChoiceField,
@@ -29,6 +28,18 @@ from utilities.forms import (
 )
 from .fields import CustomDynamicModelMultipleChoiceField
 from .models import NameServer, Record, Zone
+
+
+class BulkEditForm(forms.Form):
+    """Base form for editing multiple objects in bulk"""
+
+    def __init__(self, model, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.model = model
+        self.nullable_fields = []
+
+        if hasattr(self.Meta, "nullable_fields"):
+            self.nullable_fields = self.Meta.nullable_fields
 
 
 class ZoneForm(BootstrapMixin, forms.ModelForm):
@@ -347,7 +358,6 @@ class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
 
     class Meta:
         nullable_fields = []
-
         model = Zone
         fields = (
             "name",
