@@ -15,15 +15,10 @@ from django.forms import (
 )
 from django.urls import reverse_lazy
 
-from extras.forms import (
-    CustomFieldModelForm,
-    CustomFieldModelCSVForm,
-    AddRemoveTagsForm,
-    CustomFieldModelBulkEditForm,
-    CustomFieldModelFilterForm,
-)
+from extras.forms import AddRemoveTagsForm
 from extras.models.tags import Tag
 from utilities.forms import (
+    CSVModelForm,
     BootstrapMixin,
     BulkEditNullBooleanSelect,
     DynamicModelMultipleChoiceField,
@@ -40,7 +35,19 @@ from .fields import CustomDynamicModelMultipleChoiceField
 from .models import NameServer, Record, Zone
 
 
-class ZoneForm(BootstrapMixin, CustomFieldModelForm):
+class BulkEditForm(forms.Form):
+    """Base form for editing multiple objects in bulk."""
+
+    def __init__(self, model, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.model = model
+        self.nullable_fields = []
+
+        if hasattr(self.Meta, "nullable_fields"):
+            self.nullable_fields = self.Meta.nullable_fields
+
+
+class ZoneForm(BootstrapMixin, forms.ModelForm):
     """Form for creating a new Zone object."""
 
     def __init__(self, *args, **kwargs):
@@ -167,7 +174,7 @@ class ZoneForm(BootstrapMixin, CustomFieldModelForm):
         }
 
 
-class ZoneFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
+class ZoneFilterForm(BootstrapMixin, forms.Form):
     """Form for filtering Zone instances."""
 
     model = Zone
@@ -193,7 +200,7 @@ class ZoneFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
     tag = TagFilterField(Zone)
 
 
-class ZoneCSVForm(CustomFieldModelCSVForm):
+class ZoneCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
     status = CSVChoiceField(
         choices=Zone.CHOICES,
         help_text="Zone status",
@@ -327,7 +334,7 @@ class ZoneCSVForm(CustomFieldModelCSVForm):
         )
 
 
-class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, CustomFieldModelBulkEditForm):
+class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=Zone.objects.all(),
         widget=forms.MultipleHiddenInput(),
@@ -441,7 +448,7 @@ class NameServerForm(BootstrapMixin, forms.ModelForm):
         fields = ("name", "tags")
 
 
-class NameServerFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
+class NameServerFilterForm(BootstrapMixin, forms.Form):
     """Form for filtering NameServer instances."""
 
     model = NameServer
@@ -453,7 +460,7 @@ class NameServerFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
     tag = TagFilterField(NameServer)
 
 
-class NameServerCSVForm(CustomFieldModelCSVForm):
+class NameServerCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
     class Meta:
         model = NameServer
         fields = ("name",)
@@ -550,7 +557,7 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
         }
 
 
-class RecordFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
+class RecordFilterForm(BootstrapMixin, forms.Form):
     """Form for filtering Record instances."""
 
     model = Record
@@ -581,7 +588,7 @@ class RecordFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
     tag = TagFilterField(Record)
 
 
-class RecordCSVForm(CustomFieldModelCSVForm):
+class RecordCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
     zone = CSVModelChoiceField(
         queryset=Zone.objects.all(),
         to_field_name="name",
@@ -654,9 +661,7 @@ class RecordCSVForm(CustomFieldModelCSVForm):
         fields = ("zone", "type", "name", "value", "ttl", "disable_ptr")
 
 
-class RecordBulkEditForm(
-    BootstrapMixin, AddRemoveTagsForm, CustomFieldModelBulkEditForm
-):
+class RecordBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=Record.objects.all(), widget=forms.MultipleHiddenInput()
     )
