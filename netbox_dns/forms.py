@@ -459,6 +459,21 @@ class NameServerCSVForm(CustomFieldModelCSVForm):
         fields = ("name",)
 
 
+class NameServerBulkEditForm(
+    BootstrapMixin, AddRemoveTagsForm, CustomFieldModelBulkEditForm
+):
+    pk = forms.ModelMultipleChoiceField(
+        queryset=NameServer.objects.all(),
+        widget=forms.MultipleHiddenInput(),
+    )
+
+    class Meta:
+        nullable_fields = []
+
+        model = NameServer
+        fields = ("name", "tags")
+
+
 class RecordForm(BootstrapMixin, forms.ModelForm):
     """Form for creating a new Record object."""
 

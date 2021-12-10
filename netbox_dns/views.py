@@ -4,6 +4,7 @@ from netbox_dns.forms import (
     NameServerCSVForm,
     NameServerFilterForm,
     NameServerForm,
+    NameServerBulkEditForm,
     RecordCSVForm,
     RecordFilterForm,
     RecordForm,
@@ -188,6 +189,13 @@ class NameServerBulkImportView(generic.BulkImportView):
     queryset = NameServer.objects.all()
     model_form = NameServerCSVForm
     table = NameServerTable
+
+
+class NameServerBulkEditView(generic.BulkEditView):
+    queryset = NameServer.objects.all()
+    filterset = NameServerFilter
+    table = NameServerTable
+    form = NameServerBulkEditForm
 
 
 class NameServerBulkDeleteView(generic.BulkDeleteView):

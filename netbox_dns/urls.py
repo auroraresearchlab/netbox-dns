@@ -19,6 +19,7 @@ from .views import (
     NameServerEditView,
     NameServerDeleteView,
     NameServerBulkImportView,
+    NameServerBulkEditView,
     NameServerBulkDeleteView,
     # record
     RecordListView,
@@ -69,6 +70,11 @@ urlpatterns = [
         "nameservers/import/",
         NameServerBulkImportView.as_view(),
         name="nameserver_import",
+    ),
+    path(
+        "nameservers/edit/",
+        NameServerBulkEditView.as_view(),
+        name="nameserver_bulk_edit",
     ),
     path(
         "nameservers/delete/",
