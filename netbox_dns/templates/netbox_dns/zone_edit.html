@@ -1,0 +1,27 @@
+{% extends 'generic/object_edit.html' %}
+{% load static %}
+{% load form_helpers %}
+{% load helpers %}
+
+{% block form %}
+    <div class="field-group my-5">
+        {% render_field form.name %}
+        {% render_field form.status %}
+        {% render_field form.nameservers %}
+        {% render_field form.default_ttl %}
+    </div>
+    <div class="field-group my-5">
+        {% render_field form.soa_ttl %}
+        {% render_field form.soa_mname %}
+        {% render_field form.soa_rname %}
+        {% render_field form.soa_refresh %}
+        {% render_field form.soa_retry %}
+        {% render_field form.soa_expire %}
+        {% render_field form.soa_minimum %}
+        {% render_field form.soa_serial_auto %}
+        {% render_field form.soa_serial %}
+    </div>
+    <div class="field-group my-5">
+        {% render_field form.tags %}
+    </div>
+{% endblock %}
