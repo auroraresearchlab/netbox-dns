@@ -172,7 +172,11 @@ class ZoneFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
 
     model = Zone
 
-    q = CharField(required=False, label="Search")
+    q = CharField(
+        required=False,
+        widget=forms.TextInput(attrs={"placeholder": "Name or Status"}),
+        label="Search",
+    )
     status = forms.ChoiceField(
         choices=add_blank_choice(Zone.CHOICES),
         required=False,
@@ -442,10 +446,6 @@ class NameServerFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
 
     model = NameServer
 
-    q = CharField(
-        required=False,
-        label="Search",
-    )
     name = CharField(
         required=False,
         label="Name",
@@ -557,6 +557,7 @@ class RecordFilterForm(BootstrapMixin, CustomFieldModelFilterForm):
 
     q = CharField(
         required=False,
+        widget=forms.TextInput(attrs={"placeholder": "Name, Zone or Value"}),
         label="Search",
     )
     type = forms.MultipleChoiceField(
