@@ -466,9 +466,7 @@ class NameServerCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
         fields = ("name",)
 
 
-class NameServerBulkEditForm(
-    BootstrapMixin, AddRemoveTagsForm, CustomFieldModelBulkEditForm
-):
+class NameServerBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
     pk = forms.ModelMultipleChoiceField(
         queryset=NameServer.objects.all(),
         widget=forms.MultipleHiddenInput(),
