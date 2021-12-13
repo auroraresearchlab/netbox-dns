@@ -271,6 +271,12 @@ class Zone(PrimaryModel):
         self.last_updated = datetime.now()
         self.save()
 
+    def parent_zones(self):
+        zone_fields = self.name.split(".")
+        return [
+            f'{".".join(zone_fields[length:])}' for length in range(1, len(zone_fields))
+        ]
+
     def save(self, *args, **kwargs):
         new_zone = self.pk is None
         if not new_zone:
@@ -285,8 +291,11 @@ class Zone(PrimaryModel):
 
         if (new_zone or renamed_zone) and self.name.endswith(".arpa"):
             address_records = Record.objects.filter(
-                type__in=(Record.A, Record.AAAA)
-            ).exclude(disable_ptr=True)
+                Q(ptr_record__isnull=True)
+                | Q(ptr_record__zone__name__in=self.parent_zones()),
+                type__in=(Record.A, Record.AAAA),
+                disable_ptr=False,
+            )
             for record in address_records:
                 record.update_ptr_record()
 
