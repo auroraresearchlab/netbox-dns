@@ -24,7 +24,6 @@ class ZoneTest(
     model = Zone
     brief_fields = [
         "created",
-        "custom_field_data",
         "default_ttl",
         "display",
         "id",

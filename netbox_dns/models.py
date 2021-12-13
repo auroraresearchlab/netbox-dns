@@ -18,7 +18,7 @@ from netbox.models import PrimaryModel, TaggableManager
 from utilities.querysets import RestrictedQuerySet
 
 
-@extras_features("custom_fields", "custom_links", "export_templates", "webhooks")
+@extras_features("custom_links", "export_templates", "webhooks")
 class NameServer(PrimaryModel):
     name = models.CharField(
         unique=True,
@@ -43,7 +43,7 @@ class NameServer(PrimaryModel):
         return reverse("plugins:netbox_dns:nameserver", kwargs={"pk": self.pk})
 
 
-@extras_features("custom_fields", "custom_links", "export_templates", "webhooks")
+@extras_features("custom_links", "export_templates", "webhooks")
 class Zone(PrimaryModel):
     STATUS_ACTIVE = "active"
     STATUS_PASSIVE = "passive"
@@ -327,7 +327,7 @@ def update_ns_records(**kwargs):
     zone.update_ns_records(new_nameservers)
 
 
-@extras_features("custom_fields", "custom_links", "export_templates", "webhooks")
+@extras_features("custom_links", "export_templates", "webhooks")
 class Record(PrimaryModel):
     A = "A"
     AAAA = "AAAA"

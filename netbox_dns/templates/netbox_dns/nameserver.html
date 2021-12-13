@@ -19,10 +19,13 @@
                     </table>
                 </div>
             </div>
-            {% include 'inc/custom_fields_panel.html' %}
         </div>
         <div class="col col-md-6">
-            {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_dns:nameserver_list' %}
+            {% if netbox_version < '3.1.0' %}
+                {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_dns:nameserver_list' %}
+            {% else %}
+                {% include 'inc/panels/tags.html' with tags=object.tags.all url='plugins:netbox_dns:nameserver_list' %}
+            {% endif %}
         </div>
     </div>
 
