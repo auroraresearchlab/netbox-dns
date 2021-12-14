@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('netbox_dns', '0006_zone_soa_serial_auto'),
+        ("netbox_dns", "0006_zone_soa_serial_auto"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='zone',
-            name='soa_serial_auto',
+            model_name="zone",
+            name="soa_serial_auto",
             field=models.BooleanField(default=True),
         ),
     ]
