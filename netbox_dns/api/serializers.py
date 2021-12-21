@@ -3,6 +3,7 @@ from rest_framework import serializers
 from netbox.api.serializers import PrimaryModelSerializer
 from netbox_dns.api.nested_serializers import (
     NestedRecordSerializer,
+    NestedZoneSerializer,
     NestedNameServerSerializer,
 )
 from netbox_dns.models import Record, Zone, NameServer
@@ -42,6 +43,15 @@ class RecordSerializer(PrimaryModelSerializer):
         required=False,
         help_text="Address record defining the PTR",
     )
+    zone = NestedZoneSerializer(
+        many=False,
+        required=False,
+        help_text="Zone the record belongs to",
+    )
+    active = serializers.BooleanField(
+        required=False,
+        read_only=True,
+    )
 
     class Meta:
         model = Record
@@ -61,6 +71,7 @@ class RecordSerializer(PrimaryModelSerializer):
             "disable_ptr",
             "ptr_record",
             "address_record",
+            "active",
         )
 
 
@@ -77,6 +88,10 @@ class ZoneSerializer(PrimaryModelSerializer):
         required=False,
         help_text="Primary nameserver for the zone",
     )
+    active = serializers.BooleanField(
+        required=False,
+        read_only=True,
+    )
 
     class Meta:
         model = Zone
@@ -87,7 +102,6 @@ class ZoneSerializer(PrimaryModelSerializer):
             "display",
             "nameservers",
             "status",
-            "nameservers",
             "tags",
             "created",
             "last_updated",
@@ -101,4 +115,5 @@ class ZoneSerializer(PrimaryModelSerializer):
             "soa_retry",
             "soa_expire",
             "soa_minimum",
+            "active",
         )

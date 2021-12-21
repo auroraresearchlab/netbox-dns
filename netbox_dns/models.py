@@ -6,7 +6,7 @@ from datetime import datetime
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
-from django.db.models import Q, Max
+from django.db.models import Q, Max, ExpressionWrapper, BooleanField
 from django.db.models.functions import Length
 from django.urls import reverse
 
@@ -43,20 +43,43 @@ class NameServer(PrimaryModel):
         return reverse("plugins:netbox_dns:nameserver", kwargs={"pk": self.pk})
 
 
+class ZoneManager(models.Manager.from_queryset(RestrictedQuerySet)):
+    """Special Manager for zones providing the activity status annotation"""
+
+    def get_queryset(self):
+        return (
+            super(ZoneManager, self)
+            .get_queryset()
+            .annotate(
+                active=ExpressionWrapper(
+                    Q(status__in=Zone.ACTIVE_STATUS_LIST), output_field=BooleanField()
+                )
+            )
+        )
+
+
 @extras_features("custom_links", "export_templates", "webhooks")
 class Zone(PrimaryModel):
     STATUS_ACTIVE = "active"
-    STATUS_PASSIVE = "passive"
+    STATUS_RESERVED = "reserved"
+    STATUS_DEPRECATED = "deprecated"
+    STATUS_PARKED = "parked"
 
     CHOICES = (
         (STATUS_ACTIVE, "Active"),
-        (STATUS_PASSIVE, "Passive"),
+        (STATUS_RESERVED, "Reserved"),
+        (STATUS_DEPRECATED, "Deprecated"),
+        (STATUS_PARKED, "Parked"),
     )
 
     CSS_CLASSES = {
-        STATUS_PASSIVE: "danger",
-        STATUS_ACTIVE: "success",
+        STATUS_ACTIVE: "primary",
+        STATUS_RESERVED: "info",
+        STATUS_DEPRECATED: "danger",
+        STATUS_PARKED: "warning",
     }
+
+    ACTIVE_STATUS_LIST = (STATUS_ACTIVE,)
 
     name = models.CharField(
         unique=True,
@@ -138,7 +161,7 @@ class Zone(PrimaryModel):
         default=True,
     )
 
-    objects = RestrictedQuerySet.as_manager()
+    objects = ZoneManager()
 
     clone_fields = [
         "name",
@@ -209,7 +232,7 @@ class Zone(PrimaryModel):
             record.delete()
 
         for ns in nameservers:
-            Record.objects.update_or_create(
+            Record.raw_objects.update_or_create(
                 zone_id=self.pk,
                 type=Record.NS,
                 name=ns_name,
@@ -336,6 +359,31 @@ def update_ns_records(**kwargs):
     zone.update_ns_records(new_nameservers)
 
 
+class RecordManager(models.Manager.from_queryset(RestrictedQuerySet)):
+    """Special Manager for records providing the activity status annotation"""
+
+    def get_queryset(self):
+        return (
+            super(RecordManager, self)
+            .get_queryset()
+            .annotate(
+                active=ExpressionWrapper(
+                    Q(
+                        Q(zone__status__in=Zone.ACTIVE_STATUS_LIST)
+                        & Q(
+                            Q(address_record__isnull=True)
+                            | Q(
+                                address_record__zone__status__in=Zone.ACTIVE_STATUS_LIST
+                            )
+                        )
+                    ),
+                    output_field=BooleanField(),
+                )
+            )
+        )
+        return queryset
+
+
 @extras_features("custom_links", "export_templates", "webhooks")
 class Record(PrimaryModel):
     A = "A"
@@ -439,7 +487,8 @@ class Record(PrimaryModel):
         default=False,
     )
 
-    objects = RestrictedQuerySet.as_manager()
+    objects = RecordManager()
+    raw_objects = RestrictedQuerySet.as_manager()
 
     clone_fields = ["zone", "type", "name", "value", "ttl", "disable_ptr"]
 
