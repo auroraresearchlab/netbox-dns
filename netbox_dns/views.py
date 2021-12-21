@@ -48,7 +48,6 @@ class ZoneListView(generic.ObjectListView):
         }
 
 
-
 class ZoneView(generic.ObjectView):
     """Display Zone details"""
 
@@ -162,7 +161,6 @@ class NameServerListView(generic.ObjectListView):
         }
 
 
-
 class NameServerView(generic.ObjectView):
     """Display NameServer details"""
 
@@ -235,7 +233,6 @@ class RecordListView(generic.ObjectListView):
         return {
             "netbox_version": settings.VERSION,
         }
-
 
 
 class ManagedRecordListView(generic.ObjectListView):
