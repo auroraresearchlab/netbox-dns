@@ -86,7 +86,11 @@
       {% endif %}
 
       {# Object table controls #}
-      {% include 'inc/table_controls.html' with table_modal="ObjectTable_config" %}
+      {% if netbox_version < '3.1.2' %}
+        {% include 'inc/table_controls.html' with table_modal="ObjectTable_config" %}
+      {% else %}
+        {% include 'inc/table_controls_htmx.html' with table_modal="ObjectTable_config" %}
+      {% endif %}
 
       <form method="post" class="form form-horizontal">
         {% csrf_token %}

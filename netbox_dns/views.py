@@ -42,6 +42,12 @@ class ZoneListView(generic.ObjectListView):
     table = ZoneTable
     template_name = "netbox_dns/object_list.html"
 
+    def extra_context(self):
+        return {
+            "netbox_version": settings.VERSION,
+        }
+
+
 
 class ZoneView(generic.ObjectView):
     """Display Zone details"""
@@ -150,6 +156,12 @@ class NameServerListView(generic.ObjectListView):
     table = NameServerTable
     template_name = "netbox_dns/object_list.html"
 
+    def extra_context(self):
+        return {
+            "netbox_version": settings.VERSION,
+        }
+
+
 
 class NameServerView(generic.ObjectView):
     """Display NameServer details"""
@@ -218,6 +230,12 @@ class RecordListView(generic.ObjectListView):
     filterset_form = RecordFilterForm
     table = RecordTable
     template_name = "netbox_dns/record_list.html"
+
+    def extra_context(self):
+        return {
+            "netbox_version": settings.VERSION,
+        }
+
 
 
 class ManagedRecordListView(generic.ObjectListView):
