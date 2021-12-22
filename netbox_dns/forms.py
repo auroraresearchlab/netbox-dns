@@ -63,7 +63,6 @@ class ZoneForm(BootstrapMixin, forms.ModelForm):
         for setting in (
             "default_ttl",
             "soa_ttl",
-            "soa_mname",
             "soa_rname",
             "soa_serial_auto",
             "soa_refresh",
@@ -78,6 +77,21 @@ class ZoneForm(BootstrapMixin, forms.ModelForm):
 
         if self.initial.get("soa_serial_auto"):
             self.initial["soa_serial"] = None
+
+        default_soa_mname = defaults.get("zone_soa_mname", None)
+        if default_soa_mname is not None:
+            try:
+                self.initial["soa_mname"] = NameServer.objects.get(
+                    name=default_soa_mname
+                )
+            except NameServer.DoesNotExist:
+                pass
+
+        default_nameservers = defaults.get("zone_nameservers", [])
+        if default_nameservers:
+            self.initial["nameservers"] = NameServer.objects.filter(
+                name__in=default_nameservers
+            )
 
     def clean_default_ttl(self):
         return (
