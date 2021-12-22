@@ -1,5 +1,3 @@
-from django.conf import settings
-
 from netbox.views import generic
 from netbox_dns.filters import NameServerFilter, RecordFilter, ZoneFilter
 from netbox_dns.forms import (
@@ -42,11 +40,6 @@ class ZoneListView(generic.ObjectListView):
     table = ZoneTable
     template_name = "netbox_dns/object_list.html"
 
-    def extra_context(self):
-        return {
-            "netbox_version": settings.VERSION,
-        }
-
 
 class ZoneView(generic.ObjectView):
     """Display Zone details"""
@@ -59,7 +52,6 @@ class ZoneView(generic.ObjectView):
         return {
             "nameserver_warnings": ns_warnings,
             "nameserver_errors": ns_errors,
-            "netbox_version": settings.VERSION,
         }
 
 
@@ -155,11 +147,6 @@ class NameServerListView(generic.ObjectListView):
     table = NameServerTable
     template_name = "netbox_dns/object_list.html"
 
-    def extra_context(self):
-        return {
-            "netbox_version": settings.VERSION,
-        }
-
 
 class NameServerView(generic.ObjectView):
     """Display NameServer details"""
@@ -184,7 +171,6 @@ class NameServerView(generic.ObjectView):
                 "delete": delete_zone,
             },
             "model": Zone,
-            "netbox_version": settings.VERSION,
         }
 
 
@@ -229,11 +215,6 @@ class RecordListView(generic.ObjectListView):
     table = RecordTable
     template_name = "netbox_dns/record_list.html"
 
-    def extra_context(self):
-        return {
-            "netbox_version": settings.VERSION,
-        }
-
 
 class ManagedRecordListView(generic.ObjectListView):
     queryset = Record.objects.filter(managed=True)
@@ -247,11 +228,6 @@ class RecordView(generic.ObjectView):
     """Display Zone details"""
 
     queryset = Record.objects.all()
-
-    def get_extra_context(self, request, instance):
-        return {
-            "netbox_version": settings.VERSION,
-        }
 
 
 class RecordEditView(generic.ObjectEditView):
