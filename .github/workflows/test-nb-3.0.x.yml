@@ -1,7 +1,7 @@
 name: Test NetBox 3.0.X Versions
 on: [push, pull_request]
 jobs:
-  test-netbox-3.0.X:
+  test-netbox-3_0_X:
     runs-on: ubuntu-latest
     strategy:
       matrix:
