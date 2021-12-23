@@ -1,6 +1,6 @@
 import django_tables2 as tables
 
-from django.db.models import F, Q, ExpressionWrapper, BooleanField, Case, When, Value
+from django.db.models import F, Q, ExpressionWrapper
 from utilities.tables import BaseTable, ChoiceFieldColumn, ToggleColumn, TagColumn
 from .models import NameServer, Record, Zone
 
@@ -79,21 +79,6 @@ class RecordBaseTable(BaseTable):
     active = tables.BooleanColumn(
         verbose_name="Active",
     )
-
-    def order_status(self, queryset, is_descending):
-        queryset = queryset.annotate(
-            active=ExpressionWrapper(
-                Q(
-                    Q(zone__status__in=Zone.ACTIVE_STATUS_LIST)
-                    & Q(
-                        Q(address_record__isnull=True)
-                        | Q(address_record__zone__status__in=Zone.ACTIVE_STATUS_LIST)
-                    )
-                ),
-                output_field=BooleanField(),
-            )
-        ).order_by(("-" if is_descending else "") + "active")
-        return (queryset, True)
 
 
 class RecordTable(RecordBaseTable):
