@@ -78,6 +78,26 @@ class ZoneSerializer(PrimaryModelSerializer):
         help_text="Primary nameserver for the zone",
     )
 
+    def create(self, validated_data):
+        nameservers = validated_data.pop("nameservers", None)
+
+        zone = super().create(validated_data)
+
+        if nameservers is not None:
+            zone.nameservers.set([nameserver for nameserver in nameservers])
+
+        return zone
+
+    def update(self, instance, validated_data):
+        nameservers = validated_data.pop("nameservers", None)
+
+        zone = super().update(instance, validated_data)
+
+        if nameservers is not None:
+            zone.nameservers.set([nameserver for nameserver in nameservers])
+
+        return zone
+
     class Meta:
         model = Zone
         fields = (
