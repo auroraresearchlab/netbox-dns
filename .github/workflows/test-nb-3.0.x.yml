@@ -1,7 +1,7 @@
-name: Test NetBox Latest
+name: Test NetBox 3.0.X Versions
 on: [push, pull_request]
 jobs:
-  test-netbox-latest:
+  test-netbox-3_0_X:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -39,6 +39,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: "netbox-community/netbox"
+          ref: 'v3.0.12'
           path: netbox
 
       - name: install netbox_dns

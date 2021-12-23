@@ -21,7 +21,7 @@
             </div>
         </div>
         <div class="col col-md-6">
-            {% if netbox_version < '3.1.0' %}
+            {% if settings.VERSION < '3.1.0' %}
                 {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_dns:nameserver_list' %}
             {% else %}
                 {% include 'inc/panels/tags.html' with tags=object.tags.all url='plugins:netbox_dns:nameserver_list' %}
@@ -68,7 +68,11 @@
                     {% endif %}
 
                     {# Object table controls #}
-                    {% include 'inc/table_controls.html' with table_modal="ZoneTable_config" %}
+                    {% if settings.VERSION < '3.1.2' %}
+                        {% include 'inc/table_controls.html' with table_modal="ZoneTable_config" %}
+                    {% else %}
+                        {% include 'inc/table_controls_htmx.html' with table_modal="ZoneTable_config" %}
+                    {% endif %}
 
                     <form method="post" class="form form-horizontal">
                         {% csrf_token %}

@@ -48,7 +48,11 @@
       {% endif %}
 
       {# Object table controls #}
-      {% include 'inc/table_controls.html' with table_modal="ManagedRecordTable_config" %}
+      {% if settings.VERSION < '3.1.2' %}
+        {% include 'inc/table_controls.html' with table_modal="ManagedRecordTable_config" %}
+      {% else %}
+        {% include 'inc/table_controls_htmx.html' with table_modal="ManagedRecordTable_config" %}
+      {% endif %}
 
       {# Object table #}
       <div class="card">

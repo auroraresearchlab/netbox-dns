@@ -70,7 +70,7 @@
                 </table>
             </div>
         </div>
-        {% if netbox_version < '3.1.0' %}
+        {% if settings.VERSION < '3.1.0' %}
             {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_dns:zone_list' %}
         {% else %}
             {% include 'inc/panels/tags.html' with tags=object.tags.all url='plugins:netbox_dns:zone_list' %}

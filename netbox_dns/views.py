@@ -1,5 +1,3 @@
-from django.conf import settings
-
 from netbox.views import generic
 from netbox_dns.filters import NameServerFilter, RecordFilter, ZoneFilter
 from netbox_dns.forms import (
@@ -54,7 +52,6 @@ class ZoneView(generic.ObjectView):
         return {
             "nameserver_warnings": ns_warnings,
             "nameserver_errors": ns_errors,
-            "netbox_version": settings.VERSION,
         }
 
 
@@ -174,7 +171,6 @@ class NameServerView(generic.ObjectView):
                 "delete": delete_zone,
             },
             "model": Zone,
-            "netbox_version": settings.VERSION,
         }
 
 
@@ -232,11 +228,6 @@ class RecordView(generic.ObjectView):
     """Display Zone details"""
 
     queryset = Record.objects.all()
-
-    def get_extra_context(self, request, instance):
-        return {
-            "netbox_version": settings.VERSION,
-        }
 
 
 class RecordEditView(generic.ObjectEditView):
