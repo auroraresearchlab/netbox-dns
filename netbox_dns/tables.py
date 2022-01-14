@@ -1,5 +1,6 @@
 import django_tables2 as tables
 
+from django.db.models import F, Q, ExpressionWrapper
 from utilities.tables import BaseTable, ChoiceFieldColumn, ToggleColumn, TagColumn
 from .models import NameServer, Record, Zone
 
@@ -62,10 +63,9 @@ class NameServerTable(BaseTable):
         )
 
 
-class RecordTable(BaseTable):
-    """Table for displaying Record objects."""
+class RecordBaseTable(BaseTable):
+    """Base class for tables displaying Records"""
 
-    pk = ToggleColumn()
     zone = tables.Column(
         linkify=True,
     )
@@ -73,11 +73,20 @@ class RecordTable(BaseTable):
     name = tables.Column(
         linkify=True,
     )
-    disable_ptr = tables.BooleanColumn(
-        verbose_name="Disable PTR",
-    )
     ttl = tables.Column(
         verbose_name="TTL",
+    )
+    active = tables.BooleanColumn(
+        verbose_name="Active",
+    )
+
+
+class RecordTable(RecordBaseTable):
+    """Table for displaying Record objects."""
+
+    pk = ToggleColumn()
+    disable_ptr = tables.BooleanColumn(
+        verbose_name="Disable PTR",
     )
     tags = TagColumn(
         url_name="plugins:netbox_dns:record_list",
@@ -99,6 +108,7 @@ class RecordTable(BaseTable):
             "disable_ptr",
             "ptr_record",
             "tags",
+            "active",
         )
         default_columns = (
             "zone",
@@ -107,22 +117,13 @@ class RecordTable(BaseTable):
             "type",
             "value",
             "tags",
+            "active",
         )
 
 
-class ManagedRecordTable(BaseTable):
+class ManagedRecordTable(RecordBaseTable):
     """Table for displaying managed Record objects."""
 
-    zone = tables.Column(
-        linkify=True,
-    )
-    type = tables.Column()
-    name = tables.Column(
-        linkify=True,
-    )
-    ttl = tables.Column(
-        verbose_name="TTL",
-    )
     address_record = tables.Column(
         verbose_name="Address Record",
         linkify=True,
@@ -137,6 +138,7 @@ class ManagedRecordTable(BaseTable):
             "type",
             "value",
             "address_record",
+            "active",
         )
         default_columns = (
             "zone",
@@ -144,20 +146,14 @@ class ManagedRecordTable(BaseTable):
             "ttl",
             "type",
             "value",
+            "active",
         )
 
 
-class ZoneRecordTable(BaseTable):
+class ZoneRecordTable(RecordBaseTable):
     """Table for displaying Record objects for a given zone."""
 
     pk = ToggleColumn()
-    type = tables.Column()
-    name = tables.Column(
-        linkify=True,
-    )
-    ttl = tables.Column(
-        verbose_name="TTL",
-    )
     tags = TagColumn(
         url_name="plugins:netbox_dns:record_list",
     )
@@ -177,20 +173,15 @@ class ZoneRecordTable(BaseTable):
             "disable_ptr",
             "ptr_record",
             "tags",
+            "active",
         )
 
 
-class ZoneManagedRecordTable(BaseTable):
+class ZoneManagedRecordTable(RecordBaseTable):
     """Table for displaying managed Record objects for a given zone."""
 
-    type = tables.Column()
-    name = tables.Column(
-        linkify=True,
-    )
-    ttl = tables.Column(
-        verbose_name="TTL",
-    )
     address_record = tables.Column(
+        verbose_name="Address Record",
         linkify=True,
     )
 
@@ -202,4 +193,5 @@ class ZoneManagedRecordTable(BaseTable):
             "type",
             "value",
             "address_record",
+            "active",
         )

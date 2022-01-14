@@ -26,7 +26,7 @@ class ZoneTestCase(
     )
 
     bulk_edit_data = {
-        "status": Zone.STATUS_PASSIVE,
+        "status": Zone.STATUS_PARKED,
     }
 
     zone_data = {
@@ -65,8 +65,8 @@ class ZoneTestCase(
         }
 
         cls.form_data = {
-            "name": "zone7.com",
-            "status": "passive",
+            "name": "zone7.example.com",
+            "status": "parked",
             **cls.zone_data,
             "soa_mname": ns1.pk,
         }

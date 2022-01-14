@@ -22,25 +22,13 @@ class ZoneTest(
     APIViewTestCases.DeleteObjectViewTestCase,
 ):
     model = Zone
+
     brief_fields = [
-        "created",
-        "default_ttl",
+        "active",
         "display",
         "id",
-        "last_updated",
         "name",
-        "nameservers",
-        "soa_expire",
-        "soa_minimum",
-        "soa_mname",
-        "soa_refresh",
-        "soa_retry",
-        "soa_rname",
-        "soa_serial",
-        "soa_serial_auto",
-        "soa_ttl",
         "status",
-        "tags",
         "url",
     ]
 
@@ -73,19 +61,19 @@ class ZoneTest(
         cls.create_data = [
             {
                 "name": "zone4.example.com",
-                "status": "passive",
+                "status": "reserved",
                 **cls.zone_data,
                 "soa_mname": ns1.pk,
             },
             {
                 "name": "zone5.example.com",
-                "status": "passive",
+                "status": "reserved",
                 **cls.zone_data,
                 "soa_mname": ns1.pk,
             },
             {
                 "name": "zone6.example.com",
-                "status": "passive",
+                "status": "reserved",
                 **cls.zone_data,
                 "soa_mname": ns1.pk,
             },
@@ -127,7 +115,17 @@ class RecordTest(
     APIViewTestCases.DeleteObjectViewTestCase,
 ):
     model = Record
-    brief_fields = ["display", "id", "name", "ttl", "type", "url", "value"]
+    brief_fields = [
+        "active",
+        "display",
+        "id",
+        "name",
+        "ttl",
+        "type",
+        "url",
+        "value",
+        "zone",
+    ]
     bulk_update_data = {
         "ttl": 19200,
     }
