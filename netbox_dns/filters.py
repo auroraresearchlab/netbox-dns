@@ -67,9 +67,6 @@ class RecordFilter(PrimaryModelFilterSet):
         choices=Record.CHOICES,
         null_value=None,
     )
-    name = django_filters.CharFilter(
-        lookup_expr="icontains",
-    )
     value = django_filters.CharFilter(
         lookup_expr="icontains",
     )
