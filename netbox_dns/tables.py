@@ -1,14 +1,12 @@
 import django_tables2 as tables
 
-from django.db.models import F, Q, ExpressionWrapper
-from utilities.tables import BaseTable, ChoiceFieldColumn, ToggleColumn, TagColumn
+from netbox.tables import ChoiceFieldColumn, NetBoxTable, ToggleColumn, TagColumn
 from .models import NameServer, Record, Zone
 
 
-class ZoneTable(BaseTable):
+class ZoneTable(NetBoxTable):
     """Table for displaying Zone objects."""
 
-    pk = ToggleColumn()
     name = tables.Column(
         linkify=True,
     )
@@ -23,7 +21,7 @@ class ZoneTable(BaseTable):
         verbose_name="Default TTL",
     )
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = Zone
         fields = (
             "pk",
@@ -43,10 +41,9 @@ class ZoneTable(BaseTable):
         )
 
 
-class NameServerTable(BaseTable):
+class NameServerTable(NetBoxTable):
     """Table for displaying NameServer objects."""
 
-    pk = ToggleColumn()
     name = tables.Column(
         linkify=True,
     )
@@ -54,7 +51,7 @@ class NameServerTable(BaseTable):
         url_name="plugins:netbox_dns:nameserver_list",
     )
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = NameServer
         fields = (
             "pk",
@@ -63,7 +60,7 @@ class NameServerTable(BaseTable):
         )
 
 
-class RecordBaseTable(BaseTable):
+class RecordBaseTable(NetBoxTable):
     """Base class for tables displaying Records"""
 
     zone = tables.Column(
@@ -96,7 +93,7 @@ class RecordTable(RecordBaseTable):
         linkify=True,
     )
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = Record
         fields = (
             "pk",
@@ -129,7 +126,7 @@ class ManagedRecordTable(RecordBaseTable):
         linkify=True,
     )
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = Record
         fields = (
             "zone",
@@ -162,7 +159,7 @@ class ZoneRecordTable(RecordBaseTable):
         linkify=True,
     )
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = Record
         fields = (
             "pk",
@@ -185,7 +182,7 @@ class ZoneManagedRecordTable(RecordBaseTable):
         linkify=True,
     )
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = Record
         fields = (
             "name",
