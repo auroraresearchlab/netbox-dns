@@ -1,12 +1,11 @@
 import django_filters
 from django.db.models import Q
 
-from extras.filters import TagFilter
-from netbox.filtersets import PrimaryModelFilterSet
+from netbox.filtersets import NetBoxModelFilterSet
 from .models import NameServer, Record, Zone
 
 
-class ZoneFilter(PrimaryModelFilterSet):
+class ZoneFilter(NetBoxModelFilterSet):
     """Filter capabilities for Zone instances."""
 
     q = django_filters.CharFilter(
@@ -19,7 +18,6 @@ class ZoneFilter(PrimaryModelFilterSet):
     status = django_filters.ChoiceFilter(
         choices=Zone.CHOICES,
     )
-    tag = TagFilter()
 
     class Meta:
         model = Zone
@@ -33,20 +31,19 @@ class ZoneFilter(PrimaryModelFilterSet):
         return queryset.filter(qs_filter)
 
 
-class NameServerFilter(PrimaryModelFilterSet):
+class NameServerFilter(NetBoxModelFilterSet):
     """Filter capabilities for NameServer instances."""
 
     name = django_filters.CharFilter(
         lookup_expr="icontains",
     )
-    tag = TagFilter()
 
     class Meta:
         model = NameServer
         fields = ("name", "tag")
 
 
-class RecordFilter(PrimaryModelFilterSet):
+class RecordFilter(NetBoxModelFilterSet):
     """Filter capabilities for Record instances."""
 
     q = django_filters.CharFilter(
@@ -73,7 +70,6 @@ class RecordFilter(PrimaryModelFilterSet):
         queryset=Zone.objects.all(),
         label="Parent Zone",
     )
-    tag = TagFilter()
     managed = django_filters.BooleanFilter()
 
     class Meta:

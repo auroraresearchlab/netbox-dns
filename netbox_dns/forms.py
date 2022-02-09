@@ -15,8 +15,8 @@ from django.forms import (
 )
 from django.urls import reverse_lazy
 
-from extras.forms import AddRemoveTagsForm
 from extras.models.tags import Tag
+from netbox.forms import NetBoxModelBulkEditForm
 from utilities.forms import (
     CSVModelForm,
     BootstrapMixin,
@@ -350,11 +350,7 @@ class ZoneCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
         )
 
 
-class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
-    pk = forms.ModelMultipleChoiceField(
-        queryset=Zone.objects.all(),
-        widget=forms.MultipleHiddenInput(),
-    )
+class ZoneBulkEditForm(NetBoxModelBulkEditForm):
     status = forms.ChoiceField(
         choices=add_blank_choice(Zone.CHOICES),
         required=False,
@@ -419,6 +415,8 @@ class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
         validators=[MinValueValidator(1)],
     )
 
+    model = Zone
+
     def clean(self):
         """
         If soa_serial_auto is True, set soa_serial to None.
@@ -426,29 +424,6 @@ class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
         cleaned_data = super().clean()
         if cleaned_data.get("soa_serial_auto"):
             cleaned_data["soa_serial"] = None
-
-    class Meta:
-        nullable_fields = []
-
-        model = Zone
-        fields = (
-            "name",
-            "status",
-            "nameservers",
-            "default_ttl",
-            "tags",
-            "soa_ttl",
-            "soa_rname",
-            "soa_serial_auto",
-            "soa_serial",
-            "soa_refresh",
-            "soa_retry",
-            "soa_expire",
-            "soa_minimum",
-        )
-        widgets = {
-            "status": StaticSelect(),
-        }
 
 
 class NameServerForm(BootstrapMixin, forms.ModelForm):
@@ -482,17 +457,8 @@ class NameServerCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
         fields = ("name",)
 
 
-class NameServerBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
-    pk = forms.ModelMultipleChoiceField(
-        queryset=NameServer.objects.all(),
-        widget=forms.MultipleHiddenInput(),
-    )
-
-    class Meta:
-        nullable_fields = []
-
-        model = NameServer
-        fields = ("name", "tags")
+class NameServerBulkEditForm(NetBoxModelBulkEditForm):
+    model = NameServer
 
 
 class RecordForm(BootstrapMixin, forms.ModelForm):
@@ -675,10 +641,7 @@ class RecordCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
         fields = ("zone", "type", "name", "value", "ttl", "disable_ptr")
 
 
-class RecordBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
-    pk = forms.ModelMultipleChoiceField(
-        queryset=Record.objects.all(), widget=forms.MultipleHiddenInput()
-    )
+class RecordBulkEditForm(NetBoxModelBulkEditForm):
     zone = DynamicModelChoiceField(
         queryset=Zone.objects.all(),
         required=False,
@@ -693,6 +656,8 @@ class RecordBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
         required=False,
         label="TTL",
     )
+
+    model = Record
 
     def clean(self):
         """
@@ -724,12 +689,3 @@ class RecordBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
             if ttl <= 0:
                 raise ValidationError("TTL must be greater than zero")
             return ttl
-
-    class Meta:
-        model = Record
-        fields = ("zone", "ttl", "disable_ptr", "tags")
-        nullable_fields = []
-
-        widgets = {
-            "zone": StaticSelect(),
-        }
