@@ -23,7 +23,6 @@ from netbox_dns.tables import (
     ZoneManagedRecordTable,
     ZoneRecordTable,
 )
-from netbox.tables import configure_table
 
 
 #
@@ -100,7 +99,7 @@ class ZoneRecordListView(generic.ObjectView):
             "netbox_dns.delete_record"
         ):
             table.columns.show("pk")
-        configure_table(table, request)
+        table.configure(request)
 
         permissions = {
             "change": request.user.has_perm("netbox_dns.change_record"),
@@ -126,7 +125,7 @@ class ZoneManagedRecordListView(generic.ObjectView):
         zone_records = Record.objects.filter(managed=True, zone_id=instance.pk)
 
         table = ZoneManagedRecordTable(list(zone_records), user=request.user)
-        configure_table(table, request)
+        table.configure(request)
 
         return {
             "active_tab": "managed_record_list",
@@ -160,7 +159,7 @@ class NameServerView(generic.ObjectView):
 
         if change_zone or delete_zone:
             zone_table.columns.show("pk")
-        configure_table(zone_table, request)
+        zone_table.configure(request)
 
         return {
             "zone_table": zone_table,
