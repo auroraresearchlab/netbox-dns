@@ -12,16 +12,13 @@ class ZoneFilter(NetBoxModelFilterSet):
         method="search",
         label="Search",
     )
-    name = django_filters.CharFilter(
-        lookup_expr="icontains",
-    )
     status = django_filters.ChoiceFilter(
         choices=Zone.CHOICES,
     )
 
     class Meta:
         model = Zone
-        fields = ("name", "status", "nameservers", "tag")
+        fields = ("name", "status", "nameservers")
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
@@ -40,7 +37,7 @@ class NameServerFilter(NetBoxModelFilterSet):
 
     class Meta:
         model = NameServer
-        fields = ("name", "tag")
+        fields = ("name",)
 
 
 class RecordFilter(NetBoxModelFilterSet):
@@ -54,27 +51,21 @@ class RecordFilter(NetBoxModelFilterSet):
         choices=Record.CHOICES,
         null_value=None,
     )
-    name = django_filters.CharFilter(
-        lookup_expr="icontains",
-    )
-    value = django_filters.CharFilter(
-        lookup_expr="icontains",
-    )
     zone_id = django_filters.ModelMultipleChoiceFilter(
         queryset=Zone.objects.all(),
         label="Parent Zone ID",
     )
     zone = django_filters.ModelMultipleChoiceFilter(
+        queryset=Zone.objects.all(),
         field_name="zone__name",
         to_field_name="name",
-        queryset=Zone.objects.all(),
         label="Parent Zone",
     )
     managed = django_filters.BooleanFilter()
 
     class Meta:
         model = Record
-        fields = ("type", "name", "value", "tag", "managed")
+        fields = ("type", "name", "value", "zone", "managed")
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
