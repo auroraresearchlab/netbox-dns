@@ -71,11 +71,7 @@
                 </table>
             </div>
         </div>
-        {% if '3.1.0'|check_version %}
-            {% include 'extras/inc/tags_panel.html' with tags=object.tags.all url='plugins:netbox_dns:zone_list' %}
-        {% else %}
-            {% include 'inc/panels/tags.html' with tags=object.tags.all url='plugins:netbox_dns:zone_list' %}
-        {% endif %}
+        {% include 'inc/panels/tags.html' with tags=object.tags.all url='plugins:netbox_dns:zone_list' %}
     </div>
     <div class="col col-md-6">
         <div class="card">
