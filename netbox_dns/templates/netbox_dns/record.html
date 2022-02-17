@@ -1,4 +1,4 @@
-{% extends 'netbox_dns/object.html' %}
+{% extends 'generic/object.html' %}
 {% load helpers %}
 {% load plugins %}
 {% load render_table from django_tables2 %}
@@ -8,7 +8,7 @@
 {% block controls %}
 {% if object.managed %}
 {% else %}
-{{ block.super }}
+{{ block.super }}
 {% endif %}
 {% endblock controls %}
 

@@ -23,7 +23,6 @@ from netbox_dns.tables import (
     ZoneManagedRecordTable,
     ZoneRecordTable,
 )
-from utilities.tables import paginate_table
 
 
 #
@@ -38,7 +37,6 @@ class ZoneListView(generic.ObjectListView):
     filterset = ZoneFilter
     filterset_form = ZoneFilterForm
     table = ZoneTable
-    template_name = "netbox_dns/object_list.html"
 
 
 class ZoneView(generic.ObjectView):
@@ -101,7 +99,7 @@ class ZoneRecordListView(generic.ObjectView):
             "netbox_dns.delete_record"
         ):
             table.columns.show("pk")
-        paginate_table(table, request)
+        table.configure(request)
 
         permissions = {
             "change": request.user.has_perm("netbox_dns.change_record"),
@@ -127,7 +125,7 @@ class ZoneManagedRecordListView(generic.ObjectView):
         zone_records = Record.objects.filter(managed=True, zone_id=instance.pk)
 
         table = ZoneManagedRecordTable(list(zone_records), user=request.user)
-        paginate_table(table, request)
+        table.configure(request)
 
         return {
             "active_tab": "managed_record_list",
@@ -145,7 +143,6 @@ class NameServerListView(generic.ObjectListView):
     filterset = NameServerFilter
     filterset_form = NameServerFilterForm
     table = NameServerTable
-    template_name = "netbox_dns/object_list.html"
 
 
 class NameServerView(generic.ObjectView):
@@ -162,7 +159,7 @@ class NameServerView(generic.ObjectView):
 
         if change_zone or delete_zone:
             zone_table.columns.show("pk")
-        paginate_table(zone_table, request)
+        zone_table.configure(request)
 
         return {
             "zone_table": zone_table,
@@ -213,7 +210,6 @@ class RecordListView(generic.ObjectListView):
     filterset = RecordFilter
     filterset_form = RecordFilterForm
     table = RecordTable
-    template_name = "netbox_dns/record_list.html"
 
 
 class ManagedRecordListView(generic.ObjectListView):
@@ -221,7 +217,7 @@ class ManagedRecordListView(generic.ObjectListView):
     filterset = RecordFilter
     filterset_form = RecordFilterForm
     table = ManagedRecordTable
-    template_name = "netbox_dns/managed_record_list.html"
+    action_buttons = ("export",)
 
 
 class RecordView(generic.ObjectView):
