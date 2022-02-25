@@ -1,6 +1,12 @@
 import django_tables2 as tables
 
-from netbox.tables import ChoiceFieldColumn, NetBoxTable, ToggleColumn, TagColumn
+from netbox.tables import (
+    ChoiceFieldColumn,
+    NetBoxTable,
+    ToggleColumn,
+    TagColumn,
+    ActionsColumn,
+)
 
 from netbox_dns.models import Record
 
@@ -70,6 +76,7 @@ class ManagedRecordTable(RecordBaseTable):
         verbose_name="Address Record",
         linkify=True,
     )
+    actions = ActionsColumn(actions=("changelog",))
 
     class Meta(NetBoxTable.Meta):
         model = Record
@@ -126,6 +133,7 @@ class ZoneManagedRecordTable(RecordBaseTable):
         verbose_name="Address Record",
         linkify=True,
     )
+    actions = ActionsColumn(actions=("changelog",))
 
     class Meta(NetBoxTable.Meta):
         model = Record
