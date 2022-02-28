@@ -31,7 +31,6 @@ from utilities.forms import (
     add_blank_choice,
 )
 
-from netbox_dns.fields import CustomDynamicModelMultipleChoiceField
 from netbox_dns.models import Record, Zone
 
 
@@ -134,7 +133,7 @@ class RecordFilterForm(BootstrapMixin, forms.Form):
         required=False,
         label="Value",
     )
-    zone_id = CustomDynamicModelMultipleChoiceField(
+    zone_id = DynamicModelMultipleChoiceField(
         queryset=Zone.objects.all(),
         required=False,
         label="Zone",
