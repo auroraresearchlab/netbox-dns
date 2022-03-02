@@ -34,10 +34,21 @@ class NameServerFilter(PrimaryModelFilterSet):
     """Filter capabilities for NameServer instances."""
 
     tag = TagFilter()
+    q = django_filters.CharFilter(
+        method="search",
+        label="Search",
+    )
 
     class Meta:
         model = NameServer
         fields = ("name",)
+
+    def search(self, queryset, name, value):
+        """Perform the filtered search."""
+        if not value.strip():
+            return queryset
+        qs_filter = Q(name__icontains=value)
+        return queryset.filter(qs_filter)
 
 
 class RecordFilter(PrimaryModelFilterSet):
