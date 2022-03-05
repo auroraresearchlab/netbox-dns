@@ -670,6 +670,20 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
         if disable_ptr is None or disable_ptr:
             return
 
+        address_values = [
+            record.value
+            for record in cleaned_data.get("pk")
+            if record.type in (Record.A, Record.AAAA)
+        ]
+
+        conflicts = [
+            f"Multiple records with value {value} and PTR enabled."
+            for value in set(address_values)
+            if address_values.count(value) > 1
+        ]
+        if conflicts:
+            raise forms.ValidationError({"disable_ptr": conflicts})
+
         for record in cleaned_data.get("pk"):
             conflicts = (
                 Record.objects.filter(Record.unique_ptr_qs)
