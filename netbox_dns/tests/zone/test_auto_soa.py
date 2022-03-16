@@ -57,8 +57,8 @@ class AutoSOATest(TestCase):
         self.assertTrue(
             all(
                 (
-                    zone.soa_mname.name+'.' == soa.get("soa_mname"),
-                    zone.soa_rname+'.' == soa.get("soa_rname"),
+                    zone.soa_mname.name + "." == soa.get("soa_mname"),
+                    zone.soa_rname + "." == soa.get("soa_rname"),
                     zone.soa_serial == soa.get("soa_serial"),
                     zone.soa_refresh == soa.get("soa_refresh"),
                     zone.soa_retry == soa.get("soa_retry"),
@@ -80,7 +80,7 @@ class AutoSOATest(TestCase):
         soa_record = Record.objects.get(type=Record.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
-        self.assertEqual(nameserver2.name+'.', soa.get("soa_mname"))
+        self.assertEqual(nameserver2.name + ".", soa.get("soa_mname"))
 
     def test_zone_soa_change_mname_dot(self):
         zone = self.zone
@@ -104,7 +104,7 @@ class AutoSOATest(TestCase):
         soa_record = Record.objects.get(type=Record.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
-        self.assertEqual(rname+'.', soa.get("soa_rname"))
+        self.assertEqual(rname + ".", soa.get("soa_rname"))
 
     def test_zone_soa_change_rname_dot(self):
         zone = self.zone
