@@ -17,6 +17,12 @@ from netbox.models import NetBoxModel
 from utilities.querysets import RestrictedQuerySet
 
 
+def absolute_name(name):
+    if name.endswith("."):
+        return name
+    return f"{name}."
+
+
 class NameServer(NetBoxModel):
     name = models.CharField(
         unique=True,
@@ -180,7 +186,8 @@ class Zone(NetBoxModel):
         soa_name = "@"
         soa_ttl = self.soa_ttl
         soa_value = (
-            f"({self.soa_mname} {self.soa_rname} {self.soa_serial}"
+            f"({absolute_name(self.soa_mname.name)} {absolute_name(self.soa_rname)}"
+            f" {self.soa_serial}"
             f" {self.soa_refresh} {self.soa_retry} {self.soa_expire}"
             f" {self.soa_minimum})"
         )

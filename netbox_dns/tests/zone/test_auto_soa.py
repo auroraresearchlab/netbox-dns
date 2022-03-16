@@ -39,6 +39,7 @@ class AutoSOATest(TestCase):
         cls.nameservers = [
             NameServer(name="ns1.example.com"),
             NameServer(name="ns2.example.com"),
+            NameServer(name="ns3.example.com."),
         ]
         NameServer.objects.bulk_create(cls.nameservers)
 
@@ -56,8 +57,8 @@ class AutoSOATest(TestCase):
         self.assertTrue(
             all(
                 (
-                    zone.soa_mname.name == soa.get("soa_mname"),
-                    zone.soa_rname == soa.get("soa_rname"),
+                    zone.soa_mname.name+'.' == soa.get("soa_mname"),
+                    zone.soa_rname+'.' == soa.get("soa_rname"),
                     zone.soa_serial == soa.get("soa_serial"),
                     zone.soa_refresh == soa.get("soa_refresh"),
                     zone.soa_retry == soa.get("soa_retry"),
@@ -69,7 +70,7 @@ class AutoSOATest(TestCase):
             )
         )
 
-    def test_zone_soa_change_mname(self):
+    def test_zone_soa_change_mname_no_dot(self):
         zone = self.zone
         nameserver2 = self.nameservers[1]
 
@@ -79,11 +80,35 @@ class AutoSOATest(TestCase):
         soa_record = Record.objects.get(type=Record.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
-        self.assertEqual(nameserver2.name, soa.get("soa_mname"))
+        self.assertEqual(nameserver2.name+'.', soa.get("soa_mname"))
 
-    def test_zone_soa_change_rname(self):
+    def test_zone_soa_change_mname_dot(self):
+        zone = self.zone
+        nameserver3 = self.nameservers[2]
+
+        zone.soa_mname = nameserver3
+        zone.save()
+
+        soa_record = Record.objects.get(type=Record.SOA, zone=zone)
+        soa = parse_soa_value(soa_record.value)
+
+        self.assertEqual(nameserver3.name, soa.get("soa_mname"))
+
+    def test_zone_soa_change_rname_no_dot(self):
         zone = self.zone
         rname = "new-hostmaster.example.com"
+
+        zone.soa_rname = rname
+        zone.save()
+
+        soa_record = Record.objects.get(type=Record.SOA, zone=zone)
+        soa = parse_soa_value(soa_record.value)
+
+        self.assertEqual(rname+'.', soa.get("soa_rname"))
+
+    def test_zone_soa_change_rname_dot(self):
+        zone = self.zone
+        rname = "new-hostmaster.example.com."
 
         zone.soa_rname = rname
         zone.save()
