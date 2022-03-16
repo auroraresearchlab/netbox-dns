@@ -1,4 +1,4 @@
-from netbox.api import OrderedDefaultRouter
+from netbox.api.routers import NetBoxRouter
 from netbox_dns.api.views import (
     NetboxDNSRootView,
     ZoneViewSet,
@@ -6,7 +6,7 @@ from netbox_dns.api.views import (
     RecordViewSet,
 )
 
-router = OrderedDefaultRouter()
+router = NetBoxRouter()
 router.APIRootView = NetboxDNSRootView
 
 router.register("zones", ZoneViewSet)
