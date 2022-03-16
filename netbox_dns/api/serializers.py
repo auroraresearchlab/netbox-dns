@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from netbox.api.serializers import PrimaryModelSerializer
+from netbox.api.serializers import NetBoxModelSerializer
 from netbox_dns.api.nested_serializers import (
     NestedRecordSerializer,
     NestedZoneSerializer,
@@ -9,7 +9,7 @@ from netbox_dns.api.nested_serializers import (
 from netbox_dns.models import Record, Zone, NameServer
 
 
-class NameServerSerializer(PrimaryModelSerializer):
+class NameServerSerializer(NetBoxModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="plugins-api:netbox_dns-api:nameserver-detail"
     )
@@ -27,7 +27,7 @@ class NameServerSerializer(PrimaryModelSerializer):
         )
 
 
-class RecordSerializer(PrimaryModelSerializer):
+class RecordSerializer(NetBoxModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="plugins-api:netbox_dns-api:record-detail"
     )
@@ -75,7 +75,7 @@ class RecordSerializer(PrimaryModelSerializer):
         )
 
 
-class ZoneSerializer(PrimaryModelSerializer):
+class ZoneSerializer(NetBoxModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="plugins-api:netbox_dns-api:zone-detail"
     )
