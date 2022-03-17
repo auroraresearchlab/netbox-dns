@@ -497,7 +497,9 @@ class Record(NetBoxModel):
         )
 
     def __str__(self):
-        if self.name.endswith("."):
+        if self.name == "@":
+            return f"{self.zone.name} [{self.type}]"
+        elif self.name.endswith("."):
             return f"{self.name} [{self.type}]"
         else:
             return f"{self.name}.{self.zone.name} [{self.type}]"
