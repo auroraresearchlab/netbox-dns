@@ -236,12 +236,29 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
         """
         For A and AAA records, verify that a valid IPv4 or IPv6 was passed as
         value and raise a ValidationError exception otherwise.
+
+        Check for internal clashes between A/AAAA records with the same value
+        and for conflicts with existing A/AAAA records in the database as well.
         """
         cleaned_data = super().clean()
 
         disable_ptr = cleaned_data.get("disable_ptr")
         if disable_ptr is None or disable_ptr:
             return
+
+        address_values = [
+            record.value
+            for record in cleaned_data.get("pk")
+            if record.type in (Record.A, Record.AAAA)
+        ]
+
+        conflicts = [
+            f"Multiple records with value {value} and PTR enabled."
+            for value in set(address_values)
+            if address_values.count(value) > 1
+        ]
+        if conflicts:
+            raise forms.ValidationError({"disable_ptr": conflicts})
 
         for record in cleaned_data.get("pk"):
             conflicts = (
