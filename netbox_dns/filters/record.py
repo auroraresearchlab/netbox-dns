@@ -5,13 +5,6 @@ from netbox.filtersets import NetBoxModelFilterSet
 
 from netbox_dns.models import Record, Zone
 
-    def search(self, queryset, name, value):
-        """Perform the filtered search."""
-        if not value.strip():
-            return queryset
-        qs_filter = Q(name__icontains=value)
-        return queryset.filter(qs_filter)
-
 
 class RecordFilter(NetBoxModelFilterSet):
     """Filter capabilities for Record instances."""
