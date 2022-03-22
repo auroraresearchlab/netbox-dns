@@ -9,10 +9,6 @@ from netbox_dns.models import Record, RecordTypeChoices, Zone
 class RecordFilter(NetBoxModelFilterSet):
     """Filter capabilities for Record instances."""
 
-    q = django_filters.CharFilter(
-        method="search",
-        label="Search",
-    )
     type = django_filters.MultipleChoiceFilter(
         choices=RecordTypeChoices,
         null_value=None,
