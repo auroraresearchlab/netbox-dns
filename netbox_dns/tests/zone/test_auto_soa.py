@@ -2,7 +2,7 @@ import re
 
 from django.test import TestCase
 
-from netbox_dns.models import NameServer, Zone, Record
+from netbox_dns.models import NameServer, Record, RecordTypeChoices, Zone
 
 
 def parse_soa_value(soa):
@@ -51,7 +51,7 @@ class AutoSOATest(TestCase):
         zone = self.zone
         nameserver = self.nameservers[0]
 
-        soa_records = Record.objects.filter(type=Record.SOA, zone=zone)
+        soa_records = Record.objects.filter(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_records[0].value)
 
         self.assertTrue(
@@ -77,7 +77,7 @@ class AutoSOATest(TestCase):
         zone.soa_mname = nameserver2
         zone.save()
 
-        soa_record = Record.objects.get(type=Record.SOA, zone=zone)
+        soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
         self.assertEqual(nameserver2.name + ".", soa.get("soa_mname"))
@@ -89,7 +89,7 @@ class AutoSOATest(TestCase):
         zone.soa_mname = nameserver3
         zone.save()
 
-        soa_record = Record.objects.get(type=Record.SOA, zone=zone)
+        soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
         self.assertEqual(nameserver3.name, soa.get("soa_mname"))
@@ -101,7 +101,7 @@ class AutoSOATest(TestCase):
         zone.soa_rname = rname
         zone.save()
 
-        soa_record = Record.objects.get(type=Record.SOA, zone=zone)
+        soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
         self.assertEqual(rname + ".", soa.get("soa_rname"))
@@ -113,7 +113,7 @@ class AutoSOATest(TestCase):
         zone.soa_rname = rname
         zone.save()
 
-        soa_record = Record.objects.get(type=Record.SOA, zone=zone)
+        soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
         self.assertEqual(rname, soa.get("soa_rname"))
@@ -125,7 +125,7 @@ class AutoSOATest(TestCase):
         zone.soa_serial = serial
         zone.save()
 
-        soa_record = Record.objects.get(type=Record.SOA, zone=zone)
+        soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
         self.assertEqual(serial, soa.get("soa_serial"))
@@ -137,7 +137,7 @@ class AutoSOATest(TestCase):
         zone.soa_refresh = refresh
         zone.save()
 
-        soa_record = Record.objects.get(type=Record.SOA, zone=zone)
+        soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
         self.assertEqual(refresh, soa.get("soa_refresh"))
@@ -149,7 +149,7 @@ class AutoSOATest(TestCase):
         zone.soa_retry = retry
         zone.save()
 
-        soa_record = Record.objects.get(type=Record.SOA, zone=zone)
+        soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
         self.assertEqual(retry, soa.get("soa_retry"))
@@ -161,7 +161,7 @@ class AutoSOATest(TestCase):
         zone.soa_expire = expire
         zone.save()
 
-        soa_record = Record.objects.get(type=Record.SOA, zone=zone)
+        soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
         self.assertEqual(expire, soa.get("soa_expire"))
@@ -173,7 +173,7 @@ class AutoSOATest(TestCase):
         zone.soa_minimum = minimum
         zone.save()
 
-        soa_record = Record.objects.get(type=Record.SOA, zone=zone)
+        soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
         self.assertEqual(minimum, soa.get("soa_minimum"))
@@ -185,6 +185,6 @@ class AutoSOATest(TestCase):
         zone.soa_ttl = ttl
         zone.save()
 
-        soa_record = Record.objects.get(type=Record.SOA, zone=zone)
+        soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
 
         self.assertEqual(ttl, soa_record.ttl)

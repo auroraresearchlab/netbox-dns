@@ -6,7 +6,7 @@ from random import randint
 
 from django.test import TestCase
 
-from netbox_dns.models import NameServer, Zone, Record
+from netbox_dns.models import NameServer, Record, RecordTypeChoices, Zone
 
 
 class AutoSOASerialTest(TestCase):
@@ -92,12 +92,18 @@ class AutoSOASerialTest(TestCase):
         r_zone = self.zones[2]
 
         f_record = Record(
-            zone=f_zone, name="name1", type=Record.A, value="10.0.1.42", ttl=86400
+            zone=f_zone,
+            name="name1",
+            type=RecordTypeChoices.A,
+            value="10.0.1.42",
+            ttl=86400,
         )
         f_record.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, value=f"{f_record.name}.{f_zone.name}.", zone=r_zone
+            type=RecordTypeChoices.PTR,
+            value=f"{f_record.name}.{f_zone.name}.",
+            zone=r_zone,
         )
         r_zone = Zone.objects.get(pk=r_record.zone.pk)
 
@@ -108,12 +114,18 @@ class AutoSOASerialTest(TestCase):
         r_zone = self.zones[3]
 
         f_record = Record(
-            zone=f_zone, name="name1", type=Record.A, value="10.0.2.42", ttl=86400
+            zone=f_zone,
+            name="name1",
+            type=RecordTypeChoices.A,
+            value="10.0.2.42",
+            ttl=86400,
         )
         f_record.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, value=f"{f_record.name}.{f_zone.name}.", zone=r_zone
+            type=RecordTypeChoices.PTR,
+            value=f"{f_record.name}.{f_zone.name}.",
+            zone=r_zone,
         )
         r_zone = Zone.objects.get(pk=r_record.zone.pk)
 

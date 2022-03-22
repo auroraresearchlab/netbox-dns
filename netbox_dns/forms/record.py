@@ -31,7 +31,7 @@ from utilities.forms import (
     add_blank_choice,
 )
 
-from netbox_dns.models import Record, Zone
+from netbox_dns.models import Record, RecordTypeChoices, Zone
 
 
 class RecordForm(BootstrapMixin, forms.ModelForm):
@@ -45,13 +45,13 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
         cleaned_data = super().clean()
 
         type = cleaned_data.get("type")
-        if type not in (Record.A, Record.AAAA):
+        if type not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             return
 
         value = cleaned_data.get("value")
         try:
-            ip_version = "4" if type == Record.A else "6"
-            if type == Record.A:
+            ip_version = "4" if type == RecordTypeChoices.A else "6"
+            if type == RecordTypeChoices.A:
                 validate_ipv4_address(value)
             else:
                 validate_ipv6_address(value)
@@ -121,7 +121,7 @@ class RecordFilterForm(BootstrapMixin, forms.Form):
         label="Search",
     )
     type = forms.MultipleChoiceField(
-        choices=add_blank_choice(Record.CHOICES),
+        choices=add_blank_choice(RecordTypeChoices),
         required=False,
         widget=StaticSelectMultiple(),
     )
@@ -149,7 +149,7 @@ class RecordCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
         help_text="Assigned zone",
     )
     type = CSVChoiceField(
-        choices=Record.CHOICES,
+        choices=RecordTypeChoices,
         required=True,
         help_text="Record Type",
     )
@@ -171,13 +171,13 @@ class RecordCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
         cleaned_data = super().clean()
 
         type = cleaned_data.get("type")
-        if type not in (Record.A, Record.AAAA):
+        if type not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             return
 
         value = cleaned_data.get("value")
         try:
-            ip_version = "4" if type == Record.A else "6"
-            if type == Record.A:
+            ip_version = "4" if type == RecordTypeChoices.A else "6"
+            if type == RecordTypeChoices.A:
                 validate_ipv4_address(value)
             else:
                 validate_ipv6_address(value)
@@ -249,7 +249,7 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
         address_values = [
             record.value
             for record in cleaned_data.get("pk")
-            if record.type in (Record.A, Record.AAAA)
+            if record.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA)
         ]
 
         conflicts = [

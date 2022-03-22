@@ -2,7 +2,7 @@ from utilities.testing import ViewTestCases
 from utilities.testing import create_tags
 
 from netbox_dns.tests.custom import ModelViewTestCase
-from netbox_dns.models import NameServer, Record, Zone
+from netbox_dns.models import NameServer, Record, RecordTypeChoices, Zone
 
 
 class RecordTestCase(
@@ -52,14 +52,14 @@ class RecordTestCase(
         records = (
             Record(
                 zone=zones[0],
-                type=Record.CNAME,
+                type=RecordTypeChoices.CNAME,
                 name="name1",
                 value="test1.example.com",
                 ttl=100,
             ),
             Record(
                 zone=zones[1],
-                type=Record.A,
+                type=RecordTypeChoices.A,
                 name="name2",
                 value="192.168.1.1",
                 ttl=200,
@@ -71,7 +71,7 @@ class RecordTestCase(
 
         cls.form_data = {
             "zone": zones[0].pk,
-            "type": Record.AAAA,
+            "type": RecordTypeChoices.AAAA,
             "name": "name3",
             "value": "fe80::dead:beef",
             "ttl": 300,

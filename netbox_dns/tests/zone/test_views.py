@@ -2,7 +2,7 @@ from utilities.testing import ViewTestCases
 from utilities.testing import create_tags
 
 from netbox_dns.tests.custom import ModelViewTestCase
-from netbox_dns.models import Zone, NameServer
+from netbox_dns.models import NameServer, Zone, ZoneStatusChoices
 
 
 class ZoneTestCase(
@@ -27,7 +27,7 @@ class ZoneTestCase(
     )
 
     bulk_edit_data = {
-        "status": Zone.STATUS_PARKED,
+        "status": ZoneStatusChoices.STATUS_PARKED,
     }
 
     zone_data = {

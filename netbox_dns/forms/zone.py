@@ -26,7 +26,7 @@ from utilities.forms import (
     add_blank_choice,
 )
 
-from netbox_dns.models import NameServer, Zone
+from netbox_dns.models import NameServer, Zone, ZoneStatusChoices
 
 
 class ZoneForm(BootstrapMixin, forms.ModelForm):
@@ -183,7 +183,7 @@ class ZoneFilterForm(BootstrapMixin, forms.Form):
         label="Search",
     )
     status = forms.ChoiceField(
-        choices=add_blank_choice(Zone.CHOICES),
+        choices=add_blank_choice(ZoneStatusChoices),
         required=False,
         widget=StaticSelect(),
     )
@@ -200,7 +200,7 @@ class ZoneFilterForm(BootstrapMixin, forms.Form):
 
 class ZoneCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
     status = CSVChoiceField(
-        choices=Zone.CHOICES,
+        choices=ZoneStatusChoices,
         help_text="Zone status",
     )
 
@@ -334,7 +334,7 @@ class ZoneCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
 
 class ZoneBulkEditForm(NetBoxModelBulkEditForm):
     status = forms.ChoiceField(
-        choices=add_blank_choice(Zone.CHOICES),
+        choices=add_blank_choice(ZoneStatusChoices),
         required=False,
         widget=StaticSelect(),
     )

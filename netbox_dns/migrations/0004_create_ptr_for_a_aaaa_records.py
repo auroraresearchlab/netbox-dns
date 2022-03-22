@@ -5,7 +5,7 @@ import logging
 from django.db import migrations, models
 import django.db.models.deletion
 
-from netbox_dns.models import Record
+from netbox_dns.models import Record, RecordTypeChoices
 
 
 def cleanup_disable_ptr(apps, schema_editor):
@@ -64,7 +64,11 @@ class Migration(migrations.Migration):
             constraint=models.UniqueConstraint(
                 condition=models.Q(
                     models.Q(("disable_ptr", False)),
-                    models.Q(("type", "A"), ("type", "AAAA"), _connector="OR"),
+                    models.Q(
+                        ("type", RecordTypeChoices.A),
+                        ("type", RecordTypeChoices.AAAA),
+                        _connector="OR",
+                    ),
                 ),
                 fields=("type", "value"),
                 name="unique_pointer_for_address",

@@ -1,5 +1,5 @@
 from django.db import migrations
-from netbox_dns.models import Zone, Record
+from netbox_dns.models import Record, RecordTypeChoices, Zone
 
 
 def absolute_name(name):
@@ -18,7 +18,7 @@ def update_soa_record(zone):
         f" {zone.soa_minimum})"
     )
 
-    old_soa_records = zone.record_set.filter(type=Record.SOA, name=soa_name)
+    old_soa_records = zone.record_set.filter(type=RecordTypeChoices.SOA, name=soa_name)
 
     if len(old_soa_records):
         for index, record in enumerate(old_soa_records):
@@ -34,7 +34,7 @@ def update_soa_record(zone):
     else:
         Record.objects.create(
             zone_id=zone.pk,
-            type=Record.SOA,
+            type=RecordTypeChoices.SOA,
             name=soa_name,
             ttl=soa_ttl,
             value=soa_value,
