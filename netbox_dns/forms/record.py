@@ -15,10 +15,13 @@ from django.forms import (
 from django.urls import reverse_lazy
 
 from extras.models.tags import Tag
-from netbox.forms import NetBoxModelBulkEditForm
+from netbox.forms import (
+    NetBoxModelBulkEditForm,
+    NetBoxModelFilterSetForm,
+    NetBoxModelCSVForm,
+    NetBoxModelForm,
+)
 from utilities.forms import (
-    CSVModelForm,
-    BootstrapMixin,
     BulkEditNullBooleanSelect,
     DynamicModelMultipleChoiceField,
     TagFilterField,
@@ -33,9 +36,17 @@ from utilities.forms import (
 
 from netbox_dns.models import Record, RecordTypeChoices, Zone
 
-
-class RecordForm(BootstrapMixin, forms.ModelForm):
+class RecordForm(NetBoxModelForm):
     """Form for creating a new Record object."""
+
+    disable_ptr = BooleanField(
+        label="Disable PTR",
+        required=False,
+    )
+    ttl = IntegerField(
+        required=False,
+        label="TTL",
+    )
 
     def clean(self):
         """
@@ -86,20 +97,6 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
         else:
             return self.cleaned_data["zone"].default_ttl
 
-    disable_ptr = BooleanField(
-        label="Disable PTR",
-        required=False,
-    )
-
-    tags = DynamicModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
-        required=False,
-    )
-    ttl = IntegerField(
-        required=False,
-        label="TTL",
-    )
-
     class Meta:
         model = Record
         fields = ("zone", "type", "disable_ptr", "name", "value", "ttl", "tags")
@@ -110,16 +107,9 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
         }
 
 
-class RecordFilterForm(BootstrapMixin, forms.Form):
+class RecordFilterForm(NetBoxModelFilterSetForm):
     """Form for filtering Record instances."""
 
-    model = Record
-
-    q = CharField(
-        required=False,
-        widget=forms.TextInput(attrs={"placeholder": "Name, Zone or Value"}),
-        label="Search",
-    )
     type = forms.MultipleChoiceField(
         choices=add_blank_choice(RecordTypeChoices),
         required=False,
@@ -140,8 +130,10 @@ class RecordFilterForm(BootstrapMixin, forms.Form):
     )
     tag = TagFilterField(Record)
 
+    model = Record
 
-class RecordCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
+
+class RecordCSVForm(NetBoxModelCSVForm):
     zone = CSVModelChoiceField(
         queryset=Zone.objects.all(),
         to_field_name="name",

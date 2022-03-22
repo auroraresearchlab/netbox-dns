@@ -11,10 +11,13 @@ from django.forms import (
 from django.urls import reverse_lazy
 
 from extras.models.tags import Tag
-from netbox.forms import NetBoxModelBulkEditForm
+from netbox.forms import (
+    NetBoxModelBulkEditForm,
+    NetBoxModelFilterSetForm,
+    NetBoxModelCSVForm,
+    NetBoxModelForm,
+)
 from utilities.forms import (
-    CSVModelForm,
-    BootstrapMixin,
     BulkEditNullBooleanSelect,
     DynamicModelMultipleChoiceField,
     TagFilterField,
@@ -29,67 +32,11 @@ from utilities.forms import (
 from netbox_dns.models import NameServer, Zone, ZoneStatusChoices
 
 
-class ZoneForm(BootstrapMixin, forms.ModelForm):
+class ZoneForm(NetBoxModelForm):
     """Form for creating a new Zone object."""
-
-    def __init__(self, *args, **kwargs):
-        """Override the __init__ method in order to provide the initial value for the default fields"""
-        super().__init__(*args, **kwargs)
-
-        defaults = settings.PLUGINS_CONFIG.get("netbox_dns")
-
-        def _initialize(initial, setting):
-            if initial.get(setting, None) in (None, ""):
-                initial[setting] = defaults.get(f"zone_{setting}", None)
-
-        for setting in (
-            "default_ttl",
-            "soa_ttl",
-            "soa_rname",
-            "soa_serial_auto",
-            "soa_refresh",
-            "soa_retry",
-            "soa_expire",
-            "soa_minimum",
-        ):
-            _initialize(self.initial, setting)
-
-        if self.initial.get("soa_ttl", None) is None:
-            self.initial["soa_ttl"] = self.initial.get("default_ttl", None)
-
-        if self.initial.get("soa_serial_auto"):
-            self.initial["soa_serial"] = None
-
-        if self.initial.get("soa_mname", None) in (None, ""):
-            default_soa_mname = defaults.get("zone_soa_mname", None)
-            if default_soa_mname is not None:
-                try:
-                    self.initial["soa_mname"] = NameServer.objects.get(
-                        name=default_soa_mname
-                    )
-                except NameServer.DoesNotExist:
-                    pass
-
-        if not self.initial.get("nameservers", []):
-            default_nameservers = defaults.get("zone_nameservers", [])
-            if default_nameservers:
-                self.initial["nameservers"] = NameServer.objects.filter(
-                    name__in=default_nameservers
-                )
-
-    def clean_default_ttl(self):
-        return (
-            self.cleaned_data["default_ttl"]
-            if self.cleaned_data["default_ttl"]
-            else self.initial["default_ttl"]
-        )
 
     nameservers = DynamicModelMultipleChoiceField(
         queryset=NameServer.objects.all(),
-        required=False,
-    )
-    tags = DynamicModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
         required=False,
     )
     default_ttl = IntegerField(
@@ -145,6 +92,58 @@ class ZoneForm(BootstrapMixin, forms.ModelForm):
         validators=[MinValueValidator(1)],
     )
 
+    def __init__(self, *args, **kwargs):
+        """Override the __init__ method in order to provide the initial value for the default fields"""
+        super().__init__(*args, **kwargs)
+
+        defaults = settings.PLUGINS_CONFIG.get("netbox_dns")
+
+        def _initialize(initial, setting):
+            if initial.get(setting, None) in (None, ""):
+                initial[setting] = defaults.get(f"zone_{setting}", None)
+
+        for setting in (
+            "default_ttl",
+            "soa_ttl",
+            "soa_rname",
+            "soa_serial_auto",
+            "soa_refresh",
+            "soa_retry",
+            "soa_expire",
+            "soa_minimum",
+        ):
+            _initialize(self.initial, setting)
+
+        if self.initial.get("soa_ttl", None) is None:
+            self.initial["soa_ttl"] = self.initial.get("default_ttl", None)
+
+        if self.initial.get("soa_serial_auto"):
+            self.initial["soa_serial"] = None
+
+        if self.initial.get("soa_mname", None) in (None, ""):
+            default_soa_mname = defaults.get("zone_soa_mname", None)
+            if default_soa_mname is not None:
+                try:
+                    self.initial["soa_mname"] = NameServer.objects.get(
+                        name=default_soa_mname
+                    )
+                except NameServer.DoesNotExist:
+                    pass
+
+        if not self.initial.get("nameservers", []):
+            default_nameservers = defaults.get("zone_nameservers", [])
+            if default_nameservers:
+                self.initial["nameservers"] = NameServer.objects.filter(
+                    name__in=default_nameservers
+                )
+
+    def clean_default_ttl(self):
+        return (
+            self.cleaned_data["default_ttl"]
+            if self.cleaned_data["default_ttl"]
+            else self.initial["default_ttl"]
+        )
+
     class Meta:
         model = Zone
         fields = (
@@ -172,16 +171,9 @@ class ZoneForm(BootstrapMixin, forms.ModelForm):
         }
 
 
-class ZoneFilterForm(BootstrapMixin, forms.Form):
+class ZoneFilterForm(NetBoxModelFilterSetForm):
     """Form for filtering Zone instances."""
 
-    model = Zone
-
-    q = CharField(
-        required=False,
-        widget=forms.TextInput(attrs={"placeholder": "Name or Status"}),
-        label="Search",
-    )
     status = forms.ChoiceField(
         choices=add_blank_choice(ZoneStatusChoices),
         required=False,
@@ -197,13 +189,14 @@ class ZoneFilterForm(BootstrapMixin, forms.Form):
     )
     tag = TagFilterField(Zone)
 
+    model = Zone
 
-class ZoneCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
+
+class ZoneCSVForm(NetBoxModelCSVForm):
     status = CSVChoiceField(
         choices=ZoneStatusChoices,
         help_text="Zone status",
     )
-
     default_ttl = IntegerField(
         required=False,
         help_text="Default TTL",
