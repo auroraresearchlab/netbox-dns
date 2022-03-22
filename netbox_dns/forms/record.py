@@ -36,6 +36,7 @@ from utilities.forms import (
 
 from netbox_dns.models import Record, RecordTypeChoices, Zone
 
+
 class RecordForm(NetBoxModelForm):
     """Form for creating a new Record object."""
 
@@ -223,9 +224,7 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
     )
 
     model = Record
-    fieldsets = (
-        (None, ("zone", "disable_ptr", "ttl")),
-    )
+    fieldsets = ((None, ("zone", "disable_ptr", "ttl")),)
 
     def clean(self):
         """

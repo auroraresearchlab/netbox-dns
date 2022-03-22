@@ -392,10 +392,27 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
 
     model = Zone
     fieldsets = (
-        (None, ("status", "default_ttl",)),
-        ("SOA", ("soa_ttl", "soa_mname", "soa_rname", "soa_serial_auto",
-                 "soa_serial", "soa_refresh", "soa_retry", "soa_expire",
-                 "soa_minimum",)),
+        (
+            None,
+            (
+                "status",
+                "default_ttl",
+            ),
+        ),
+        (
+            "SOA",
+            (
+                "soa_ttl",
+                "soa_mname",
+                "soa_rname",
+                "soa_serial_auto",
+                "soa_serial",
+                "soa_refresh",
+                "soa_retry",
+                "soa_expire",
+                "soa_minimum",
+            ),
+        ),
     )
 
     def clean(self):
