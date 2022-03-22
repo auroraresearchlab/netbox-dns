@@ -13,9 +13,7 @@ class NameServerFilter(NetBoxModelFilterSet):
         method="search",
         label="Search",
     )
-    name = django_filters.CharFilter(
-        lookup_expr="icontains",
-    )
+    name = django_filters.CharFilter()
 
     class Meta:
         model = NameServer
