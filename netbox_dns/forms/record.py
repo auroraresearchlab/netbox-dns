@@ -223,6 +223,9 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
     )
 
     model = Record
+    fieldsets = (
+        (None, ("zone", "disable_ptr", "ttl")),
+    )
 
     def clean(self):
         """
