@@ -20,7 +20,7 @@
             </div>
         </div>
         <div class="col col-md-6">
-            {% include 'inc/panels/tags.html' with tags=object.tags.all url='plugins:netbox_dns:nameserver_list' %}
+            {% include 'inc/panels/tags.html' %}
         </div>
     </div>
 
@@ -28,8 +28,7 @@
         <div class="col col-md-12">
             <div class="card">
                 <h5 class="card-header">Zones</h5>
-                <div class="card-body">
-
+                <div class="card-body table-responsive">
                     {# "Select all" form #}
                     {% if zone_table.paginator.num_pages > 1 %}
                         {% with bulk_edit_url="plugins:netbox_dns:zone_bulk_edit" bulk_delete_url="plugins:netbox_dns:zone_bulk_delete" %}

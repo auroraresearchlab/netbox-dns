@@ -83,7 +83,7 @@
     </div>
     {% if not object.managed %}
     <div class="col col-md-4">
-        {% include 'inc/panels/tags.html' with tags=object.tags.all url='plugins:netbox_dns:record_list' %}
+        {% include 'inc/panels/tags.html' %}
     </div>
     {% endif %}
 </div>
