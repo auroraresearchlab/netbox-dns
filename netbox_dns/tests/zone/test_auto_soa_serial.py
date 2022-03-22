@@ -1,8 +1,4 @@
-import re
-
 from time import time
-from math import ceil
-from random import randint
 
 from django.test import TestCase
 

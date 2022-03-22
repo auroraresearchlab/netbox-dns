@@ -39,9 +39,8 @@ class AutoNSTest(TestCase):
 
     def test_zone_without_ns_error(self):
         zone = self.zone
-        nameserver = self.nameservers[0]
 
-        ns_warnings, ns_errors = zone.check_nameservers()
+        ns_errors = zone.check_nameservers()[1]
         self.assertIn(f"No nameservers are configured for zone {zone.name}", ns_errors)
 
     def test_zone_with_ns(self):
@@ -61,7 +60,7 @@ class AutoNSTest(TestCase):
         nameserver = self.nameservers[0]
 
         zone.nameservers.add(nameserver)
-        ns_warnings, ns_errors = zone.check_nameservers()
+        ns_warnings = zone.check_nameservers()[0]
         self.assertEqual([], ns_warnings)
 
     def test_zone_with_ns_warning(self):
@@ -73,7 +72,7 @@ class AutoNSTest(TestCase):
         )
 
         zone.nameservers.add(nameserver)
-        ns_warnings, ns_errors = zone.check_nameservers()
+        ns_warnings = zone.check_nameservers()[0]
         self.assertIn(
             f"Nameserver {nameserver.name} does not have an address record in zone {ns_zone.name}",
             ns_warnings,

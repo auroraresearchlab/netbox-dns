@@ -20,10 +20,10 @@ class ZoneTestCase(
     model = Zone
 
     csv_data = (
-        f"name,status,soa_mname,soa_rname",
-        f"zone4.example.com,active,ns1.example.com,hostmaster.example.com",
-        f"zone5.example.com,active,ns1.example.com,hostmaster.example.com",
-        f"zone6.example.com,active,ns1.example.com,hostmaster.example.com",
+        "name,status,soa_mname,soa_rname",
+        "zone4.example.com,active,ns1.example.com,hostmaster.example.com",
+        "zone5.example.com,active,ns1.example.com,hostmaster.example.com",
+        "zone6.example.com,active,ns1.example.com,hostmaster.example.com",
     )
 
     bulk_edit_data = {

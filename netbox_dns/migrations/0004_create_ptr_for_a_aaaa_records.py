@@ -12,7 +12,7 @@ def cleanup_disable_ptr(apps, schema_editor):
     logger = logging.getLogger("django")
 
     for record in Record.objects.filter(Record.unique_ptr_qs):
-        logger.warn(
+        logger.warning(
             "Disabling PTR generation for record %s:%s in zone %s",
             record.type,
             record.name,

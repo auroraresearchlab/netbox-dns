@@ -1,5 +1,5 @@
 from django.db import migrations
-from netbox_dns.models import Record, RecordTypeChoices, Zone
+from netbox_dns.models import Record, RecordTypeChoices
 
 
 def absolute_name(name):

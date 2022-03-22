@@ -1,4 +1,3 @@
-import re
 import ipaddress
 
 from django.test import TestCase
@@ -13,8 +12,8 @@ def reverse_name(address, reverse_zone):
 
     if reverse_pointer.endswith(reverse_zone.name):
         return reverse_pointer[: -len(zone_name)]
-    else:
-        return f"{reverse_pointer}."
+
+    return f"{reverse_pointer}."
 
 
 class AutoPTRTest(TestCase):
@@ -120,7 +119,6 @@ class AutoPTRTest(TestCase):
 
     def test_create_duplicate_ipv4(self):
         f_zone = self.zones[0]
-        r_zone = self.zones[1]
 
         name1 = "test1"
         name2 = "test2"
@@ -395,8 +393,6 @@ class AutoPTRTest(TestCase):
     def test_ipv4_create_ptr_zone_with_parent(self):
         f_zone = self.zones[0]
 
-        r_zone1 = self.zones[5]
-
         name = "test1"
         address = "10.2.1.42"
 
@@ -409,15 +405,15 @@ class AutoPTRTest(TestCase):
         )
         f_record.save()
 
-        r_zone2 = Zone(
+        r_zone = Zone(
             name="1.2.10.in-addr.arpa", **self.zone_data, soa_mname=self.nameserver
         )
-        r_zone2.save()
+        r_zone.save()
 
         r_record = Record.objects.get(
             type=RecordTypeChoices.PTR,
-            zone=r_zone2,
-            name=reverse_name(address, r_zone2),
+            zone=r_zone,
+            name=reverse_name(address, r_zone),
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
@@ -496,7 +492,6 @@ class AutoPTRTest(TestCase):
 
     def test_create_duplicate_ipv6(self):
         f_zone = self.zones[0]
-        r_zone = self.zones[6]
 
         name1 = "test1"
         name2 = "test2"
@@ -771,8 +766,6 @@ class AutoPTRTest(TestCase):
     def test_ipv6_create_ptr_zone_with_parent(self):
         f_zone = self.zones[0]
 
-        r_zone1 = self.zones[10]
-
         name = "test1"
         address = "fe80:dead:beef:21::42"
 
@@ -785,17 +778,17 @@ class AutoPTRTest(TestCase):
         )
         f_record.save()
 
-        r_zone2 = Zone(
+        r_zone = Zone(
             name="1.2.0.0.f.e.e.b.d.a.e.d.0.8.e.f.ip6.arpa",
             **self.zone_data,
             soa_mname=self.nameserver,
         )
-        r_zone2.save()
+        r_zone.save()
 
         r_record = Record.objects.get(
             type=RecordTypeChoices.PTR,
-            zone=r_zone2,
-            name=reverse_name(address, r_zone2),
+            zone=r_zone,
+            name=reverse_name(address, r_zone),
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")

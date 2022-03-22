@@ -36,7 +36,7 @@ class NameServer(NetBoxModel):
         ordering = ("name",)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:nameserver", kwargs={"pk": self.pk})
@@ -47,7 +47,7 @@ class ZoneManager(models.Manager.from_queryset(RestrictedQuerySet)):
 
     def get_queryset(self):
         return (
-            super(ZoneManager, self)
+            super()
             .get_queryset()
             .annotate(
                 active=ExpressionWrapper(
@@ -172,7 +172,7 @@ class Zone(NetBoxModel):
         ordering = ("name",)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     def get_status_color(self):
         return ZoneStatusChoices.colors.get(self.status)
@@ -361,7 +361,7 @@ class RecordManager(models.Manager.from_queryset(RestrictedQuerySet)):
 
     def get_queryset(self):
         return (
-            super(RecordManager, self)
+            super()
             .get_queryset()
             .annotate(
                 active=ExpressionWrapper(
@@ -378,7 +378,6 @@ class RecordManager(models.Manager.from_queryset(RestrictedQuerySet)):
                 )
             )
         )
-        return queryset
 
 
 class RecordTypeChoices(ChoiceSet):
@@ -510,10 +509,11 @@ class Record(NetBoxModel):
     def __str__(self):
         if self.name == "@":
             return f"{self.zone.name} [{self.type}]"
-        elif self.name.endswith("."):
+
+        if self.name.endswith("."):
             return f"{self.name} [{self.type}]"
-        else:
-            return f"{self.name}.{self.zone.name} [{self.type}]"
+
+        return f"{self.name}.{self.zone.name} [{self.type}]"
 
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:record", kwargs={"pk": self.id})
@@ -537,6 +537,8 @@ class Record(NetBoxModel):
         )
         if len(ptr_zones):
             return ptr_zones[0]
+
+        return None
 
     def update_ptr_record(self):
         ptr_zone = self.ptr_zone()

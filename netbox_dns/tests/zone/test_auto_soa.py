@@ -49,7 +49,6 @@ class AutoSOATest(TestCase):
 
     def test_zone_soa(self):
         zone = self.zone
-        nameserver = self.nameservers[0]
 
         soa_records = Record.objects.filter(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_records[0].value)

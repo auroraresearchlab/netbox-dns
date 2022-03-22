@@ -1,8 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import (
-    MinValueValidator,
-    MaxValueValidator,
     validate_ipv6_address,
     validate_ipv4_address,
 )
@@ -14,7 +12,6 @@ from django.forms import (
 )
 from django.urls import reverse_lazy
 
-from extras.models.tags import Tag
 from netbox.forms import (
     NetBoxModelBulkEditForm,
     NetBoxModelFilterSetForm,
@@ -78,7 +75,6 @@ class RecordForm(NetBoxModelForm):
         if cleaned_data.get("disable_ptr"):
             return
 
-        pk = cleaned_data.get("pk")
         conflicts = Record.objects.filter(value=value, type=type, disable_ptr=False)
         if self.instance.pk:
             conflicts = conflicts.exclude(pk=self.instance.pk)
@@ -94,9 +90,10 @@ class RecordForm(NetBoxModelForm):
         if ttl is not None:
             if ttl <= 0:
                 raise ValidationError("TTL must be greater than zero")
+
             return ttl
-        else:
-            return self.cleaned_data["zone"].default_ttl
+
+        return self.cleaned_data["zone"].default_ttl
 
     class Meta:
         model = Record
@@ -198,9 +195,13 @@ class RecordCSVForm(NetBoxModelCSVForm):
         if ttl is not None:
             if ttl <= 0:
                 raise ValidationError("TTL must be greater than zero")
+
             return ttl
-        elif "zone" in self.cleaned_data:
+
+        if "zone" in self.cleaned_data:
             return self.cleaned_data["zone"].default_ttl
+
+        return None
 
     class Meta:
         model = Record
@@ -272,4 +273,7 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
         if ttl is not None:
             if ttl <= 0:
                 raise ValidationError("TTL must be greater than zero")
+
             return ttl
+
+        return None

@@ -10,7 +10,6 @@ from django.forms import (
 )
 from django.urls import reverse_lazy
 
-from extras.models.tags import Tag
 from netbox.forms import (
     NetBoxModelBulkEditForm,
     NetBoxModelFilterSetForm,
@@ -244,7 +243,7 @@ class ZoneCSVForm(NetBoxModelCSVForm):
     )
 
     def _get_default_value(self, field):
-        _default_values = settings.PLUGINS_CONFIG.get("netbox_dns", dict())
+        _default_values = settings.PLUGINS_CONFIG.get("netbox_dns", {})
         if _default_values.get("zone_soa_ttl", None) is None:
             _default_values["zone_soa_ttl"] = _default_values.get(
                 "zone_default_ttl", None
@@ -281,8 +280,8 @@ class ZoneCSVForm(NetBoxModelCSVForm):
         except ValidationError:
             if self.cleaned_data["soa_serial"] or self._get_default_value("soa_serial"):
                 return None
-            else:
-                raise
+
+            raise
 
     def clean_soa_serial(self):
         try:
@@ -292,8 +291,8 @@ class ZoneCSVForm(NetBoxModelCSVForm):
                 "soa_serial_auto"
             ):
                 return None
-            else:
-                raise
+
+            raise
 
     def clean_soa_refresh(self):
         return self._clean_field_with_defaults("soa_refresh")

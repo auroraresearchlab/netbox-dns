@@ -1,6 +1,3 @@
-from django import forms
-from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.forms import CharField
 
 from netbox.forms import (
@@ -10,7 +7,7 @@ from netbox.forms import (
     NetBoxModelForm,
 )
 
-from utilities.forms import DynamicModelMultipleChoiceField, TagFilterField
+from utilities.forms import TagFilterField
 
 from netbox_dns.models import NameServer
 
