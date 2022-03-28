@@ -1,6 +1,6 @@
 from extras.plugins import PluginConfig
 
-__version__ = "0.8.0"
+__version__ = "0.9.0"
 
 
 class DNSConfig(PluginConfig):
@@ -8,7 +8,7 @@ class DNSConfig(PluginConfig):
     verbose_name = "Netbox DNS"
     description = "Netbox DNS"
     min_version = "3.0.0"
-    max_version = None
+    max_version = "3.1.99"
     version = __version__
     author = "Aurora Research Lab"
     author_email = "info@aurorabilisim.com"
