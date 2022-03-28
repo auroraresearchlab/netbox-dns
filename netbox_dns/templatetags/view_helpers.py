@@ -1,3 +1,5 @@
+from pkg_resources import parse_version
+from django.conf import settings
 from django import template
 from django.urls import NoReverseMatch, reverse
 
@@ -91,3 +93,13 @@ def plugin_add_button(url):
     return {
         "add_url": url,
     }
+
+
+#
+# Version check
+#
+
+
+@register.filter()
+def check_version(version):
+    return parse_version(settings.VERSION) < parse_version(version)
