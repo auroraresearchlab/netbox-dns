@@ -37,7 +37,7 @@ class RecordEditView(generic.ObjectEditView):
     """View for editing a Record instance."""
 
     queryset = Record.objects.filter(managed=False)
-    model_form = RecordForm
+    form = RecordForm
 
 
 class RecordDeleteView(generic.ObjectDeleteView):

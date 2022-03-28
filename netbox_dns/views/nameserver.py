@@ -48,7 +48,7 @@ class NameServerEditView(generic.ObjectEditView):
     """View for editing a Name Server instance."""
 
     queryset = NameServer.objects.all()
-    model_form = NameServerForm
+    form = NameServerForm
 
 
 class NameServerDeleteView(generic.ObjectDeleteView):

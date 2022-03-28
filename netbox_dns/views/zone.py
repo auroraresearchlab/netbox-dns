@@ -43,7 +43,7 @@ class ZoneEditView(generic.ObjectEditView):
     """View for editing and creating a Zone instance."""
 
     queryset = Zone.objects.all()
-    model_form = ZoneForm
+    form = ZoneForm
     template_name = "netbox_dns/zone_edit.html"
 
 
