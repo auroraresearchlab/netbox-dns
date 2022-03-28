@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: ["3.8", "3.9", "3.10"]
     services:
       redis:
         image: redis
@@ -40,6 +40,7 @@ jobs:
         with:
           repository: "netbox-community/netbox"
           path: netbox
+          ref: "feature"
 
       - name: install netbox_dns
         working-directory: netbox-dns
@@ -54,7 +55,7 @@ jobs:
           ln -s $(pwd)/../netbox-dns/media/configuration.testing.py netbox/netbox/configuration.py
 
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt -U
 
       - name: Run tests
         working-directory: netbox

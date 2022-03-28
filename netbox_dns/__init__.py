@@ -7,8 +7,7 @@ class DNSConfig(PluginConfig):
     name = "netbox_dns"
     verbose_name = "Netbox DNS"
     description = "Netbox DNS"
-    min_version = "3.0.0"
-    max_version = "3.1.99"
+    min_version = "3.2.0-beta2"
     version = __version__
     author = "Aurora Research Lab"
     author_email = "info@aurorabilisim.com"

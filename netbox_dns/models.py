@@ -13,23 +13,21 @@ from django.urls import reverse
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
-from extras.utils import extras_features
-from netbox.models import PrimaryModel, TaggableManager
+from netbox.models import NetBoxModel
 from utilities.querysets import RestrictedQuerySet
 
 
-@extras_features("custom_links", "export_templates", "webhooks")
-class NameServer(PrimaryModel):
+def absolute_name(name):
+    if name.endswith("."):
+        return name
+    return f"{name}."
+
+
+class NameServer(NetBoxModel):
     name = models.CharField(
         unique=True,
         max_length=255,
     )
-    tags = TaggableManager(
-        through="extras.TaggedItem",
-        blank=True,
-    )
-
-    objects = RestrictedQuerySet.as_manager()
 
     clone_fields = ["name"]
 
@@ -58,8 +56,7 @@ class ZoneManager(models.Manager.from_queryset(RestrictedQuerySet)):
         )
 
 
-@extras_features("custom_links", "export_templates", "webhooks")
-class Zone(PrimaryModel):
+class Zone(NetBoxModel):
     STATUS_ACTIVE = "active"
     STATUS_RESERVED = "reserved"
     STATUS_DEPRECATED = "deprecated"
@@ -94,10 +91,6 @@ class Zone(PrimaryModel):
     nameservers = models.ManyToManyField(
         NameServer,
         related_name="zones",
-        blank=True,
-    )
-    tags = TaggableManager(
-        through="extras.TaggedItem",
         blank=True,
     )
     default_ttl = models.PositiveIntegerField(
@@ -193,7 +186,8 @@ class Zone(PrimaryModel):
         soa_name = "@"
         soa_ttl = self.soa_ttl
         soa_value = (
-            f"({self.soa_mname} {self.soa_rname} {self.soa_serial}"
+            f"({absolute_name(self.soa_mname.name)} {absolute_name(self.soa_rname)}"
+            f" {self.soa_serial}"
             f" {self.soa_refresh} {self.soa_retry} {self.soa_expire}"
             f" {self.soa_minimum})"
         )
@@ -384,8 +378,7 @@ class RecordManager(models.Manager.from_queryset(RestrictedQuerySet)):
         return queryset
 
 
-@extras_features("custom_links", "export_templates", "webhooks")
-class Record(PrimaryModel):
+class Record(NetBoxModel):
     A = "A"
     AAAA = "AAAA"
     CNAME = "CNAME"
@@ -465,10 +458,6 @@ class Record(PrimaryModel):
     ttl = models.PositiveIntegerField(
         verbose_name="TTL",
     )
-    tags = TaggableManager(
-        through="extras.TaggedItem",
-        blank=True,
-    )
     managed = models.BooleanField(
         null=False,
         default=False,
@@ -508,7 +497,9 @@ class Record(PrimaryModel):
         )
 
     def __str__(self):
-        if self.name.endswith("."):
+        if self.name == "@":
+            return f"{self.zone.name} [{self.type}]"
+        elif self.name.endswith("."):
             return f"{self.name} [{self.type}]"
         else:
             return f"{self.name}.{self.zone.name} [{self.type}]"

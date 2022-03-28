@@ -1,69 +1,17 @@
 import django_tables2 as tables
 
-from django.db.models import F, Q, ExpressionWrapper
-from utilities.tables import BaseTable, ChoiceFieldColumn, ToggleColumn, TagColumn
-from .models import NameServer, Record, Zone
+from netbox.tables import (
+    ChoiceFieldColumn,
+    NetBoxTable,
+    ToggleColumn,
+    TagColumn,
+    ActionsColumn,
+)
+
+from netbox_dns.models import Record
 
 
-class ZoneTable(BaseTable):
-    """Table for displaying Zone objects."""
-
-    pk = ToggleColumn()
-    name = tables.Column(
-        linkify=True,
-    )
-    soa_mname = tables.Column(
-        linkify=True,
-    )
-    status = ChoiceFieldColumn()
-    tags = TagColumn(
-        url_name="plugins:netbox_dns:zone_list",
-    )
-    default_ttl = tables.Column(
-        verbose_name="Default TTL",
-    )
-
-    class Meta(BaseTable.Meta):
-        model = Zone
-        fields = (
-            "pk",
-            "name",
-            "status",
-            "tags",
-            "default_ttl",
-            "soa_mname",
-            "soa_rname",
-            "soa_serial",
-        )
-        default_columns = (
-            "pk",
-            "name",
-            "status",
-            "tags",
-        )
-
-
-class NameServerTable(BaseTable):
-    """Table for displaying NameServer objects."""
-
-    pk = ToggleColumn()
-    name = tables.Column(
-        linkify=True,
-    )
-    tags = TagColumn(
-        url_name="plugins:netbox_dns:nameserver_list",
-    )
-
-    class Meta(BaseTable.Meta):
-        model = NameServer
-        fields = (
-            "pk",
-            "name",
-            "tags",
-        )
-
-
-class RecordBaseTable(BaseTable):
+class RecordBaseTable(NetBoxTable):
     """Base class for tables displaying Records"""
 
     zone = tables.Column(
@@ -96,7 +44,7 @@ class RecordTable(RecordBaseTable):
         linkify=True,
     )
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = Record
         fields = (
             "pk",
@@ -128,8 +76,9 @@ class ManagedRecordTable(RecordBaseTable):
         verbose_name="Address Record",
         linkify=True,
     )
+    actions = ActionsColumn(actions=("changelog",))
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = Record
         fields = (
             "zone",
@@ -162,7 +111,7 @@ class ZoneRecordTable(RecordBaseTable):
         linkify=True,
     )
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = Record
         fields = (
             "pk",
@@ -184,8 +133,9 @@ class ZoneManagedRecordTable(RecordBaseTable):
         verbose_name="Address Record",
         linkify=True,
     )
+    actions = ActionsColumn(actions=("changelog",))
 
-    class Meta(BaseTable.Meta):
+    class Meta(NetBoxTable.Meta):
         model = Record
         fields = (
             "name",

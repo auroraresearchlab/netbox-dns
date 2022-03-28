@@ -1,12 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import (
-    MinValueValidator,
-    MaxValueValidator,
-    validate_ipv6_address,
-    validate_ipv4_address,
-)
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.forms import (
     CharField,
     IntegerField,
@@ -15,8 +10,8 @@ from django.forms import (
 )
 from django.urls import reverse_lazy
 
-from extras.forms import AddRemoveTagsForm
 from extras.models.tags import Tag
+from netbox.forms import NetBoxModelBulkEditForm
 from utilities.forms import (
     CSVModelForm,
     BootstrapMixin,
@@ -28,23 +23,10 @@ from utilities.forms import (
     CSVModelChoiceField,
     DynamicModelChoiceField,
     APISelect,
-    StaticSelectMultiple,
     add_blank_choice,
 )
-from .fields import CustomDynamicModelMultipleChoiceField
-from .models import NameServer, Record, Zone
 
-
-class BulkEditForm(forms.Form):
-    """Base form for editing multiple objects in bulk."""
-
-    def __init__(self, model, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.model = model
-        self.nullable_fields = []
-
-        if hasattr(self.Meta, "nullable_fields"):
-            self.nullable_fields = self.Meta.nullable_fields
+from netbox_dns.models import NameServer, Zone
 
 
 class ZoneForm(BootstrapMixin, forms.ModelForm):
@@ -102,7 +84,7 @@ class ZoneForm(BootstrapMixin, forms.ModelForm):
             else self.initial["default_ttl"]
         )
 
-    nameservers = CustomDynamicModelMultipleChoiceField(
+    nameservers = DynamicModelMultipleChoiceField(
         queryset=NameServer.objects.all(),
         required=False,
     )
@@ -209,7 +191,7 @@ class ZoneFilterForm(BootstrapMixin, forms.Form):
         required=False,
         label="Name",
     )
-    nameservers = CustomDynamicModelMultipleChoiceField(
+    nameservers = DynamicModelMultipleChoiceField(
         queryset=NameServer.objects.all(),
         required=False,
     )
@@ -350,17 +332,13 @@ class ZoneCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
         )
 
 
-class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
-    pk = forms.ModelMultipleChoiceField(
-        queryset=Zone.objects.all(),
-        widget=forms.MultipleHiddenInput(),
-    )
+class ZoneBulkEditForm(NetBoxModelBulkEditForm):
     status = forms.ChoiceField(
         choices=add_blank_choice(Zone.CHOICES),
         required=False,
         widget=StaticSelect(),
     )
-    nameservers = CustomDynamicModelMultipleChoiceField(
+    nameservers = DynamicModelMultipleChoiceField(
         queryset=NameServer.objects.all(),
         required=False,
     )
@@ -419,6 +397,8 @@ class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
         validators=[MinValueValidator(1)],
     )
 
+    model = Zone
+
     def clean(self):
         """
         If soa_serial_auto is True, set soa_serial to None.
@@ -426,310 +406,3 @@ class ZoneBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
         cleaned_data = super().clean()
         if cleaned_data.get("soa_serial_auto"):
             cleaned_data["soa_serial"] = None
-
-    class Meta:
-        nullable_fields = []
-
-        model = Zone
-        fields = (
-            "name",
-            "status",
-            "nameservers",
-            "default_ttl",
-            "tags",
-            "soa_ttl",
-            "soa_rname",
-            "soa_serial_auto",
-            "soa_serial",
-            "soa_refresh",
-            "soa_retry",
-            "soa_expire",
-            "soa_minimum",
-        )
-        widgets = {
-            "status": StaticSelect(),
-        }
-
-
-class NameServerForm(BootstrapMixin, forms.ModelForm):
-    """Form for creating a new NameServer object."""
-
-    tags = DynamicModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
-        required=False,
-    )
-
-    class Meta:
-        model = NameServer
-        fields = ("name", "tags")
-
-
-class NameServerFilterForm(BootstrapMixin, forms.Form):
-    """Form for filtering NameServer instances."""
-
-    model = NameServer
-
-    name = CharField(
-        required=False,
-        label="Name",
-    )
-    tag = TagFilterField(NameServer)
-
-
-class NameServerCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
-    class Meta:
-        model = NameServer
-        fields = ("name",)
-
-
-class NameServerBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
-    pk = forms.ModelMultipleChoiceField(
-        queryset=NameServer.objects.all(),
-        widget=forms.MultipleHiddenInput(),
-    )
-
-    class Meta:
-        nullable_fields = []
-
-        model = NameServer
-        fields = ("name", "tags")
-
-
-class RecordForm(BootstrapMixin, forms.ModelForm):
-    """Form for creating a new Record object."""
-
-    def clean(self):
-        """
-        For A and AAA records, verify that a valid IPv4 or IPv6 was passed as
-        value and raise a ValidationError exception otherwise.
-        """
-        cleaned_data = super().clean()
-
-        type = cleaned_data.get("type")
-        if type not in (Record.A, Record.AAAA):
-            return
-
-        value = cleaned_data.get("value")
-        try:
-            ip_version = "4" if type == Record.A else "6"
-            if type == Record.A:
-                validate_ipv4_address(value)
-            else:
-                validate_ipv6_address(value)
-
-        except ValidationError:
-            raise forms.ValidationError(
-                {
-                    "value": f"A valid IPv{ip_version} address is required for record type {type}."
-                }
-            )
-
-        if cleaned_data.get("disable_ptr"):
-            return
-
-        pk = cleaned_data.get("pk")
-        conflicts = Record.objects.filter(value=value, type=type, disable_ptr=False)
-        if self.instance.pk:
-            conflicts = conflicts.exclude(pk=self.instance.pk)
-        if len(conflicts):
-            raise forms.ValidationError(
-                {
-                    "value": f"There is already an {type} record with value {value} and PTR enabled."
-                }
-            )
-
-    def clean_ttl(self):
-        ttl = self.cleaned_data["ttl"]
-        if ttl is not None:
-            if ttl <= 0:
-                raise ValidationError("TTL must be greater than zero")
-            return ttl
-        else:
-            return self.cleaned_data["zone"].default_ttl
-
-    disable_ptr = BooleanField(
-        label="Disable PTR",
-        required=False,
-    )
-
-    tags = DynamicModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
-        required=False,
-    )
-    ttl = IntegerField(
-        required=False,
-        label="TTL",
-    )
-
-    class Meta:
-        model = Record
-        fields = ("zone", "type", "disable_ptr", "name", "value", "ttl", "tags")
-
-        widgets = {
-            "zone": StaticSelect(),
-            "type": StaticSelect(),
-        }
-
-
-class RecordFilterForm(BootstrapMixin, forms.Form):
-    """Form for filtering Record instances."""
-
-    model = Record
-
-    q = CharField(
-        required=False,
-        widget=forms.TextInput(attrs={"placeholder": "Name, Zone or Value"}),
-        label="Search",
-    )
-    type = forms.MultipleChoiceField(
-        choices=add_blank_choice(Record.CHOICES),
-        required=False,
-        widget=StaticSelectMultiple(),
-    )
-    name = CharField(
-        required=False,
-        label="Name",
-    )
-    value = CharField(
-        required=False,
-        label="Value",
-    )
-    zone_id = CustomDynamicModelMultipleChoiceField(
-        queryset=Zone.objects.all(),
-        required=False,
-        label="Zone",
-    )
-    tag = TagFilterField(Record)
-
-
-class RecordCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
-    zone = CSVModelChoiceField(
-        queryset=Zone.objects.all(),
-        to_field_name="name",
-        required=True,
-        help_text="Assigned zone",
-    )
-    type = CSVChoiceField(
-        choices=Record.CHOICES,
-        required=True,
-        help_text="Record Type",
-    )
-    ttl = IntegerField(
-        required=False,
-        help_text="TTL",
-    )
-    disable_ptr = forms.BooleanField(
-        required=False,
-        label="Disable PTR",
-        help_text="Disable generation of a PTR record",
-    )
-
-    def clean(self):
-        """
-        For A and AAA records, verify that a valid IPv4 or IPv6 was passed as
-        value and raise a ValidationError exception otherwise.
-        """
-        cleaned_data = super().clean()
-
-        type = cleaned_data.get("type")
-        if type not in (Record.A, Record.AAAA):
-            return
-
-        value = cleaned_data.get("value")
-        try:
-            ip_version = "4" if type == Record.A else "6"
-            if type == Record.A:
-                validate_ipv4_address(value)
-            else:
-                validate_ipv6_address(value)
-
-        except ValidationError:
-            raise forms.ValidationError(
-                {
-                    "value": f"A valid IPv{ip_version} address is required for record type {type}."
-                }
-            )
-
-        if cleaned_data.get("disable_ptr"):
-            return
-
-        conflicts = Record.objects.filter(value=value, type=type, disable_ptr=False)
-        if len(conflicts):
-            raise forms.ValidationError(
-                {
-                    "value": f"There is already an {type} record with value {value} and PTR enabled."
-                }
-            )
-
-    def clean_ttl(self):
-        ttl = self.cleaned_data["ttl"]
-        if ttl is not None:
-            if ttl <= 0:
-                raise ValidationError("TTL must be greater than zero")
-            return ttl
-        elif "zone" in self.cleaned_data:
-            return self.cleaned_data["zone"].default_ttl
-
-    class Meta:
-        model = Record
-        fields = ("zone", "type", "name", "value", "ttl", "disable_ptr")
-
-
-class RecordBulkEditForm(BootstrapMixin, AddRemoveTagsForm, BulkEditForm):
-    pk = forms.ModelMultipleChoiceField(
-        queryset=Record.objects.all(), widget=forms.MultipleHiddenInput()
-    )
-    zone = DynamicModelChoiceField(
-        queryset=Zone.objects.all(),
-        required=False,
-        widget=APISelect(
-            attrs={"data-url": reverse_lazy("plugins-api:netbox_dns-api:zone-list")}
-        ),
-    )
-    disable_ptr = NullBooleanField(
-        required=False, widget=BulkEditNullBooleanSelect(), label="Disable PTR"
-    )
-    ttl = IntegerField(
-        required=False,
-        label="TTL",
-    )
-
-    def clean(self):
-        """
-        For A and AAA records, verify that a valid IPv4 or IPv6 was passed as
-        value and raise a ValidationError exception otherwise.
-        """
-        cleaned_data = super().clean()
-
-        disable_ptr = cleaned_data.get("disable_ptr")
-        if disable_ptr is None or disable_ptr:
-            return
-
-        for record in cleaned_data.get("pk"):
-            conflicts = (
-                Record.objects.filter(Record.unique_ptr_qs)
-                .filter(value=record.value)
-                .exclude(pk=record.pk)
-            )
-            if len(conflicts):
-                raise forms.ValidationError(
-                    {
-                        "disable_ptr": f"Multiple {record.type} records with value {record.value} and PTR enabled."
-                    }
-                )
-
-    def clean_ttl(self):
-        ttl = self.cleaned_data["ttl"]
-        if ttl is not None:
-            if ttl <= 0:
-                raise ValidationError("TTL must be greater than zero")
-            return ttl
-
-    class Meta:
-        model = Record
-        fields = ("zone", "ttl", "disable_ptr", "tags")
-        nullable_fields = []
-
-        widgets = {
-            "zone": StaticSelect(),
-        }
