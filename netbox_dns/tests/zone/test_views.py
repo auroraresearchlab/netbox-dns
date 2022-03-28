@@ -2,7 +2,7 @@ from utilities.testing import ViewTestCases
 from utilities.testing import create_tags
 
 from netbox_dns.tests.custom import ModelViewTestCase
-from netbox_dns.models import Zone, NameServer
+from netbox_dns.models import NameServer, Zone, ZoneStatusChoices
 
 
 class ZoneTestCase(
@@ -20,14 +20,14 @@ class ZoneTestCase(
     model = Zone
 
     csv_data = (
-        f"name,status,soa_mname,soa_rname",
-        f"zone4.example.com,active,ns1.example.com,hostmaster.example.com",
-        f"zone5.example.com,active,ns1.example.com,hostmaster.example.com",
-        f"zone6.example.com,active,ns1.example.com,hostmaster.example.com",
+        "name,status,soa_mname,soa_rname",
+        "zone4.example.com,active,ns1.example.com,hostmaster.example.com",
+        "zone5.example.com,active,ns1.example.com,hostmaster.example.com",
+        "zone6.example.com,active,ns1.example.com,hostmaster.example.com",
     )
 
     bulk_edit_data = {
-        "status": Zone.STATUS_PARKED,
+        "status": ZoneStatusChoices.STATUS_PARKED,
     }
 
     zone_data = {

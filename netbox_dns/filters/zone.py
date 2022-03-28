@@ -3,18 +3,14 @@ from django.db.models import Q
 
 from netbox.filtersets import NetBoxModelFilterSet
 
-from netbox_dns.models import Zone
+from netbox_dns.models import Zone, ZoneStatusChoices
 
 
 class ZoneFilter(NetBoxModelFilterSet):
     """Filter capabilities for Zone instances."""
 
-    q = django_filters.CharFilter(
-        method="search",
-        label="Search",
-    )
     status = django_filters.ChoiceFilter(
-        choices=Zone.CHOICES,
+        choices=ZoneStatusChoices,
     )
 
     class Meta:

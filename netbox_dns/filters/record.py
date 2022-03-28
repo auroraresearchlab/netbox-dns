@@ -3,18 +3,14 @@ from django.db.models import Q
 
 from netbox.filtersets import NetBoxModelFilterSet
 
-from netbox_dns.models import Record, Zone
+from netbox_dns.models import Record, RecordTypeChoices, Zone
 
 
 class RecordFilter(NetBoxModelFilterSet):
     """Filter capabilities for Record instances."""
 
-    q = django_filters.CharFilter(
-        method="search",
-        label="Search",
-    )
     type = django_filters.MultipleChoiceFilter(
-        choices=Record.CHOICES,
+        choices=RecordTypeChoices,
         null_value=None,
     )
     zone_id = django_filters.ModelMultipleChoiceFilter(

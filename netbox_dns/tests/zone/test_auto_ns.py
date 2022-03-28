@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from netbox_dns.models import NameServer, Zone, Record
+from netbox_dns.models import NameServer, Record, RecordTypeChoices, Zone
 
 
 class AutoNSTest(TestCase):
@@ -32,14 +32,15 @@ class AutoNSTest(TestCase):
     def test_zone_without_ns(self):
         zone = self.zone
 
-        ns_records = Record.objects.filter(zone=zone, type=Record.NS, managed=True)
+        ns_records = Record.objects.filter(
+            zone=zone, type=RecordTypeChoices.NS, managed=True
+        )
         self.assertEqual(0, len(ns_records))
 
     def test_zone_without_ns_error(self):
         zone = self.zone
-        nameserver = self.nameservers[0]
 
-        ns_warnings, ns_errors = zone.check_nameservers()
+        ns_errors = zone.check_nameservers()[1]
         self.assertIn(f"No nameservers are configured for zone {zone.name}", ns_errors)
 
     def test_zone_with_ns(self):
@@ -49,7 +50,7 @@ class AutoNSTest(TestCase):
         zone.nameservers.add(nameserver)
 
         ns_records = Record.objects.filter(
-            zone=zone, type=Record.NS, managed=True, name="@"
+            zone=zone, type=RecordTypeChoices.NS, managed=True, name="@"
         )
         ns_values = [ns.value for ns in ns_records]
         self.assertEqual([f"{nameserver.name}."], ns_values)
@@ -59,7 +60,7 @@ class AutoNSTest(TestCase):
         nameserver = self.nameservers[0]
 
         zone.nameservers.add(nameserver)
-        ns_warnings, ns_errors = zone.check_nameservers()
+        ns_warnings = zone.check_nameservers()[0]
         self.assertEqual([], ns_warnings)
 
     def test_zone_with_ns_warning(self):
@@ -71,7 +72,7 @@ class AutoNSTest(TestCase):
         )
 
         zone.nameservers.add(nameserver)
-        ns_warnings, ns_errors = zone.check_nameservers()
+        ns_warnings = zone.check_nameservers()[0]
         self.assertIn(
             f"Nameserver {nameserver.name} does not have an address record in zone {ns_zone.name}",
             ns_warnings,
@@ -86,7 +87,7 @@ class AutoNSTest(TestCase):
         zone.nameservers.add(nameserver2)
 
         ns_records = Record.objects.filter(
-            zone=zone, type=Record.NS, managed=True, name="@"
+            zone=zone, type=RecordTypeChoices.NS, managed=True, name="@"
         )
         ns_values = [ns.value for ns in ns_records]
         self.assertEqual(
@@ -104,7 +105,7 @@ class AutoNSTest(TestCase):
         zone.nameservers.remove(nameserver1)
 
         ns_records = Record.objects.filter(
-            zone=zone, type=Record.NS, managed=True, name="@"
+            zone=zone, type=RecordTypeChoices.NS, managed=True, name="@"
         )
         ns_values = [ns.value for ns in ns_records]
         self.assertEqual([f"{nameserver2.name}."], ns_values)

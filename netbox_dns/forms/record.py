@@ -1,8 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import (
-    MinValueValidator,
-    MaxValueValidator,
     validate_ipv6_address,
     validate_ipv4_address,
 )
@@ -14,11 +12,13 @@ from django.forms import (
 )
 from django.urls import reverse_lazy
 
-from extras.models.tags import Tag
-from netbox.forms import NetBoxModelBulkEditForm
+from netbox.forms import (
+    NetBoxModelBulkEditForm,
+    NetBoxModelFilterSetForm,
+    NetBoxModelCSVForm,
+    NetBoxModelForm,
+)
 from utilities.forms import (
-    CSVModelForm,
-    BootstrapMixin,
     BulkEditNullBooleanSelect,
     DynamicModelMultipleChoiceField,
     TagFilterField,
@@ -31,11 +31,20 @@ from utilities.forms import (
     add_blank_choice,
 )
 
-from netbox_dns.models import Record, Zone
+from netbox_dns.models import Record, RecordTypeChoices, Zone
 
 
-class RecordForm(BootstrapMixin, forms.ModelForm):
+class RecordForm(NetBoxModelForm):
     """Form for creating a new Record object."""
+
+    disable_ptr = BooleanField(
+        label="Disable PTR",
+        required=False,
+    )
+    ttl = IntegerField(
+        required=False,
+        label="TTL",
+    )
 
     def clean(self):
         """
@@ -45,13 +54,13 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
         cleaned_data = super().clean()
 
         type = cleaned_data.get("type")
-        if type not in (Record.A, Record.AAAA):
+        if type not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             return
 
         value = cleaned_data.get("value")
         try:
-            ip_version = "4" if type == Record.A else "6"
-            if type == Record.A:
+            ip_version = "4" if type == RecordTypeChoices.A else "6"
+            if type == RecordTypeChoices.A:
                 validate_ipv4_address(value)
             else:
                 validate_ipv6_address(value)
@@ -66,7 +75,6 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
         if cleaned_data.get("disable_ptr"):
             return
 
-        pk = cleaned_data.get("pk")
         conflicts = Record.objects.filter(value=value, type=type, disable_ptr=False)
         if self.instance.pk:
             conflicts = conflicts.exclude(pk=self.instance.pk)
@@ -82,23 +90,10 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
         if ttl is not None:
             if ttl <= 0:
                 raise ValidationError("TTL must be greater than zero")
+
             return ttl
-        else:
-            return self.cleaned_data["zone"].default_ttl
 
-    disable_ptr = BooleanField(
-        label="Disable PTR",
-        required=False,
-    )
-
-    tags = DynamicModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
-        required=False,
-    )
-    ttl = IntegerField(
-        required=False,
-        label="TTL",
-    )
+        return self.cleaned_data["zone"].default_ttl
 
     class Meta:
         model = Record
@@ -110,18 +105,11 @@ class RecordForm(BootstrapMixin, forms.ModelForm):
         }
 
 
-class RecordFilterForm(BootstrapMixin, forms.Form):
+class RecordFilterForm(NetBoxModelFilterSetForm):
     """Form for filtering Record instances."""
 
-    model = Record
-
-    q = CharField(
-        required=False,
-        widget=forms.TextInput(attrs={"placeholder": "Name, Zone or Value"}),
-        label="Search",
-    )
     type = forms.MultipleChoiceField(
-        choices=add_blank_choice(Record.CHOICES),
+        choices=add_blank_choice(RecordTypeChoices),
         required=False,
         widget=StaticSelectMultiple(),
     )
@@ -140,8 +128,10 @@ class RecordFilterForm(BootstrapMixin, forms.Form):
     )
     tag = TagFilterField(Record)
 
+    model = Record
 
-class RecordCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
+
+class RecordCSVForm(NetBoxModelCSVForm):
     zone = CSVModelChoiceField(
         queryset=Zone.objects.all(),
         to_field_name="name",
@@ -149,7 +139,7 @@ class RecordCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
         help_text="Assigned zone",
     )
     type = CSVChoiceField(
-        choices=Record.CHOICES,
+        choices=RecordTypeChoices,
         required=True,
         help_text="Record Type",
     )
@@ -171,13 +161,13 @@ class RecordCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
         cleaned_data = super().clean()
 
         type = cleaned_data.get("type")
-        if type not in (Record.A, Record.AAAA):
+        if type not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             return
 
         value = cleaned_data.get("value")
         try:
-            ip_version = "4" if type == Record.A else "6"
-            if type == Record.A:
+            ip_version = "4" if type == RecordTypeChoices.A else "6"
+            if type == RecordTypeChoices.A:
                 validate_ipv4_address(value)
             else:
                 validate_ipv6_address(value)
@@ -205,9 +195,13 @@ class RecordCSVForm(CSVModelForm, BootstrapMixin, forms.ModelForm):
         if ttl is not None:
             if ttl <= 0:
                 raise ValidationError("TTL must be greater than zero")
+
             return ttl
-        elif "zone" in self.cleaned_data:
+
+        if "zone" in self.cleaned_data:
             return self.cleaned_data["zone"].default_ttl
+
+        return None
 
     class Meta:
         model = Record
@@ -231,6 +225,7 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
     )
 
     model = Record
+    fieldsets = ((None, ("zone", "disable_ptr", "ttl")),)
 
     def clean(self):
         """
@@ -249,7 +244,7 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
         address_values = [
             record.value
             for record in cleaned_data.get("pk")
-            if record.type in (Record.A, Record.AAAA)
+            if record.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA)
         ]
 
         conflicts = [
@@ -278,4 +273,7 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
         if ttl is not None:
             if ttl <= 0:
                 raise ValidationError("TTL must be greater than zero")
+
             return ttl
+
+        return None

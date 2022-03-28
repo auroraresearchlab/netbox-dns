@@ -1,10 +1,9 @@
-import re
 import ipaddress
 
 from django.test import TestCase
 from django.db.utils import IntegrityError
 
-from netbox_dns.models import NameServer, Zone, Record
+from netbox_dns.models import NameServer, Record, RecordTypeChoices, Zone
 
 
 def reverse_name(address, reverse_zone):
@@ -13,8 +12,8 @@ def reverse_name(address, reverse_zone):
 
     if reverse_pointer.endswith(reverse_zone.name):
         return reverse_pointer[: -len(zone_name)]
-    else:
-        return f"{reverse_pointer}."
+
+    return f"{reverse_pointer}."
 
 
 class AutoPTRTest(TestCase):
@@ -80,11 +79,15 @@ class AutoPTRTest(TestCase):
         address = "10.0.1.42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.A, value=address, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
@@ -97,7 +100,11 @@ class AutoPTRTest(TestCase):
         address = "10.0.1.42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.A, value=address, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
 
@@ -105,24 +112,33 @@ class AutoPTRTest(TestCase):
 
         with self.assertRaises(Record.DoesNotExist):
             Record.objects.get(
-                type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
             )
 
     def test_create_duplicate_ipv4(self):
         f_zone = self.zones[0]
-        r_zone = self.zones[1]
 
         name1 = "test1"
         name2 = "test2"
         address = "10.0.1.42"
 
         f_record1 = Record(
-            zone=f_zone, name=name1, type=Record.A, value=address, **self.record_data
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
         )
         f_record1.save()
 
         f_record2 = Record(
-            zone=f_zone, name=name2, type=Record.A, value=address, **self.record_data
+            zone=f_zone,
+            name=name2,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
         )
         self.assertRaises(IntegrityError, f_record2.save)
 
@@ -137,7 +153,7 @@ class AutoPTRTest(TestCase):
         f_record1 = Record(
             zone=f_zone,
             name=name1,
-            type=Record.A,
+            type=RecordTypeChoices.A,
             value=address,
             disable_ptr=True,
             **self.record_data,
@@ -145,12 +161,16 @@ class AutoPTRTest(TestCase):
         f_record1.save()
 
         f_record2 = Record(
-            zone=f_zone, name=name2, type=Record.A, value=address, **self.record_data
+            zone=f_zone,
+            name=name2,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
         )
         f_record2.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name2}.{f_zone.name}.")
@@ -164,14 +184,18 @@ class AutoPTRTest(TestCase):
         address = "10.0.1.42"
 
         f_record1 = Record(
-            zone=f_zone, name=name1, type=Record.A, value=address, **self.record_data
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
         )
         f_record1.save()
 
         f_record2 = Record(
             zone=f_zone,
             name=name2,
-            type=Record.A,
+            type=RecordTypeChoices.A,
             value=address,
             disable_ptr=True,
             **self.record_data,
@@ -179,7 +203,7 @@ class AutoPTRTest(TestCase):
         f_record2.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name1}.{f_zone.name}.")
@@ -193,7 +217,11 @@ class AutoPTRTest(TestCase):
         address = "10.0.1.42"
 
         f_record = Record(
-            zone=f_zone, name=name1, type=Record.A, value=address, **self.record_data
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
 
@@ -201,7 +229,7 @@ class AutoPTRTest(TestCase):
         f_record.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name2}.{f_zone.name}.")
@@ -215,7 +243,11 @@ class AutoPTRTest(TestCase):
         address2 = "10.0.1.42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.A, value=address1, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address1,
+            **self.record_data,
         )
         f_record.save()
 
@@ -223,7 +255,7 @@ class AutoPTRTest(TestCase):
         f_record.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address2, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address2, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
@@ -237,7 +269,11 @@ class AutoPTRTest(TestCase):
         address2 = "10.0.2.42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.A, value=address1, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address1,
+            **self.record_data,
         )
         f_record.save()
 
@@ -246,7 +282,9 @@ class AutoPTRTest(TestCase):
 
         with self.assertRaises(Record.DoesNotExist):
             Record.objects.get(
-                type=Record.PTR, zone=r_zone, name=reverse_name(address1, r_zone)
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address1, r_zone),
             )
 
     def test_change_address_outside_zone_ipv4_new_zone(self):
@@ -258,7 +296,11 @@ class AutoPTRTest(TestCase):
         address2 = "10.0.2.42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.A, value=address1, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address1,
+            **self.record_data,
         )
         f_record.save()
 
@@ -266,7 +308,7 @@ class AutoPTRTest(TestCase):
         f_record.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address2, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address2, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
@@ -279,7 +321,11 @@ class AutoPTRTest(TestCase):
         address2 = "10.3.1.23"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.A, value=address1, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address1,
+            **self.record_data,
         )
         f_record.save()
 
@@ -287,7 +333,9 @@ class AutoPTRTest(TestCase):
         f_record.save()
 
         with self.assertRaises(Record.DoesNotExist):
-            Record.objects.get(type=Record.PTR, value=f"{name}.{f_zone.name}.")
+            Record.objects.get(
+                type=RecordTypeChoices.PTR, value=f"{name}.{f_zone.name}."
+            )
 
     def test_change_ttl_ipv4(self):
         f_zone = self.zones[0]
@@ -297,7 +345,11 @@ class AutoPTRTest(TestCase):
         address = "10.0.1.42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.A, value=address, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
 
@@ -305,7 +357,7 @@ class AutoPTRTest(TestCase):
         f_record.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
         )
 
         self.assertEqual(r_record.ttl, 98765)
@@ -320,14 +372,20 @@ class AutoPTRTest(TestCase):
         address = "10.0.1.42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.A, value=address, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
 
         r_zone1.delete()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone2, name=reverse_name(address, r_zone2)
+            type=RecordTypeChoices.PTR,
+            zone=r_zone2,
+            name=reverse_name(address, r_zone2),
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
@@ -335,23 +393,27 @@ class AutoPTRTest(TestCase):
     def test_ipv4_create_ptr_zone_with_parent(self):
         f_zone = self.zones[0]
 
-        r_zone1 = self.zones[5]
-
         name = "test1"
         address = "10.2.1.42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.A, value=address, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
 
-        r_zone2 = Zone(
+        r_zone = Zone(
             name="1.2.10.in-addr.arpa", **self.zone_data, soa_mname=self.nameserver
         )
-        r_zone2.save()
+        r_zone.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone2, name=reverse_name(address, r_zone2)
+            type=RecordTypeChoices.PTR,
+            zone=r_zone,
+            name=reverse_name(address, r_zone),
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
@@ -363,7 +425,11 @@ class AutoPTRTest(TestCase):
         address = "10.3.1.42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.A, value=address, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
 
@@ -373,7 +439,7 @@ class AutoPTRTest(TestCase):
         r_zone.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
@@ -386,11 +452,15 @@ class AutoPTRTest(TestCase):
         address = "fe80:dead:beef:1::42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.AAAA, value=address, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
@@ -403,7 +473,11 @@ class AutoPTRTest(TestCase):
         address = "fe80:dead:beef:1::42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.AAAA, value=address, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
 
@@ -411,24 +485,33 @@ class AutoPTRTest(TestCase):
 
         with self.assertRaises(Record.DoesNotExist):
             Record.objects.get(
-                type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
             )
 
     def test_create_duplicate_ipv6(self):
         f_zone = self.zones[0]
-        r_zone = self.zones[6]
 
         name1 = "test1"
         name2 = "test2"
         address = "fe80:dead:beef:1::42"
 
         f_record1 = Record(
-            zone=f_zone, name=name1, type=Record.AAAA, value=address, **self.record_data
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
         )
         f_record1.save()
 
         f_record2 = Record(
-            zone=f_zone, name=name2, type=Record.AAAA, value=address, **self.record_data
+            zone=f_zone,
+            name=name2,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
         )
         self.assertRaises(IntegrityError, f_record2.save)
 
@@ -443,7 +526,7 @@ class AutoPTRTest(TestCase):
         f_record1 = Record(
             zone=f_zone,
             name=name1,
-            type=Record.AAAA,
+            type=RecordTypeChoices.AAAA,
             value=address,
             disable_ptr=True,
             **self.record_data,
@@ -451,12 +534,16 @@ class AutoPTRTest(TestCase):
         f_record1.save()
 
         f_record2 = Record(
-            zone=f_zone, name=name2, type=Record.AAAA, value=address, **self.record_data
+            zone=f_zone,
+            name=name2,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
         )
         f_record2.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name2}.{f_zone.name}.")
@@ -470,14 +557,18 @@ class AutoPTRTest(TestCase):
         address = "fe80:dead:beef:1::42"
 
         f_record1 = Record(
-            zone=f_zone, name=name1, type=Record.AAAA, value=address, **self.record_data
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
         )
         f_record1.save()
 
         f_record2 = Record(
             zone=f_zone,
             name=name2,
-            type=Record.AAAA,
+            type=RecordTypeChoices.AAAA,
             value=address,
             disable_ptr=True,
             **self.record_data,
@@ -485,7 +576,7 @@ class AutoPTRTest(TestCase):
         f_record2.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name1}.{f_zone.name}.")
@@ -499,7 +590,11 @@ class AutoPTRTest(TestCase):
         address = "fe80:dead:beef:1::42"
 
         f_record = Record(
-            zone=f_zone, name=name1, type=Record.AAAA, value=address, **self.record_data
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
 
@@ -507,7 +602,7 @@ class AutoPTRTest(TestCase):
         f_record.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name2}.{f_zone.name}.")
@@ -521,7 +616,11 @@ class AutoPTRTest(TestCase):
         address2 = "fe80:dead:beef:1::42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.AAAA, value=address1, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address1,
+            **self.record_data,
         )
         f_record.save()
 
@@ -529,7 +628,7 @@ class AutoPTRTest(TestCase):
         f_record.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address2, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address2, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
@@ -543,7 +642,11 @@ class AutoPTRTest(TestCase):
         address2 = "fe80:dead:beef:2::42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.AAAA, value=address1, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address1,
+            **self.record_data,
         )
         f_record.save()
 
@@ -552,7 +655,9 @@ class AutoPTRTest(TestCase):
 
         with self.assertRaises(Record.DoesNotExist):
             Record.objects.get(
-                type=Record.PTR, zone=r_zone, name=reverse_name(address1, r_zone)
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address1, r_zone),
             )
 
     def test_change_address_outside_zone_ipv6_new_zone(self):
@@ -564,7 +669,11 @@ class AutoPTRTest(TestCase):
         address2 = "fe80:dead:beef:2::42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.AAAA, value=address1, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address1,
+            **self.record_data,
         )
         f_record.save()
 
@@ -572,7 +681,7 @@ class AutoPTRTest(TestCase):
         f_record.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address2, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address2, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
@@ -585,7 +694,11 @@ class AutoPTRTest(TestCase):
         address2 = "fe80:dead:beef:31::42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.AAAA, value=address1, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address1,
+            **self.record_data,
         )
         f_record.save()
 
@@ -593,7 +706,9 @@ class AutoPTRTest(TestCase):
         f_record.save()
 
         with self.assertRaises(Record.DoesNotExist):
-            Record.objects.get(type=Record.PTR, value=f"{name}.{f_zone.name}.")
+            Record.objects.get(
+                type=RecordTypeChoices.PTR, value=f"{name}.{f_zone.name}."
+            )
 
     def test_change_ttl_ipv6(self):
         f_zone = self.zones[0]
@@ -603,7 +718,11 @@ class AutoPTRTest(TestCase):
         address = "fe80:dead:beef:1::42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.AAAA, value=address, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
 
@@ -611,7 +730,7 @@ class AutoPTRTest(TestCase):
         f_record.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
         )
 
         self.assertEqual(r_record.ttl, 98765)
@@ -626,14 +745,20 @@ class AutoPTRTest(TestCase):
         address = "fe80:dead:beef:1::42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.AAAA, value=address, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
 
         r_zone1.delete()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone2, name=reverse_name(address, r_zone2)
+            type=RecordTypeChoices.PTR,
+            zone=r_zone2,
+            name=reverse_name(address, r_zone2),
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
@@ -641,25 +766,29 @@ class AutoPTRTest(TestCase):
     def test_ipv6_create_ptr_zone_with_parent(self):
         f_zone = self.zones[0]
 
-        r_zone1 = self.zones[10]
-
         name = "test1"
         address = "fe80:dead:beef:21::42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.AAAA, value=address, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
 
-        r_zone2 = Zone(
+        r_zone = Zone(
             name="1.2.0.0.f.e.e.b.d.a.e.d.0.8.e.f.ip6.arpa",
             **self.zone_data,
             soa_mname=self.nameserver,
         )
-        r_zone2.save()
+        r_zone.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone2, name=reverse_name(address, r_zone2)
+            type=RecordTypeChoices.PTR,
+            zone=r_zone,
+            name=reverse_name(address, r_zone),
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
@@ -671,7 +800,11 @@ class AutoPTRTest(TestCase):
         address = "fe80:dead:beef:31::42"
 
         f_record = Record(
-            zone=f_zone, name=name, type=Record.AAAA, value=address, **self.record_data
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
         )
         f_record.save()
 
@@ -683,7 +816,7 @@ class AutoPTRTest(TestCase):
         r_zone.save()
 
         r_record = Record.objects.get(
-            type=Record.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")

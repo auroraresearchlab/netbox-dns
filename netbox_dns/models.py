@@ -15,6 +15,7 @@ from django.dispatch import receiver
 
 from netbox.models import NetBoxModel
 from utilities.querysets import RestrictedQuerySet
+from utilities.choices import ChoiceSet
 
 
 def absolute_name(name):
@@ -35,7 +36,7 @@ class NameServer(NetBoxModel):
         ordering = ("name",)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:nameserver", kwargs={"pk": self.pk})
@@ -46,7 +47,7 @@ class ZoneManager(models.Manager.from_queryset(RestrictedQuerySet)):
 
     def get_queryset(self):
         return (
-            super(ZoneManager, self)
+            super()
             .get_queryset()
             .annotate(
                 active=ExpressionWrapper(
@@ -56,27 +57,24 @@ class ZoneManager(models.Manager.from_queryset(RestrictedQuerySet)):
         )
 
 
-class Zone(NetBoxModel):
+class ZoneStatusChoices(ChoiceSet):
+    key = "Zone.status"
+
     STATUS_ACTIVE = "active"
     STATUS_RESERVED = "reserved"
     STATUS_DEPRECATED = "deprecated"
     STATUS_PARKED = "parked"
 
     CHOICES = (
-        (STATUS_ACTIVE, "Active"),
-        (STATUS_RESERVED, "Reserved"),
-        (STATUS_DEPRECATED, "Deprecated"),
-        (STATUS_PARKED, "Parked"),
+        (STATUS_ACTIVE, "Active", "blue"),
+        (STATUS_RESERVED, "Reserved", "cyan"),
+        (STATUS_DEPRECATED, "Deprecated", "red"),
+        (STATUS_PARKED, "Parked", "gray"),
     )
 
-    CSS_CLASSES = {
-        STATUS_ACTIVE: "primary",
-        STATUS_RESERVED: "info",
-        STATUS_DEPRECATED: "danger",
-        STATUS_PARKED: "warning",
-    }
 
-    ACTIVE_STATUS_LIST = (STATUS_ACTIVE,)
+class Zone(NetBoxModel):
+    ACTIVE_STATUS_LIST = (ZoneStatusChoices.STATUS_ACTIVE,)
 
     name = models.CharField(
         unique=True,
@@ -84,8 +82,8 @@ class Zone(NetBoxModel):
     )
     status = models.CharField(
         max_length=50,
-        choices=CHOICES,
-        default=STATUS_ACTIVE,
+        choices=ZoneStatusChoices,
+        default=ZoneStatusChoices.STATUS_ACTIVE,
         blank=True,
     )
     nameservers = models.ManyToManyField(
@@ -174,7 +172,10 @@ class Zone(NetBoxModel):
         ordering = ("name",)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
+
+    def get_status_color(self):
+        return ZoneStatusChoices.colors.get(self.status)
 
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:zone", kwargs={"pk": self.pk})
@@ -192,7 +193,9 @@ class Zone(NetBoxModel):
             f" {self.soa_minimum})"
         )
 
-        old_soa_records = self.record_set.filter(type=Record.SOA, name=soa_name)
+        old_soa_records = self.record_set.filter(
+            type=RecordTypeChoices.SOA, name=soa_name
+        )
 
         if len(old_soa_records):
             for index, record in enumerate(old_soa_records):
@@ -208,7 +211,7 @@ class Zone(NetBoxModel):
         else:
             Record.objects.create(
                 zone_id=self.pk,
-                type=Record.SOA,
+                type=RecordTypeChoices.SOA,
                 name=soa_name,
                 ttl=soa_ttl,
                 value=soa_value,
@@ -219,16 +222,16 @@ class Zone(NetBoxModel):
         ns_name = "@"
         ns_ttl = self.default_ttl
 
-        delete_ns = self.record_set.filter(type=Record.NS, managed=True).exclude(
-            value__in=nameservers
-        )
+        delete_ns = self.record_set.filter(
+            type=RecordTypeChoices.NS, managed=True
+        ).exclude(value__in=nameservers)
         for record in delete_ns:
             record.delete()
 
         for ns in nameservers:
             Record.raw_objects.update_or_create(
                 zone_id=self.pk,
-                type=Record.NS,
+                type=RecordTypeChoices.NS,
                 name=ns_name,
                 ttl=ns_ttl,
                 value=ns,
@@ -258,7 +261,7 @@ class Zone(NetBoxModel):
             address_records = Record.objects.filter(
                 Q(zone=ns_zone),
                 Q(Q(name=f"{nameserver.name}.") | Q(name=ns_name)),
-                Q(Q(type=Record.A) | Q(type=Record.AAAA)),
+                Q(Q(type=RecordTypeChoices.A) | Q(type=RecordTypeChoices.AAAA)),
             )
 
             if not address_records:
@@ -269,7 +272,7 @@ class Zone(NetBoxModel):
         return ns_warnings, ns_errors
 
     def get_auto_serial(self):
-        records = Record.objects.filter(zone=self).exclude(type=Record.SOA)
+        records = Record.objects.filter(zone=self).exclude(type=RecordTypeChoices.SOA)
         if records:
             soa_serial = (
                 records.aggregate(Max("last_updated"))
@@ -310,7 +313,7 @@ class Zone(NetBoxModel):
             address_records = Record.objects.filter(
                 Q(ptr_record__isnull=True)
                 | Q(ptr_record__zone__name__in=self.parent_zones()),
-                type__in=(Record.A, Record.AAAA),
+                type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA),
                 disable_ptr=False,
             )
             for record in address_records:
@@ -358,7 +361,7 @@ class RecordManager(models.Manager.from_queryset(RestrictedQuerySet)):
 
     def get_queryset(self):
         return (
-            super(RecordManager, self)
+            super()
             .get_queryset()
             .annotate(
                 active=ExpressionWrapper(
@@ -375,10 +378,11 @@ class RecordManager(models.Manager.from_queryset(RestrictedQuerySet)):
                 )
             )
         )
-        return queryset
 
 
-class Record(NetBoxModel):
+class RecordTypeChoices(ChoiceSet):
+    key = "Record.type"
+
     A = "A"
     AAAA = "AAAA"
     CNAME = "CNAME"
@@ -439,14 +443,19 @@ class Record(NetBoxModel):
         (RP, RP),
     )
 
-    unique_ptr_qs = Q(Q(disable_ptr=False), Q(Q(type="A") | Q(type="AAAA")))
+
+class Record(NetBoxModel):
+    unique_ptr_qs = Q(
+        Q(disable_ptr=False),
+        Q(Q(type=RecordTypeChoices.A) | Q(type=RecordTypeChoices.AAAA)),
+    )
 
     zone = models.ForeignKey(
         Zone,
         on_delete=models.CASCADE,
     )
     type = models.CharField(
-        choices=CHOICES,
+        choices=RecordTypeChoices,
         max_length=10,
     )
     name = models.CharField(
@@ -490,7 +499,8 @@ class Record(NetBoxModel):
                 condition=(
                     models.Q(
                         models.Q(disable_ptr=False),
-                        models.Q(type="A") | models.Q(type="AAAA"),
+                        models.Q(type=RecordTypeChoices.A)
+                        | models.Q(type=RecordTypeChoices.AAAA),
                     )
                 ),
             ),
@@ -499,10 +509,11 @@ class Record(NetBoxModel):
     def __str__(self):
         if self.name == "@":
             return f"{self.zone.name} [{self.type}]"
-        elif self.name.endswith("."):
+
+        if self.name.endswith("."):
             return f"{self.name} [{self.type}]"
-        else:
-            return f"{self.name}.{self.zone.name} [{self.type}]"
+
+        return f"{self.name}.{self.zone.name} [{self.type}]"
 
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:record", kwargs={"pk": self.id})
@@ -526,6 +537,8 @@ class Record(NetBoxModel):
         )
         if len(ptr_zones):
             return ptr_zones[0]
+
+        return None
 
     def update_ptr_record(self):
         ptr_zone = self.ptr_zone()
@@ -563,7 +576,7 @@ class Record(NetBoxModel):
             if ptr_record is None:
                 ptr_record = Record.objects.create(
                     zone_id=ptr_zone.pk,
-                    type=Record.PTR,
+                    type=RecordTypeChoices.PTR,
                     name=ptr_name,
                     ttl=self.ttl,
                     value=ptr_value,
@@ -574,13 +587,13 @@ class Record(NetBoxModel):
         super().save()
 
     def save(self, *args, **kwargs):
-        if self.type in (self.A, self.AAAA):
+        if self.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             self.update_ptr_record()
 
         super().save(*args, **kwargs)
 
         zone = self.zone
-        if self.type != self.SOA and zone.soa_serial_auto:
+        if self.type != RecordTypeChoices.SOA and zone.soa_serial_auto:
             zone.update_serial()
 
     def delete(self, *args, **kwargs):
