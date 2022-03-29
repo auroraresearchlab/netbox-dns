@@ -11,4 +11,3 @@ jobs:
         with:
           options: "--check"
           src: "netbox_dns"
-          version: "21.8b0"
