@@ -114,12 +114,7 @@ class ZoneForm(NetBoxModelForm):
                 "soa_serial",
             ),
         ),
-        (
-            "Tags",
-            (
-                "tags",
-            )
-        ),
+        ("Tags", ("tags",)),
     )
 
     def __init__(self, *args, **kwargs):
