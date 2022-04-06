@@ -17,7 +17,23 @@
         {% applied_filters filter_form request.GET %}
       {% endif %}
 
-      {% include 'inc/table_controls_htmx.html' with table_modal="ZoneManagedRecordTable_config" %}
+      <div class="row mb-3 justify-content-between">
+        <div class="table-controls noprint col col-md-12 mb-0">
+          {% if request.user.is_authenticated %}
+            <div class="table-configure input-group input-group-sm">
+              <button
+                type="button"
+                data-bs-toggle="modal"
+                title="Configure Table"
+                data-bs-target="#ZoneManagedRecordTable_config"
+                class="btn btn-sm btn-outline-dark"
+              >
+                <i class="mdi mdi-cog"></i> Configure Table
+              </button>
+            </div>
+          {% endif %}
+        </div>
+      </div>
 
       <form method="post" class="form form-horizontal">
         {% csrf_token %}
@@ -27,7 +43,7 @@
         <div class="card">
           <div class="card-body">
             <div class="table-responsive">
-              {% render_table table 'inc/table.html' %}
+              {% render_table table %}
             </div>
           </div>
         </div>
