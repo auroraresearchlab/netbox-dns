@@ -65,12 +65,12 @@ class ZoneStatusChoices(ChoiceSet):
     STATUS_DEPRECATED = "deprecated"
     STATUS_PARKED = "parked"
 
-    CHOICES = (
+    CHOICES = [
         (STATUS_ACTIVE, "Active", "blue"),
         (STATUS_RESERVED, "Reserved", "cyan"),
         (STATUS_DEPRECATED, "Deprecated", "red"),
         (STATUS_PARKED, "Parked", "gray"),
-    )
+    ]
 
 
 class Zone(NetBoxModel):
@@ -412,7 +412,7 @@ class RecordTypeChoices(ChoiceSet):
     RRSIG = "RRSIG"
     RP = "RP"
 
-    CHOICES = (
+    CHOICES = [
         (A, A),
         (AAAA, AAAA),
         (CNAME, CNAME),
@@ -441,7 +441,7 @@ class RecordTypeChoices(ChoiceSet):
         (NSEC, NSEC),
         (RRSIG, RRSIG),
         (RP, RP),
-    )
+    ]
 
 
 class Record(NetBoxModel):
