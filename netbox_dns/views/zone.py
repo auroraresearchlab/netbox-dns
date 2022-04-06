@@ -44,7 +44,6 @@ class ZoneEditView(generic.ObjectEditView):
 
     queryset = Zone.objects.all()
     form = ZoneForm
-    template_name = "netbox_dns/zone_edit.html"
 
 
 class ZoneDeleteView(generic.ObjectDeleteView):
