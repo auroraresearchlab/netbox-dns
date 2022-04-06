@@ -12,11 +12,6 @@
     {# Object list #}
     <div class="tab-pane show active" id="object-list" role="tabpanel" aria-labelledby="object-list-tab">
 
-      {# Applied filters #}
-      {% if filter_form %}
-        {% applied_filters filter_form request.GET %}
-      {% endif %}
-
       <div class="row mb-3 justify-content-between">
         <div class="table-controls noprint col col-md-12 mb-0">
           {% if request.user.is_authenticated %}
@@ -53,13 +48,6 @@
       {# Paginator #}
       {% include 'inc/paginator.html' with paginator=table.paginator page=table.page %}
     </div>
-
-    {# Filter form #}
-    {% if filter_form %}
-      <div class="tab-pane show" id="filters-form" role="tabpanel" aria-labelledby="filters-form-tab">
-        {% include 'inc/filter_list.html' %}
-      </div>
-    {% endif %}
   </div>
 
   {# Table config form #}

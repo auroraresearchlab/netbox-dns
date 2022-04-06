@@ -73,8 +73,6 @@ class ZoneBulkDeleteView(generic.BulkDeleteView):
 
 class ZoneRecordListView(generic.ObjectView):
     queryset = Zone.objects.all()
-    filterset = RecordFilter
-    filterset_form = RecordFilterForm
     template_name = "netbox_dns/zone_record.html"
 
     def get_extra_context(self, request, instance):
@@ -103,8 +101,6 @@ class ZoneRecordListView(generic.ObjectView):
 
 class ZoneManagedRecordListView(generic.ObjectView):
     queryset = Zone.objects.all()
-    filterset = RecordFilter
-    filterset_form = RecordFilterForm
     template_name = "netbox_dns/zone_managed_record.html"
 
     def get_extra_context(self, request, instance):
