@@ -421,6 +421,7 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
             None,
             (
                 "status",
+                "nameservers",
                 "default_ttl",
             ),
         ),
