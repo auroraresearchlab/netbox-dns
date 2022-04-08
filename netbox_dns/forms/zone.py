@@ -90,6 +90,32 @@ class ZoneForm(NetBoxModelForm):
         help_text="Minimum TTL for negative results, e.g. NXRRSET",
         validators=[MinValueValidator(1)],
     )
+    fieldsets = (
+        (
+            "Zone",
+            (
+                "name",
+                "status",
+                "nameservers",
+                "default_ttl",
+            ),
+        ),
+        (
+            "SOA",
+            (
+                "soa_ttl",
+                "soa_mname",
+                "soa_rname",
+                "soa_refresh",
+                "soa_retry",
+                "soa_expire",
+                "soa_minimum",
+                "soa_serial_auto",
+                "soa_serial",
+            ),
+        ),
+        ("Tags", ("tags",)),
+    )
 
     def __init__(self, *args, **kwargs):
         """Override the __init__ method in order to provide the initial value for the default fields"""
@@ -395,6 +421,7 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
             None,
             (
                 "status",
+                "nameservers",
                 "default_ttl",
             ),
         ),
