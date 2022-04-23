@@ -1,11 +1,16 @@
 from django.contrib import admin
 
-from .models import Zone, NameServer, Record
+from .models import View, Zone, NameServer, Record
+
+
+@admin.register(View)
+class ViewAdmin(admin.ModelAdmin):
+    list_display = ("name", "default")
 
 
 @admin.register(Zone)
 class ZoneAdmin(admin.ModelAdmin):
-    list_display = ("name", "status")
+    list_display = ("view", "name", "status")
 
 
 @admin.register(NameServer)

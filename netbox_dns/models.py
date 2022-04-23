@@ -14,6 +14,7 @@ from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
 from netbox.models import NetBoxModel
+
 from utilities.querysets import RestrictedQuerySet
 from utilities.choices import ChoiceSet
 
@@ -76,8 +77,13 @@ class ZoneStatusChoices(ChoiceSet):
 class Zone(NetBoxModel):
     ACTIVE_STATUS_LIST = (ZoneStatusChoices.STATUS_ACTIVE,)
 
+    view = models.ForeignKey(
+        to='View',
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+    )
     name = models.CharField(
-        unique=True,
         max_length=255,
     )
     status = models.CharField(
@@ -155,6 +161,7 @@ class Zone(NetBoxModel):
     objects = ZoneManager()
 
     clone_fields = [
+        "view",
         "name",
         "status",
         "nameservers",
@@ -169,7 +176,8 @@ class Zone(NetBoxModel):
     ]
 
     class Meta:
-        ordering = ("name",)
+        ordering = ("view", "name",)
+        unique_together = ("view", "name",)
 
     def __str__(self):
         return str(self.name)
@@ -605,3 +613,23 @@ class Record(NetBoxModel):
         zone = self.zone
         if zone.soa_serial_auto:
             zone.update_serial()
+
+
+class View(NetBoxModel):
+    name = models.CharField(
+        unique=True,
+        max_length=255,
+    )
+    default = models.BooleanField(
+        null=False,
+        default=False,
+    )
+
+    def get_absolute_url(self):
+        return reverse("plugins:netbox_dns:view", kwargs={"pk": self.id})
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ("name",)

@@ -6,12 +6,13 @@ from rest_framework.routers import APIRootView
 from netbox.api.viewsets import NetBoxModelViewSet
 
 from netbox_dns.api.serializers import (
+    ViewSerializer,
     ZoneSerializer,
     NameServerSerializer,
     RecordSerializer,
 )
-from netbox_dns.filters import ZoneFilter, NameServerFilter, RecordFilter
-from netbox_dns.models import Zone, NameServer, Record
+from netbox_dns.filters import ViewFilter, ZoneFilter, NameServerFilter, RecordFilter
+from netbox_dns.models import View, Zone, NameServer, Record
 
 
 class NetboxDNSRootView(APIRootView):
@@ -21,6 +22,18 @@ class NetboxDNSRootView(APIRootView):
 
     def get_view_name(self):
         return "NetboxDNS"
+
+
+class ViewViewSet(NetBoxModelViewSet):
+    queryset = View.objects.all()
+    serializer_class = ViewSerializer
+    filterset_class = ViewFilter
+
+    @action(detail=True, methods=["get"])
+    def views(self, request, pk=None):
+        views = View.objects.filter(zone=pk)
+        serializer = ViewSerializer(views, many=True, context={"request": request})
+        return Response(serializer.data)
 
 
 class ZoneViewSet(NetBoxModelViewSet):

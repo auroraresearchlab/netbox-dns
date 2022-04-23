@@ -1,29 +1,25 @@
 from rest_framework import serializers
 
 from netbox.api import WritableNestedSerializer
-from netbox_dns import models
 
+from netbox_dns.models import View, Zone, NameServer, Record
 
 #
-# Nameservers
+# Views
 #
-
-
-class NestedNameServerSerializer(WritableNestedSerializer):
+class ViewSerializer(WritableNestedSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="plugins-api:netbox_dns-api:nameserver-detail"
+        view_name="plugins-api:netbox_dns-api:view-detail"
     )
 
     class Meta:
-        model = models.NameServer
-        fields = ["id", "url", "display", "name"]
+        model = View
+        fields = ["id", "url", "display", "name", "default"]
 
 
 #
 # Zones
 #
-
-
 class NestedZoneSerializer(WritableNestedSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="plugins-api:netbox_dns-api:zone-detail"
@@ -34,15 +30,26 @@ class NestedZoneSerializer(WritableNestedSerializer):
     )
 
     class Meta:
-        model = models.Zone
+        model = Zone
         fields = ["id", "url", "display", "name", "status", "active"]
+
+
+#
+# Nameservers
+#
+class NestedNameServerSerializer(WritableNestedSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="plugins-api:netbox_dns-api:nameserver-detail"
+    )
+
+    class Meta:
+        model = NameServer
+        fields = ["id", "url", "display", "name"]
 
 
 #
 # Records
 #
-
-
 class NestedRecordSerializer(WritableNestedSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="plugins-api:netbox_dns-api:record-detail"
@@ -58,7 +65,7 @@ class NestedRecordSerializer(WritableNestedSerializer):
     )
 
     class Meta:
-        model = models.Record
+        model = Record
         fields = [
             "id",
             "url",

@@ -1,12 +1,96 @@
 from rest_framework import serializers
 
 from netbox.api.serializers import NetBoxModelSerializer
+
 from netbox_dns.api.nested_serializers import (
     NestedRecordSerializer,
     NestedZoneSerializer,
     NestedNameServerSerializer,
 )
-from netbox_dns.models import Record, Zone, NameServer
+from netbox_dns.models import View, Zone, NameServer, Record
+
+
+class ViewSerializer(NetBoxModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="plugins-api:netbox_dns-api:view-detail"
+    )
+
+    class Meta:
+        model = View
+        fields = (
+            "id",
+            "url",
+            "display",
+            "name",
+            "default",
+            "tags",
+            "created",
+            "last_updated",
+        )
+
+
+class ZoneSerializer(NetBoxModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="plugins-api:netbox_dns-api:zone-detail"
+    )
+    nameservers = NestedNameServerSerializer(
+        many=True, read_only=False, required=False, help_text="Nameservers for the zone"
+    )
+    soa_mname = NestedNameServerSerializer(
+        many=False,
+        read_only=False,
+        required=False,
+        help_text="Primary nameserver for the zone",
+    )
+    active = serializers.BooleanField(
+        required=False,
+        read_only=True,
+    )
+
+    def create(self, validated_data):
+        nameservers = validated_data.pop("nameservers", None)
+
+        zone = super().create(validated_data)
+
+        if nameservers is not None:
+            zone.nameservers.set([nameserver for nameserver in nameservers])
+
+        return zone
+
+    def update(self, instance, validated_data):
+        nameservers = validated_data.pop("nameservers", None)
+
+        zone = super().update(instance, validated_data)
+
+        if nameservers is not None:
+            zone.nameservers.set([nameserver for nameserver in nameservers])
+
+        return zone
+
+    class Meta:
+        model = Zone
+        fields = (
+            "id",
+            "url",
+            "name",
+            "display",
+            "nameservers",
+            "status",
+            "tags",
+            "created",
+            "last_updated",
+            "default_ttl",
+            "soa_ttl",
+            "soa_mname",
+            "soa_rname",
+            "soa_serial",
+            "soa_serial_auto",
+            "soa_refresh",
+            "soa_retry",
+            "soa_expire",
+            "soa_minimum",
+            "active",
+        )
 
 
 class NameServerSerializer(NetBoxModelSerializer):
@@ -75,65 +159,3 @@ class RecordSerializer(NetBoxModelSerializer):
         )
 
 
-class ZoneSerializer(NetBoxModelSerializer):
-    url = serializers.HyperlinkedIdentityField(
-        view_name="plugins-api:netbox_dns-api:zone-detail"
-    )
-    nameservers = NestedNameServerSerializer(
-        many=True, read_only=False, required=False, help_text="Nameservers for the zone"
-    )
-    soa_mname = NestedNameServerSerializer(
-        many=False,
-        read_only=False,
-        required=False,
-        help_text="Primary nameserver for the zone",
-    )
-    active = serializers.BooleanField(
-        required=False,
-        read_only=True,
-    )
-
-    def create(self, validated_data):
-        nameservers = validated_data.pop("nameservers", None)
-
-        zone = super().create(validated_data)
-
-        if nameservers is not None:
-            zone.nameservers.set([nameserver for nameserver in nameservers])
-
-        return zone
-
-    def update(self, instance, validated_data):
-        nameservers = validated_data.pop("nameservers", None)
-
-        zone = super().update(instance, validated_data)
-
-        if nameservers is not None:
-            zone.nameservers.set([nameserver for nameserver in nameservers])
-
-        return zone
-
-    class Meta:
-        model = Zone
-        fields = (
-            "id",
-            "url",
-            "name",
-            "display",
-            "nameservers",
-            "status",
-            "tags",
-            "created",
-            "last_updated",
-            "default_ttl",
-            "soa_ttl",
-            "soa_mname",
-            "soa_rname",
-            "soa_serial",
-            "soa_serial_auto",
-            "soa_refresh",
-            "soa_retry",
-            "soa_expire",
-            "soa_minimum",
-            "active",
-        )
