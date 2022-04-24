@@ -94,6 +94,7 @@ class ZoneForm(NetBoxModelForm):
         (
             "Zone",
             (
+                "view",
                 "name",
                 "status",
                 "nameservers",
@@ -173,6 +174,7 @@ class ZoneForm(NetBoxModelForm):
         model = Zone
         fields = (
             "name",
+            "view",
             "status",
             "nameservers",
             "default_ttl",
@@ -188,10 +190,12 @@ class ZoneForm(NetBoxModelForm):
             "soa_minimum",
         )
         widgets = {
+            "view": StaticSelect(),
             "status": StaticSelect(),
             "soa_mname": StaticSelect(),
         }
         help_texts = {
+            "view": "View the zone belongs to",
             "soa_mname": "Primary name server for the zone",
         }
 
@@ -223,6 +227,15 @@ class ZoneFilterForm(NetBoxModelFilterSetForm):
 
 
 class ZoneCSVForm(NetBoxModelCSVForm):
+    view = CSVModelChoiceField(
+        queryset=View.objects.all(),
+        required=False,
+        to_field_name="name",
+        help_text="View the zone belongs to",
+        error_messages={
+            "invalid_choice": "View not found.",
+        }
+    )
     status = CSVChoiceField(
         choices=ZoneStatusChoices,
         help_text="Zone status",
@@ -356,6 +369,16 @@ class ZoneCSVForm(NetBoxModelCSVForm):
 
 
 class ZoneBulkEditForm(NetBoxModelBulkEditForm):
+    view = DynamicModelChoiceField(
+        queryset=View.objects.all(),
+        required=False,
+        label="View",
+        widget=APISelect(
+            attrs={
+                "data-url": reverse_lazy("plugins-api:netbox_dns-api:view-list")
+            }
+        ),
+    )
     status = forms.ChoiceField(
         choices=add_blank_choice(ZoneStatusChoices),
         required=False,
@@ -425,6 +448,7 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
         (
             None,
             (
+                "view",
                 "status",
                 "nameservers",
                 "default_ttl",
