@@ -28,7 +28,7 @@ from utilities.forms import (
     add_blank_choice,
 )
 
-from netbox_dns.models import NameServer, Zone, ZoneStatusChoices
+from netbox_dns.models import View, Zone, ZoneStatusChoices, NameServer
 
 
 class ZoneForm(NetBoxModelForm):
@@ -199,6 +199,11 @@ class ZoneForm(NetBoxModelForm):
 class ZoneFilterForm(NetBoxModelFilterSetForm):
     """Form for filtering Zone instances."""
 
+    view_id = DynamicModelMultipleChoiceField(
+        queryset=View.objects.all(),
+        required=False,
+        label="View",
+    )
     status = forms.ChoiceField(
         choices=add_blank_choice(ZoneStatusChoices),
         required=False,
