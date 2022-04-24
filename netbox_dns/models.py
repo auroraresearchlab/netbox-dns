@@ -180,6 +180,9 @@ class Zone(NetBoxModel):
         unique_together = ("view", "name",)
 
     def __str__(self):
+        if self.view:
+            return f"[{self.view}] {self.name}"
+
         return str(self.name)
 
     def get_status_color(self):

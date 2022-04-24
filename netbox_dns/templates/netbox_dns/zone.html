@@ -16,6 +16,12 @@
                         <th scope="row">Name</th>
                         <td>{{ object.name }}</td>
                     </tr>
+                    {% if object.view %}
+                    <tr>
+                        <th scope="row">View</th>
+                        <td>{{ object.view }}</td>
+                    </tr>
+                    {% endif %}
                     <tr>
                         <th scope="row">Status</th>
                         <td>{{ object.status }}</td>
