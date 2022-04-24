@@ -4,7 +4,7 @@ from math import ceil
 from datetime import datetime
 
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models, transaction
 from django.db.models import Q, Max, ExpressionWrapper, BooleanField
 from django.db.models.functions import Length
@@ -307,6 +307,15 @@ class Zone(NetBoxModel):
         return [
             f'{".".join(zone_fields[length:])}' for length in range(1, len(zone_fields))
         ]
+
+    def validate_unique(self, *args, **kwargs):
+        super().validate_unique(*args, **kwargs)
+
+        if self.view is None:
+            if Zone.objects.exclude(pk=self.pk).filter(name=self.name, view__isnull=True):
+                raise ValidationError({
+                    'name': 'A zone with this name already exists.'
+                })
 
     def save(self, *args, **kwargs):
         new_zone = self.pk is None
