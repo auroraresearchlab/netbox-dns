@@ -13,7 +13,7 @@ class ViewTest(
     APIViewTestCases.DeleteObjectViewTestCase,
 ):
     model = View
-    brief_fields = ['default', 'display', 'id', 'name', 'url']
+    brief_fields = ["default", "display", "id", "name", "url"]
 
     create_data = [
         {"name": "external"},

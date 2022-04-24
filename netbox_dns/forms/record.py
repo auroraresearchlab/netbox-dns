@@ -58,8 +58,8 @@ class RecordForm(NetBoxModelForm):
             return
 
         value = cleaned_data.get("value")
+        ip_version = "4" if type == RecordTypeChoices.A else "6"
         try:
-            ip_version = "4" if type == RecordTypeChoices.A else "6"
             if type == RecordTypeChoices.A:
                 validate_ipv4_address(value)
             else:
@@ -70,7 +70,7 @@ class RecordForm(NetBoxModelForm):
                 {
                     "value": f"A valid IPv{ip_version} address is required for record type {type}."
                 }
-            )
+            ) from None
 
         if cleaned_data.get("disable_ptr"):
             return
@@ -83,7 +83,7 @@ class RecordForm(NetBoxModelForm):
                 {
                     "value": f"There is already an {type} record with value {value} and PTR enabled."
                 }
-            )
+            ) from None
 
     def clean_ttl(self):
         ttl = self.cleaned_data["ttl"]
@@ -165,8 +165,8 @@ class RecordCSVForm(NetBoxModelCSVForm):
             return
 
         value = cleaned_data.get("value")
+        ip_version = "4" if type == RecordTypeChoices.A else "6"
         try:
-            ip_version = "4" if type == RecordTypeChoices.A else "6"
             if type == RecordTypeChoices.A:
                 validate_ipv4_address(value)
             else:
@@ -177,7 +177,7 @@ class RecordCSVForm(NetBoxModelCSVForm):
                 {
                     "value": f"A valid IPv{ip_version} address is required for record type {type}."
                 }
-            )
+            ) from None
 
         if cleaned_data.get("disable_ptr"):
             return
@@ -188,7 +188,7 @@ class RecordCSVForm(NetBoxModelCSVForm):
                 {
                     "value": f"There is already an {type} record with value {value} and PTR enabled."
                 }
-            )
+            ) from None
 
     def clean_ttl(self):
         ttl = self.cleaned_data["ttl"]

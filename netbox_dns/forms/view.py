@@ -10,6 +10,7 @@ from netbox_dns.models import View
 
 from utilities.forms import TagFilterField, BulkEditNullBooleanSelect
 
+
 class ViewForm(NetBoxModelForm):
     """Form for creating a new View object."""
 

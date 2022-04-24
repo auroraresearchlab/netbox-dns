@@ -31,5 +31,9 @@ class ZoneFilter(NetBoxModelFilterSet):
         """Perform the filtered search."""
         if not value.strip():
             return queryset
-        qs_filter = Q(name__icontains=value) | Q(status__icontains=value) | Q(view__name__icontains=value)
+        qs_filter = (
+            Q(name__icontains=value)
+            | Q(status__icontains=value)
+            | Q(view__name__icontains=value)
+        )
         return queryset.filter(qs_filter)

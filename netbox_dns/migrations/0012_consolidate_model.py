@@ -6,6 +6,6 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('netbox_dns', '0010_update_soa_records'),
-        ('netbox_dns', '0011_add_view_model'),
+        ("netbox_dns", "0010_update_soa_records"),
+        ("netbox_dns", "0011_add_view_model"),
     ]

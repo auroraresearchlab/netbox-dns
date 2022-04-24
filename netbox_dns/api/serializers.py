@@ -158,5 +158,3 @@ class RecordSerializer(NetBoxModelSerializer):
             "address_record",
             "active",
         )
-
-

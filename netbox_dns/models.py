@@ -13,10 +13,10 @@ from django.urls import reverse
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
-from netbox.models import NetBoxModel
-
 from utilities.querysets import RestrictedQuerySet
 from utilities.choices import ChoiceSet
+
+from netbox.models import NetBoxModel
 
 
 def absolute_name(name):
@@ -78,7 +78,7 @@ class Zone(NetBoxModel):
     ACTIVE_STATUS_LIST = (ZoneStatusChoices.STATUS_ACTIVE,)
 
     view = models.ForeignKey(
-        to='View',
+        to="View",
         on_delete=models.PROTECT,
         blank=True,
         null=True,
@@ -176,8 +176,14 @@ class Zone(NetBoxModel):
     ]
 
     class Meta:
-        ordering = ("view", "name",)
-        unique_together = ("view", "name",)
+        ordering = (
+            "view",
+            "name",
+        )
+        unique_together = (
+            "view",
+            "name",
+        )
 
     def __str__(self):
         if self.view:
@@ -312,10 +318,10 @@ class Zone(NetBoxModel):
         super().validate_unique(*args, **kwargs)
 
         if self.view is None:
-            if Zone.objects.exclude(pk=self.pk).filter(name=self.name, view__isnull=True):
-                raise ValidationError({
-                    'name': 'A zone with this name already exists.'
-                })
+            if Zone.objects.exclude(pk=self.pk).filter(
+                name=self.name, view__isnull=True
+            ):
+                raise ValidationError({"name": "A zone with this name already exists."})
 
     def save(self, *args, **kwargs):
         new_zone = self.pk is None
@@ -641,7 +647,7 @@ class View(NetBoxModel):
         return reverse("plugins:netbox_dns:view", kwargs={"pk": self.id})
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     class Meta:
         ordering = ("name",)

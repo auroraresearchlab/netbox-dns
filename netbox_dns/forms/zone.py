@@ -234,7 +234,7 @@ class ZoneCSVForm(NetBoxModelCSVForm):
         help_text="View the zone belongs to",
         error_messages={
             "invalid_choice": "View not found.",
-        }
+        },
     )
     status = CSVChoiceField(
         choices=ZoneStatusChoices,
@@ -353,6 +353,7 @@ class ZoneCSVForm(NetBoxModelCSVForm):
     class Meta:
         model = Zone
         fields = (
+            "view",
             "name",
             "status",
             "default_ttl",
@@ -374,9 +375,7 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
         required=False,
         label="View",
         widget=APISelect(
-            attrs={
-                "data-url": reverse_lazy("plugins-api:netbox_dns-api:view-list")
-            }
+            attrs={"data-url": reverse_lazy("plugins-api:netbox_dns-api:view-list")}
         ),
     )
     status = forms.ChoiceField(
