@@ -7,11 +7,10 @@ from netbox_dns.models import View, Zone, NameServer, Record
 #
 # Views
 #
-class ViewSerializer(WritableNestedSerializer):
+class NestedViewSerializer(WritableNestedSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="plugins-api:netbox_dns-api:view-detail"
     )
-
     class Meta:
         model = View
         fields = ["id", "url", "display", "name", "default"]

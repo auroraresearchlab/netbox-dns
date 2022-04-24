@@ -3,9 +3,10 @@ from rest_framework import serializers
 from netbox.api.serializers import NetBoxModelSerializer
 
 from netbox_dns.api.nested_serializers import (
-    NestedRecordSerializer,
+    NestedViewSerializer,
     NestedZoneSerializer,
     NestedNameServerSerializer,
+    NestedRecordSerializer,
 )
 from netbox_dns.models import View, Zone, NameServer, Record
 
