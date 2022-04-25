@@ -326,7 +326,9 @@ class Zone(NetBoxModel):
     def save(self, *args, **kwargs):
         new_zone = self.pk is None
         if not new_zone:
-            renamed_zone = Zone.objects.get(pk=self.pk).name != self.name
+            old_zone = Zone.objects.get(pk=self.pk)
+            renamed_zone = old_zone.name != self.name
+            changed_view = old_zone.view != self.view
         else:
             renamed_zone = False
 
@@ -335,7 +337,7 @@ class Zone(NetBoxModel):
 
         super().save(*args, **kwargs)
 
-        if (new_zone or renamed_zone) and self.name.endswith(".arpa"):
+        if (new_zone or renamed_zone or changed_view) and self.name.endswith(".arpa"):
             address_records = Record.objects.filter(
                 Q(ptr_record__isnull=True)
                 | Q(ptr_record__zone__name__in=self.parent_zones()),
@@ -345,7 +347,7 @@ class Zone(NetBoxModel):
             for record in address_records:
                 record.update_ptr_record()
 
-        elif renamed_zone:
+        elif renamed_zone or changed_view:
             for record in self.record_set.filter(ptr_record__isnull=False):
                 record.update_ptr_record()
 
@@ -545,9 +547,12 @@ class Record(NetBoxModel):
             ".".join(address.reverse_pointer.split(".")[length:]) for length in lengths
         ]
 
-        ptr_zones = Zone.objects.filter(Q(name__in=zone_names)).order_by(
-            Length("name").desc()
-        )
+        if self.zone.view is None:
+            ptr_zone_filter = Q(name__in=zone_names, view__isnull=True)
+        else:
+            ptr_zone_filter = Q(name__in=zone_names, view_id=self.zone.view.pk)
+
+        ptr_zones = Zone.objects.filter(ptr_zone_filter).order_by(Length("name").desc())
         if len(ptr_zones):
             return ptr_zones[0]
 
