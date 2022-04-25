@@ -10,7 +10,7 @@ class ViewAdmin(admin.ModelAdmin):
 
 @admin.register(Zone)
 class ZoneAdmin(admin.ModelAdmin):
-    list_display = ("view", "name", "status")
+    list_display = ("name", "view", "status")
 
 
 @admin.register(NameServer)
