@@ -331,6 +331,7 @@ class Zone(NetBoxModel):
             changed_view = old_zone.view != self.view
         else:
             renamed_zone = False
+            changed_view = False
 
         if self.soa_serial_auto:
             self.soa_serial = self.get_auto_serial()
@@ -536,6 +537,26 @@ class Record(NetBoxModel):
     def fqdn(self):
         return f"{self.name}.{self.zone.name}."
 
+    @property
+    def address_conflicts(self):
+        if self.type not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
+            return False
+
+        if self.disable_ptr:
+            return False
+
+        if self.zone.view is None:
+            conflicts_qs = Q(zone__view__isnull=True)
+        else:
+            conflicts_qs = Q(zone__view_id=self.zone.view.pk)
+
+        return (
+            Record.objects.filter(type=self.type, disable_ptr=False, value=self.value)
+            .filter(conflicts_qs)
+            .exclude(pk=self.pk)
+            .exists()
+        )
+
     def ptr_zone(self):
         address = ipaddress.ip_address(self.value)
         if address.version == 4:
@@ -607,6 +628,13 @@ class Record(NetBoxModel):
     def save(self, *args, **kwargs):
         if self.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             self.update_ptr_record()
+
+        if self.address_conflicts:
+            raise ValidationError(
+                {
+                    "name": f"There is already an address record with name {self.name} and value {self.value} in view {self.zone.view}."
+                }
+            ) from None
 
         super().save(*args, **kwargs)
 

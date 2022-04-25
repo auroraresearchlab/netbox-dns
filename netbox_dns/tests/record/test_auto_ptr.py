@@ -2,6 +2,8 @@ import ipaddress
 
 from django.test import TestCase
 from django.db.utils import IntegrityError
+from django.core.exceptions import ValidationError
+
 
 from netbox_dns.models import NameServer, Record, RecordTypeChoices, Zone
 
@@ -140,7 +142,7 @@ class AutoPTRTest(TestCase):
             value=address,
             **self.record_data,
         )
-        self.assertRaises(IntegrityError, f_record2.save)
+        self.assertRaises(ValidationError, f_record2.save)
 
     def test_create_duplicate_ipv4_disable_ptr_1(self):
         f_zone = self.zones[0]
@@ -513,7 +515,7 @@ class AutoPTRTest(TestCase):
             value=address,
             **self.record_data,
         )
-        self.assertRaises(IntegrityError, f_record2.save)
+        self.assertRaises(ValidationError, f_record2.save)
 
     def test_create_duplicate_ipv6_disable_ptr_1(self):
         f_zone = self.zones[0]
