@@ -518,19 +518,6 @@ class Record(NetBoxModel):
 
     class Meta:
         ordering = ("zone", "name", "type", "value")
-        constraints = (
-            models.UniqueConstraint(
-                name="unique_pointer_for_address",
-                fields=["type", "value"],
-                condition=(
-                    models.Q(
-                        models.Q(disable_ptr=False),
-                        models.Q(type=RecordTypeChoices.A)
-                        | models.Q(type=RecordTypeChoices.AAAA),
-                    )
-                ),
-            ),
-        )
 
     def __str__(self):
         if self.name == "@":
