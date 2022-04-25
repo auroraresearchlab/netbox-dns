@@ -443,7 +443,7 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
     )
 
     model = Zone
-    nullable_fields = ("view", )
+    nullable_fields = ("view",)
     fieldsets = (
         (
             None,

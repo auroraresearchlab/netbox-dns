@@ -75,7 +75,14 @@ class RecordForm(NetBoxModelForm):
         if cleaned_data.get("disable_ptr"):
             return
 
+        zone = cleaned_data.get("zone")
+
         conflicts = Record.objects.filter(value=value, type=type, disable_ptr=False)
+        if zone.view is None:
+            conflicts = conflicts.filter(zone__view__isnull=True)
+        else:
+            conflicts = conflicts.filter(zone__view_id=zone.view.pk)
+
         if self.instance.pk:
             conflicts = conflicts.exclude(pk=self.instance.pk)
         if len(conflicts):
@@ -182,7 +189,14 @@ class RecordCSVForm(NetBoxModelCSVForm):
         if cleaned_data.get("disable_ptr"):
             return
 
+        zone = cleaned_data.get("zone")
+
         conflicts = Record.objects.filter(value=value, type=type, disable_ptr=False)
+        if zone.view is None:
+            conflicts = conflicts.filter(zone__view__isnull=True)
+        else:
+            conflicts = conflicts.filter(zone__view_id=zone.view.pk)
+
         if len(conflicts):
             raise forms.ValidationError(
                 {
@@ -241,17 +255,19 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
         cleaned_data = super().clean()
 
         disable_ptr = cleaned_data.get("disable_ptr")
-        if disable_ptr is None or disable_ptr:
+        zone = cleaned_data.get("zone")
+
+        if zone is None and (disable_pointer is None or disable_ptr):
             return
 
         address_values = [
-            record.value
+            (record.value, record.zone.view)
             for record in cleaned_data.get("pk")
             if record.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA)
         ]
 
         conflicts = [
-            f"Multiple records with value {value} and PTR enabled."
+            f"Multiple records with value {value[0]} and PTR enabled in view {value[1]}."
             for value in set(address_values)
             if address_values.count(value) > 1
         ]
@@ -259,15 +275,23 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
             raise forms.ValidationError({"disable_ptr": conflicts})
 
         for record in cleaned_data.get("pk"):
-            conflicts = (
-                Record.objects.filter(Record.unique_ptr_qs)
-                .filter(value=record.value)
-                .exclude(pk=record.pk)
-            )
+            if record.zone.view is None:
+                conflicts = (
+                    Record.objects.filter(Record.unique_ptr_qs)
+                    .filter(value=record.value, zone__view__isnull=True)
+                    .exclude(pk=record.pk)
+                )
+            else:
+                conflicts = (
+                    Record.objects.filter(Record.unique_ptr_qs)
+                    .filter(value=record.value, zone__view_id=record.zone.view.pk)
+                    .exclude(pk=record.pk)
+                )
+
             if len(conflicts):
                 raise forms.ValidationError(
                     {
-                        "disable_ptr": f"Multiple {record.type} records with value {record.value} and PTR enabled."
+                        "disable_ptr": f"Multiple {record.type} records with value {record.value} and PTR enabled in view {record.zone.view}."
                     }
                 )
 
