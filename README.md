@@ -17,6 +17,7 @@
 * Manage name servers
 * Manage DNS zone information, automatically generating SOA and NS records
 * Automatically create and update PTR records for A and AAAA records
+* Optionally organize zones in views to cater for split horizon DNS and multi site deployments
 
 NetBox DNS is using the standardized NetBox plugin interface, so it also takes advantage of the NetBox tagging and change log features.
 
