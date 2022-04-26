@@ -22,8 +22,8 @@ class NameServerTestCase(
     def setUpTestData(cls):
         View.objects.bulk_create(
             [
-                View(name="external", default=False),
-                View(name="internal", default=True),
+                View(name="external"),
+                View(name="internal"),
             ]
         )
 

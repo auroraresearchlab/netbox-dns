@@ -316,9 +316,11 @@ class Zone(NetBoxModel):
 
     def save(self, *args, **kwargs):
         if self.view is None:
-            if Zone.objects.exclude(pk=self.pk).filter(
-                name=self.name, view__isnull=True
-            ).exists():
+            if (
+                Zone.objects.exclude(pk=self.pk)
+                .filter(name=self.name, view__isnull=True)
+                .exists()
+            ):
                 raise ValidationError({"name": "A zone with this name already exists."})
 
         new_zone = self.pk is None
@@ -654,10 +656,6 @@ class View(NetBoxModel):
     name = models.CharField(
         unique=True,
         max_length=255,
-    )
-    default = models.BooleanField(
-        null=False,
-        default=False,
     )
 
     def get_absolute_url(self):

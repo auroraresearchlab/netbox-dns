@@ -23,7 +23,6 @@ class ViewSerializer(NetBoxModelSerializer):
             "url",
             "display",
             "name",
-            "default",
             "tags",
             "created",
             "last_updated",

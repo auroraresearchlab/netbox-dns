@@ -45,12 +45,42 @@ class AutoPTRTest(TestCase):
         View.objects.bulk_create(cls.views)
 
         cls.zones = [
-            Zone(name="zone1.example.com", **cls.zone_data, soa_mname=cls.nameserver, view=None),
-            Zone(name="zone1.example.com", **cls.zone_data, soa_mname=cls.nameserver, view=cls.views[0]),
-            Zone(name="zone1.example.com", **cls.zone_data, soa_mname=cls.nameserver, view=cls.views[1]),
-            Zone(name="1.0.10.in-addr.arpa", **cls.zone_data, soa_mname=cls.nameserver, view=None),
-            Zone(name="1.0.10.in-addr.arpa", **cls.zone_data, soa_mname=cls.nameserver, view=cls.views[0]),
-            Zone(name="1.0.10.in-addr.arpa", **cls.zone_data, soa_mname=cls.nameserver, view=cls.views[1]),
+            Zone(
+                name="zone1.example.com",
+                **cls.zone_data,
+                soa_mname=cls.nameserver,
+                view=None,
+            ),
+            Zone(
+                name="zone1.example.com",
+                **cls.zone_data,
+                soa_mname=cls.nameserver,
+                view=cls.views[0],
+            ),
+            Zone(
+                name="zone1.example.com",
+                **cls.zone_data,
+                soa_mname=cls.nameserver,
+                view=cls.views[1],
+            ),
+            Zone(
+                name="1.0.10.in-addr.arpa",
+                **cls.zone_data,
+                soa_mname=cls.nameserver,
+                view=None,
+            ),
+            Zone(
+                name="1.0.10.in-addr.arpa",
+                **cls.zone_data,
+                soa_mname=cls.nameserver,
+                view=cls.views[0],
+            ),
+            Zone(
+                name="1.0.10.in-addr.arpa",
+                **cls.zone_data,
+                soa_mname=cls.nameserver,
+                view=cls.views[1],
+            ),
             Zone(
                 name="1.0.0.0.f.e.e.b.d.a.e.d.0.8.e.f.ip6.arpa",
                 **cls.zone_data,
@@ -263,7 +293,9 @@ class AutoPTRTest(TestCase):
         f_record1.delete()
 
         r_record2 = Record.objects.get(
-            type=RecordTypeChoices.PTR, zone=r_zone2, name=reverse_name(address, r_zone2)
+            type=RecordTypeChoices.PTR,
+            zone=r_zone2,
+            name=reverse_name(address, r_zone2),
         )
 
         self.assertEqual(r_record2.value, f"{name}.{f_zone2.name}.")
@@ -298,7 +330,9 @@ class AutoPTRTest(TestCase):
         f_record1.delete()
 
         r_record2 = Record.objects.get(
-            type=RecordTypeChoices.PTR, zone=r_zone2, name=reverse_name(address, r_zone2)
+            type=RecordTypeChoices.PTR,
+            zone=r_zone2,
+            name=reverse_name(address, r_zone2),
         )
 
         self.assertEqual(r_record2.value, f"{name}.{f_zone2.name}.")
@@ -333,11 +367,12 @@ class AutoPTRTest(TestCase):
         f_record1.delete()
 
         r_record2 = Record.objects.get(
-            type=RecordTypeChoices.PTR, zone=r_zone2, name=reverse_name(address, r_zone2)
+            type=RecordTypeChoices.PTR,
+            zone=r_zone2,
+            name=reverse_name(address, r_zone2),
         )
 
         self.assertEqual(r_record2.value, f"{name}.{f_zone2.name}.")
-
 
     def test_create_duplicate_ipv4_with_view(self):
         f_zone = self.zones[1]
@@ -429,7 +464,6 @@ class AutoPTRTest(TestCase):
         )
 
         self.assertEqual(r_record.value, f"{name1}.{f_zone.name}.")
-
 
     def test_create_ipv6_ptr_no_view(self):
         f_zone = self.zones[0]
@@ -622,7 +656,9 @@ class AutoPTRTest(TestCase):
         f_record1.delete()
 
         r_record2 = Record.objects.get(
-            type=RecordTypeChoices.PTR, zone=r_zone2, name=reverse_name(address, r_zone2)
+            type=RecordTypeChoices.PTR,
+            zone=r_zone2,
+            name=reverse_name(address, r_zone2),
         )
 
         self.assertEqual(r_record2.value, f"{name}.{f_zone2.name}.")
@@ -657,7 +693,9 @@ class AutoPTRTest(TestCase):
         f_record1.delete()
 
         r_record2 = Record.objects.get(
-            type=RecordTypeChoices.PTR, zone=r_zone2, name=reverse_name(address, r_zone2)
+            type=RecordTypeChoices.PTR,
+            zone=r_zone2,
+            name=reverse_name(address, r_zone2),
         )
 
         self.assertEqual(r_record2.value, f"{name}.{f_zone2.name}.")
@@ -692,11 +730,12 @@ class AutoPTRTest(TestCase):
         f_record1.delete()
 
         r_record2 = Record.objects.get(
-            type=RecordTypeChoices.PTR, zone=r_zone2, name=reverse_name(address, r_zone2)
+            type=RecordTypeChoices.PTR,
+            zone=r_zone2,
+            name=reverse_name(address, r_zone2),
         )
 
         self.assertEqual(r_record2.value, f"{name}.{f_zone2.name}.")
-
 
     def test_create_duplicate_ipv6_with_view(self):
         f_zone = self.zones[1]

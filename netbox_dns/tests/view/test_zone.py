@@ -47,11 +47,36 @@ class ZoneMoveTest(TestCase):
         View.objects.bulk_create(cls.views)
 
         cls.zones = [
-            Zone(name="zone1.example.com", **cls.zone_data, soa_mname=cls.nameserver, view=None),
-            Zone(name="zone1.example.com", **cls.zone_data, soa_mname=cls.nameserver, view=cls.views[0]),
-            Zone(name="1.0.10.in-addr.arpa", **cls.zone_data, soa_mname=cls.nameserver, view=None),
-            Zone(name="1.0.10.in-addr.arpa", **cls.zone_data, soa_mname=cls.nameserver, view=cls.views[0]),
-            Zone(name="1.0.10.in-addr.arpa", **cls.zone_data, soa_mname=cls.nameserver, view=cls.views[1]),
+            Zone(
+                name="zone1.example.com",
+                **cls.zone_data,
+                soa_mname=cls.nameserver,
+                view=None,
+            ),
+            Zone(
+                name="zone1.example.com",
+                **cls.zone_data,
+                soa_mname=cls.nameserver,
+                view=cls.views[0],
+            ),
+            Zone(
+                name="1.0.10.in-addr.arpa",
+                **cls.zone_data,
+                soa_mname=cls.nameserver,
+                view=None,
+            ),
+            Zone(
+                name="1.0.10.in-addr.arpa",
+                **cls.zone_data,
+                soa_mname=cls.nameserver,
+                view=cls.views[0],
+            ),
+            Zone(
+                name="1.0.10.in-addr.arpa",
+                **cls.zone_data,
+                soa_mname=cls.nameserver,
+                view=cls.views[1],
+            ),
             Zone(
                 name="1.0.0.0.f.e.e.b.d.a.e.d.0.8.e.f.ip6.arpa",
                 **cls.zone_data,
@@ -352,7 +377,12 @@ class ZoneMoveTest(TestCase):
     def test_change_view_zone_conflict(self):
         f_zone1 = self.zones[1]
 
-        f_zone2 = Zone(name="zone1.example.com", **self.zone_data, soa_mname=self.nameserver, view=self.views[1])
+        f_zone2 = Zone(
+            name="zone1.example.com",
+            **self.zone_data,
+            soa_mname=self.nameserver,
+            view=self.views[1],
+        )
         f_zone2.save()
 
         f_zone1.view = self.views[1]

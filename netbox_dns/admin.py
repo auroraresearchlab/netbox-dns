@@ -5,7 +5,7 @@ from .models import View, Zone, NameServer, Record
 
 @admin.register(View)
 class ViewAdmin(admin.ModelAdmin):
-    list_display = ("name", "default")
+    list_display = ("name",)
 
 
 @admin.register(Zone)

@@ -13,7 +13,7 @@ class ViewTest(
     APIViewTestCases.DeleteObjectViewTestCase,
 ):
     model = View
-    brief_fields = ["default", "display", "id", "name", "url"]
+    brief_fields = ["display", "id", "name", "url"]
 
     create_data = [
         {"name": "external"},
@@ -24,8 +24,8 @@ class ViewTest(
     @classmethod
     def setUpTestData(cls):
         views = (
-            View(name="test1", default=True),
-            View(name="test2", default=False),
-            View(name="test3", default=False),
+            View(name="test1"),
+            View(name="test2"),
+            View(name="test3"),
         )
         View.objects.bulk_create(views)

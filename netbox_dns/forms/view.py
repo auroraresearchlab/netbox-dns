@@ -16,7 +16,7 @@ class ViewForm(NetBoxModelForm):
 
     class Meta:
         model = View
-        fields = ("name", "default", "tags")
+        fields = ("name", "tags")
 
 
 class ViewFilterForm(NetBoxModelFilterSetForm):
@@ -34,12 +34,8 @@ class ViewFilterForm(NetBoxModelFilterSetForm):
 class ViewCSVForm(NetBoxModelCSVForm):
     class Meta:
         model = View
-        fields = ("name", "default")
+        fields = ("name",)
 
 
 class ViewBulkEditForm(NetBoxModelBulkEditForm):
     model = View
-
-    default = NullBooleanField(
-        required=False, widget=BulkEditNullBooleanSelect(), label="Default View"
-    )

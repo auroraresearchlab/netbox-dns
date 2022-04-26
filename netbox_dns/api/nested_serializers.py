@@ -14,7 +14,7 @@ class NestedViewSerializer(WritableNestedSerializer):
 
     class Meta:
         model = View
-        fields = ["id", "url", "display", "name", "default"]
+        fields = ["id", "url", "display", "name"]
 
 
 #
