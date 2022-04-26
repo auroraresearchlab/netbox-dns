@@ -340,7 +340,8 @@ class Zone(NetBoxModel):
         if (new_zone or renamed_zone or changed_view) and self.name.endswith(".arpa"):
             address_records = Record.objects.filter(
                 Q(ptr_record__isnull=True)
-                | Q(ptr_record__zone__name__in=self.parent_zones()),
+                | Q(ptr_record__zone__name__in=self.parent_zones())
+                | Q(ptr_record__zone__name=self.name),
                 type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA),
                 disable_ptr=False,
             )
