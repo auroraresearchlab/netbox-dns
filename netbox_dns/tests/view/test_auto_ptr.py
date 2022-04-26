@@ -475,7 +475,7 @@ class AutoPTRTest(TestCase):
         f_record = Record(
             zone=f_zone,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -496,7 +496,7 @@ class AutoPTRTest(TestCase):
         f_record = Record(
             zone=f_zone,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -517,7 +517,7 @@ class AutoPTRTest(TestCase):
         f_record = Record(
             zone=f_zone,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -540,7 +540,7 @@ class AutoPTRTest(TestCase):
         f_record = Record(
             zone=f_zone,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -563,7 +563,7 @@ class AutoPTRTest(TestCase):
         f_record = Record(
             zone=f_zone,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -586,7 +586,7 @@ class AutoPTRTest(TestCase):
         f_record = Record(
             zone=f_zone,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -611,7 +611,7 @@ class AutoPTRTest(TestCase):
         f_record = Record(
             zone=f_zone,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -638,7 +638,7 @@ class AutoPTRTest(TestCase):
         f_record1 = Record(
             zone=f_zone1,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -647,7 +647,7 @@ class AutoPTRTest(TestCase):
         f_record2 = Record(
             zone=f_zone2,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -675,7 +675,7 @@ class AutoPTRTest(TestCase):
         f_record1 = Record(
             zone=f_zone1,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -684,7 +684,7 @@ class AutoPTRTest(TestCase):
         f_record2 = Record(
             zone=f_zone2,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -712,7 +712,7 @@ class AutoPTRTest(TestCase):
         f_record1 = Record(
             zone=f_zone1,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -721,7 +721,7 @@ class AutoPTRTest(TestCase):
         f_record2 = Record(
             zone=f_zone2,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -747,7 +747,7 @@ class AutoPTRTest(TestCase):
         f_record1 = Record(
             zone=f_zone,
             name=name1,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -756,7 +756,7 @@ class AutoPTRTest(TestCase):
         f_record2 = Record(
             zone=f_zone,
             name=name2,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -773,7 +773,7 @@ class AutoPTRTest(TestCase):
         f_record1 = Record(
             zone=f_zone,
             name=name1,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             disable_ptr=True,
             **self.record_data,
@@ -783,7 +783,7 @@ class AutoPTRTest(TestCase):
         f_record2 = Record(
             zone=f_zone,
             name=name2,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -806,7 +806,7 @@ class AutoPTRTest(TestCase):
         f_record1 = Record(
             zone=f_zone,
             name=name1,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -815,7 +815,7 @@ class AutoPTRTest(TestCase):
         f_record2 = Record(
             zone=f_zone,
             name=name2,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             disable_ptr=True,
             **self.record_data,

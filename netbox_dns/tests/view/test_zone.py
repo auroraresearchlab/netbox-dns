@@ -228,6 +228,111 @@ class ZoneMoveTest(TestCase):
                 type=RecordTypeChoices.PTR, name=reverse_name(address, r_zone)
             )
 
+    def test_ipv4_add_view_record_conflict(self):
+        f_zone1 = self.zones[1]
+        f_zone2 = Zone(
+            name="zone2.example.com",
+            **self.zone_data,
+            soa_mname=self.nameserver,
+            view=None,
+        )
+        f_zone2.save()
+
+        name = "test1"
+        address = "10.0.1.42"
+
+        f_record1 = Record(
+            zone=f_zone1,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone2,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
+        )
+        f_record2.save()
+
+        f_zone2.view = self.views[0]
+        with self.assertRaises(ValidationError):
+            f_zone2.save()
+
+    def test_ipv4_remove_view_record_conflict(self):
+        f_zone1 = self.zones[0]
+        f_zone2 = Zone(
+            name="zone2.example.com",
+            **self.zone_data,
+            soa_mname=self.nameserver,
+            view=self.views[1],
+        )
+        f_zone2.save()
+
+        name = "test1"
+        address = "10.0.1.42"
+
+        f_record1 = Record(
+            zone=f_zone1,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone2,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
+        )
+        f_record2.save()
+
+        f_zone2.view = None
+        with self.assertRaises(ValidationError):
+            f_zone2.save()
+
+    def test_ipv4_change_view_record_conflict(self):
+        f_zone1 = self.zones[1]
+        f_zone2 = Zone(
+            name="zone2.example.com",
+            **self.zone_data,
+            soa_mname=self.nameserver,
+            view=self.views[1],
+        )
+        f_zone2.save()
+
+        name = "test1"
+        address = "10.0.1.42"
+
+        f_record1 = Record(
+            zone=f_zone1,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone2,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
+        )
+        f_record2.save()
+
+        f_zone2.view = self.views[0]
+        with self.assertRaises(ValidationError):
+            f_zone2.save()
+
     def test_ipv6_add_view_to_zone_new_ptr_added(self):
         f_zone = self.zones[0]
         r_zone = self.zones[7]
@@ -238,7 +343,7 @@ class ZoneMoveTest(TestCase):
         f_record = Record(
             zone=f_zone,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -263,7 +368,7 @@ class ZoneMoveTest(TestCase):
         f_record = Record(
             zone=f_zone,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -291,7 +396,7 @@ class ZoneMoveTest(TestCase):
         f_record = Record(
             zone=f_zone,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -318,7 +423,7 @@ class ZoneMoveTest(TestCase):
         f_record = Record(
             zone=f_zone,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -344,7 +449,7 @@ class ZoneMoveTest(TestCase):
         f_record = Record(
             zone=f_zone,
             name=name,
-            type=RecordTypeChoices.A,
+            type=RecordTypeChoices.AAAA,
             value=address,
             **self.record_data,
         )
@@ -357,6 +462,111 @@ class ZoneMoveTest(TestCase):
             r_record = Record.objects.get(
                 type=RecordTypeChoices.PTR, name=reverse_name(address, r_zone)
             )
+
+    def test_ipv6_add_view_record_conflict(self):
+        f_zone1 = self.zones[1]
+        f_zone2 = Zone(
+            name="zone2.example.com",
+            **self.zone_data,
+            soa_mname=self.nameserver,
+            view=None,
+        )
+        f_zone2.save()
+
+        name = "test1"
+        address = "fe80:dead:beef:1::42"
+
+        f_record1 = Record(
+            zone=f_zone1,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone2,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record2.save()
+
+        f_zone2.view = self.views[0]
+        with self.assertRaises(ValidationError):
+            f_zone2.save()
+
+    def test_ipv6_remove_view_record_conflict(self):
+        f_zone1 = self.zones[0]
+        f_zone2 = Zone(
+            name="zone2.example.com",
+            **self.zone_data,
+            soa_mname=self.nameserver,
+            view=self.views[1],
+        )
+        f_zone2.save()
+
+        name = "test1"
+        address = "fe80:dead:beef:1::42"
+
+        f_record1 = Record(
+            zone=f_zone1,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone2,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record2.save()
+
+        f_zone2.view = None
+        with self.assertRaises(ValidationError):
+            f_zone2.save()
+
+    def test_ipv6_change_view_record_conflict(self):
+        f_zone1 = self.zones[1]
+        f_zone2 = Zone(
+            name="zone2.example.com",
+            **self.zone_data,
+            soa_mname=self.nameserver,
+            view=self.views[1],
+        )
+        f_zone2.save()
+
+        name = "test1"
+        address = "fe80:dead:beef:1::42"
+
+        f_record1 = Record(
+            zone=f_zone1,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone2,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record2.save()
+
+        f_zone2.view = self.views[0]
+        with self.assertRaises(ValidationError):
+            f_zone2.save()
 
     def test_add_view_to_zone_zone_conflict(self):
         f_zone = self.zones[0]
