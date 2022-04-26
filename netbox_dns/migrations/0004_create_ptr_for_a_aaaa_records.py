@@ -38,10 +38,6 @@ class Migration(migrations.Migration):
             name="record",
             options={"ordering": ("zone", "name", "type", "value")},
         ),
-        migrations.AlterModelOptions(
-            name="zone",
-            options={"ordering": ("name",)},
-        ),
         migrations.AddField(
             model_name="record",
             name="disable_ptr",
