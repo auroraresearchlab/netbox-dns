@@ -257,7 +257,7 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
         disable_ptr = cleaned_data.get("disable_ptr")
         zone = cleaned_data.get("zone")
 
-        if zone is None and (disable_pointer is None or disable_ptr):
+        if zone is None and (disable_ptr is None or disable_ptr):
             return
 
         address_values = [
