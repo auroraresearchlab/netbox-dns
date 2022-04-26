@@ -204,6 +204,119 @@ class ZoneMoveTest(TestCase):
                 name=reverse_name(address, r_zone),
             )
 
+    def test_ipv4_add_view_to_ptr_zone_new_ptr_added(self):
+        f_zone = self.zones[0]
+        f_zone.view = self.views[2]
+        f_zone.save()
+
+        r_zone = self.zones[2]
+
+        name = "test1"
+        address = "10.0.1.42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+
+        r_zone.view = self.views[2]
+        r_zone.save()
+
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+        )
+
+        self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
+
+    def test_ipv4_add_view_to_ptr_zone_old_ptr_removed(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[2]
+
+        name = "test1"
+        address = "10.0.1.42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+
+        r_zone.view = self.views[2]
+        r_zone.save()
+
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+
+    def test_ipv4_remove_view_from_ptr_zone_new_ptr_added(self):
+        f_zone = self.zones[0]
+
+        r_zone = self.zones[2]
+        r_zone.view = self.views[2]
+        r_zone.save()
+
+        name = "test1"
+        address = "10.0.1.42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+
+        r_zone.view = None
+        r_zone.save()
+
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+        )
+
+        self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
+
+    def test_ipv4_remove_view_from_ptr_zone_old_ptr_removed(self):
+        f_zone = self.zones[0]
+        f_zone.view = self.views[2]
+        f_zone.save()
+
+        r_zone = self.zones[2]
+        r_zone.view = self.views[2]
+        r_zone.save()
+
+        name = "test1"
+        address = "10.0.1.42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+
+        r_zone.view = None
+        r_zone.save()
+
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+
     def test_ipv4_add_view_to_zone_no_ptr_zone(self):
         f_zone = self.zones[0]
         r_zone = self.zones[2]
@@ -431,6 +544,119 @@ class ZoneMoveTest(TestCase):
 
         f_zone.view = None
         f_zone.save()
+
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+
+    def test_ipv6_add_view_to_ptr_zone_new_ptr_added(self):
+        f_zone = self.zones[0]
+        f_zone.view = self.views[2]
+        f_zone.save()
+
+        r_zone = self.zones[5]
+
+        name = "test1"
+        address = "fe80:dead:beef:1::42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+
+        r_zone.view = self.views[2]
+        r_zone.save()
+
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+        )
+
+        self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
+
+    def test_ipv6_add_view_to_ptr_zone_old_ptr_removed(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[5]
+
+        name = "test1"
+        address = "fe80:dead:beef:1::42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+
+        r_zone.view = self.views[2]
+        r_zone.save()
+
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+
+    def test_ipv6_remove_view_from_ptr_zone_new_ptr_added(self):
+        f_zone = self.zones[0]
+
+        r_zone = self.zones[5]
+        r_zone.view = self.views[2]
+        r_zone.save()
+
+        name = "test1"
+        address = "fe80:dead:beef:1::42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+
+        r_zone.view = None
+        r_zone.save()
+
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+        )
+
+        self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
+
+    def test_ipv6_remove_view_from_ptr_zone_old_ptr_removed(self):
+        f_zone = self.zones[0]
+        f_zone.view = self.views[2]
+        f_zone.save()
+
+        r_zone = self.zones[5]
+        r_zone.view = self.views[2]
+        r_zone.save()
+
+        name = "test1"
+        address = "fe80:dead:beef:1::42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+
+        r_zone.view = None
+        r_zone.save()
 
         with self.assertRaises(Record.DoesNotExist):
             Record.objects.get(
