@@ -556,6 +556,19 @@ class Record(NetBoxModel):
             .exists()
         )
 
+    @property
+    def pointer_conflicts(self):
+        if self.type != RecordTypeChoices.PTR:
+            return False
+
+        return (
+            Record.objects.filter(
+                type=RecordTypeChoices.PTR, zone=self.zone, name=self.name
+            )
+            .exclude(pk=self.pk)
+            .exists()
+        )
+
     def ptr_zone(self):
         address = ipaddress.ip_address(self.value)
         if address.version == 4:
@@ -632,6 +645,13 @@ class Record(NetBoxModel):
             raise ValidationError(
                 {
                     "name": f"There is already an address record with name {self.name} and value {self.value} in view {self.zone.view}."
+                }
+            ) from None
+
+        if self.pointer_conflicts:
+            raise ValidationError(
+                {
+                    "name": f"There is already a pointer record with name {self.name} in zone {self.zone}."
                 }
             ) from None
 
