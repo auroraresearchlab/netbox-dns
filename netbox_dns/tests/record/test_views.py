@@ -2,7 +2,7 @@ from utilities.testing import ViewTestCases
 from utilities.testing import create_tags
 
 from netbox_dns.tests.custom import ModelViewTestCase
-from netbox_dns.models import NameServer, Record, RecordTypeChoices, Zone
+from netbox_dns.models import View, Zone, NameServer, Record, RecordTypeChoices
 
 
 class RecordTestCase(
@@ -32,20 +32,46 @@ class RecordTestCase(
     }
 
     csv_data = (
-        "zone,type,name,value,ttl",
-        "zone1.example.com,A,@,10.10.10.10,3600",
-        "zone2.example.com,AAAA,name4,fe80::dead:beef,7200",
-        "zone1.example.com,CNAME,dns,name1.zone2.example.com,100",
-        "zone2.example.com,TXT,textname,textvalue,1000",
+        "zone,view,type,name,value,ttl",
+        "zone1.example.com,,A,@,10.10.10.10,3600",
+        "zone2.example.com,,AAAA,name4,fe80::dead:beef,7200",
+        "zone1.example.com,,CNAME,dns,name1.zone2.example.com,100",
+        "zone2.example.com,,TXT,textname,textvalue,1000",
+        "zone1.example.com,view1,A,@,10.10.10.10,3600",
+        "zone2.example.com,view1,AAAA,name4,fe80::dead:beef,7200",
+        "zone1.example.com,view1,CNAME,dns,name1.zone2.example.com,100",
+        "zone2.example.com,view1,TXT,textname,textvalue,1000",
+        "zone1.example.com,view2,A,@,10.10.10.10,3600",
+        "zone2.example.com,view2,AAAA,name4,fe80::dead:beef,7200",
+        "zone1.example.com,view2,CNAME,dns,name1.zone2.example.com,100",
+        "zone2.example.com,view2,TXT,textname,textvalue,1000",
     )
 
     @classmethod
     def setUpTestData(cls):
         ns1 = NameServer.objects.create(name="ns1.example.com")
 
+        views = (
+            View(name="view1"),
+            View(name="view2"),
+        )
+        View.objects.bulk_create(views)
+
         zones = (
-            Zone(name="zone1.example.com", **cls.zone_data, soa_mname=ns1),
-            Zone(name="zone2.example.com", **cls.zone_data, soa_mname=ns1),
+            Zone(name="zone1.example.com", **cls.zone_data, soa_mname=ns1, view=None),
+            Zone(name="zone2.example.com", **cls.zone_data, soa_mname=ns1, view=None),
+            Zone(
+                name="zone1.example.com", **cls.zone_data, soa_mname=ns1, view=views[0]
+            ),
+            Zone(
+                name="zone2.example.com", **cls.zone_data, soa_mname=ns1, view=views[0]
+            ),
+            Zone(
+                name="zone1.example.com", **cls.zone_data, soa_mname=ns1, view=views[1]
+            ),
+            Zone(
+                name="zone2.example.com", **cls.zone_data, soa_mname=ns1, view=views[1]
+            ),
         )
         Zone.objects.bulk_create(zones)
 

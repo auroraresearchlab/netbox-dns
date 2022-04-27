@@ -31,7 +31,7 @@ from utilities.forms import (
     add_blank_choice,
 )
 
-from netbox_dns.models import Record, RecordTypeChoices, Zone
+from netbox_dns.models import View, Zone, Record, RecordTypeChoices
 
 
 class RecordForm(NetBoxModelForm):
@@ -139,11 +139,17 @@ class RecordFilterForm(NetBoxModelFilterSetForm):
 
 
 class RecordCSVForm(NetBoxModelCSVForm):
-    zone = CSVModelChoiceField(
-        queryset=Zone.objects.all(),
-        to_field_name="name",
+    zone = CharField(
         required=True,
-        help_text="Assigned zone",
+        min_length=1,
+        max_length=255,
+        help_text="Zone",
+    )
+    view = CSVModelChoiceField(
+        queryset=View.objects.all(),
+        to_field_name="name",
+        required=False,
+        help_text="View the zone belongs to",
     )
     type = CSVChoiceField(
         choices=RecordTypeChoices,
@@ -162,14 +168,42 @@ class RecordCSVForm(NetBoxModelCSVForm):
 
     def clean(self):
         """
+        Determine the unique zone object (if any) from the value of "zone" and
+        "view".
+
         For A and AAA records, verify that a valid IPv4 or IPv6 was passed as
         value and raise a ValidationError exception otherwise.
         """
         cleaned_data = super().clean()
 
+        zone_name = cleaned_data.get("zone")
+        view = cleaned_data.get("view", None)
+
+        if view is None:
+            zones = Zone.objects.filter(name=zone_name, view__isnull=True)
+        else:
+            zones = Zone.objects.filter(name=zone_name, view=view)
+
+        if len(zones):
+            cleaned_data["zone"] = zones[0]
+        else:
+            cleaned_data["zone"] = None
+            raise forms.ValidationError(
+                {"zone": f"Zone {zone_name} not found in view {view}."}
+            ) from None
+
+        ttl = cleaned_data.get("ttl", None)
+        if ttl is not None:
+            if ttl <= 0:
+                raise forms.ValidationError({"TTL must be greater than zero"}) from None
+
+            cleaned_data["ttl"] = ttl
+        else:
+            cleaned_data["ttl"] = cleaned_data["zone"].default_ttl
+
         type = cleaned_data.get("type")
         if type not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
-            return
+            return cleaned_data
 
         value = cleaned_data.get("value")
         ip_version = "4" if type == RecordTypeChoices.A else "6"
@@ -187,15 +221,13 @@ class RecordCSVForm(NetBoxModelCSVForm):
             ) from None
 
         if cleaned_data.get("disable_ptr"):
-            return
-
-        zone = cleaned_data.get("zone")
+            return cleaned_data
 
         conflicts = Record.objects.filter(value=value, type=type, disable_ptr=False)
-        if zone.view is None:
+        if view is None:
             conflicts = conflicts.filter(zone__view__isnull=True)
         else:
-            conflicts = conflicts.filter(zone__view_id=zone.view.pk)
+            conflicts = conflicts.filter(zone__view_id=view.pk)
 
         if len(conflicts):
             raise forms.ValidationError(
@@ -204,25 +236,14 @@ class RecordCSVForm(NetBoxModelCSVForm):
                 }
             ) from None
 
-    def clean_ttl(self):
-        ttl = self.cleaned_data["ttl"]
-        if ttl is not None:
-            if ttl <= 0:
-                raise ValidationError("TTL must be greater than zero")
-
-            return ttl
-
-        if "zone" in self.cleaned_data:
-            return self.cleaned_data["zone"].default_ttl
-
-        return None
+        return cleaned_data
 
     def clean_type(self):
         return self.cleaned_data["type"].upper()
 
     class Meta:
         model = Record
-        fields = ("zone", "type", "name", "value", "ttl", "disable_ptr")
+        fields = ("zone", "view", "type", "name", "value", "ttl", "disable_ptr")
 
 
 class RecordBulkEditForm(NetBoxModelBulkEditForm):
