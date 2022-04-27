@@ -19,7 +19,11 @@
                     {% if object.view %}
                     <tr>
                         <th scope="row">View</th>
-                        <td>{{ object.view }}</td>
+                        <td>
+                            <a href="{% url 'plugins:netbox_dns:view' pk=object.view.pk %}">
+                                {{ object.view }}
+                            </a>
+                        </td>
                     </tr>
                     {% endif %}
                     <tr>
