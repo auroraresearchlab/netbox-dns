@@ -24,6 +24,12 @@ class NestedZoneSerializer(WritableNestedSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="plugins-api:netbox_dns-api:zone-detail"
     )
+    view = NestedViewSerializer(
+        many=False,
+        required=False,
+        read_only=True,
+        help_text="View the zone belongs to",
+    )
     active = serializers.BooleanField(
         required=False,
         read_only=True,
@@ -31,7 +37,7 @@ class NestedZoneSerializer(WritableNestedSerializer):
 
     class Meta:
         model = Zone
-        fields = ["id", "url", "display", "name", "status", "active"]
+        fields = ["id", "url", "display", "name", "view", "status", "active"]
 
 
 #

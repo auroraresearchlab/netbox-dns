@@ -33,6 +33,13 @@ class ZoneSerializer(NetBoxModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="plugins-api:netbox_dns-api:zone-detail"
     )
+    view = NestedViewSerializer(
+        many=False,
+        read_only=False,
+        required=False,
+        default=None,
+        help_text="View the zone belongs to",
+    )
     nameservers = NestedNameServerSerializer(
         many=True, read_only=False, required=False, help_text="Nameservers for the zone"
     )
@@ -53,7 +60,7 @@ class ZoneSerializer(NetBoxModelSerializer):
         zone = super().create(validated_data)
 
         if nameservers is not None:
-            zone.nameservers.set([nameserver for nameserver in nameservers])
+            zone.nameservers.set(nameservers)
 
         return zone
 
@@ -63,7 +70,7 @@ class ZoneSerializer(NetBoxModelSerializer):
         zone = super().update(instance, validated_data)
 
         if nameservers is not None:
-            zone.nameservers.set([nameserver for nameserver in nameservers])
+            zone.nameservers.set(nameservers)
 
         return zone
 
@@ -73,6 +80,7 @@ class ZoneSerializer(NetBoxModelSerializer):
             "id",
             "url",
             "name",
+            "view",
             "display",
             "nameservers",
             "status",
