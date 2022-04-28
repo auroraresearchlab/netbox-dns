@@ -1,7 +1,7 @@
-from utilities.testing import APIViewTestCases
+from utilities.testing import APIViewTestCases, create_tags
 
 from netbox_dns.tests.custom import APITestCase
-from netbox_dns.models import NameServer, Zone
+from netbox_dns.models import View, Zone, NameServer
 
 
 class ZoneTest(
@@ -21,11 +21,8 @@ class ZoneTest(
         "name",
         "status",
         "url",
+        "view",
     ]
-
-    bulk_update_data = {
-        "status": "active",
-    }
 
     zone_data = {
         "default_ttl": 86400,
@@ -42,30 +39,73 @@ class ZoneTest(
     def setUpTestData(cls):
         ns1 = NameServer.objects.create(name="ns1.example.com")
 
+        views = (
+            View(name="view1"),
+            View(name="view2"),
+            View(name="view3"),
+        )
+        View.objects.bulk_create(views)
+
         zones = (
             Zone(name="zone1.example.com", **cls.zone_data, soa_mname=ns1),
             Zone(name="zone2.example.com", **cls.zone_data, soa_mname=ns1),
-            Zone(name="zone3.example.com", **cls.zone_data, soa_mname=ns1),
+            Zone(
+                name="zone3.example.com", **cls.zone_data, soa_mname=ns1, view=views[0]
+            ),
+            Zone(
+                name="zone4.example.com", **cls.zone_data, soa_mname=ns1, view=views[1]
+            ),
+            Zone(
+                name="zone5.example.com", **cls.zone_data, soa_mname=ns1, view=views[2]
+            ),
         )
         Zone.objects.bulk_create(zones)
 
+        tags = create_tags("Alpha", "Bravo", "Charlie")
+
         cls.create_data = [
-            {
-                "name": "zone4.example.com",
-                "status": "reserved",
-                **cls.zone_data,
-                "soa_mname": ns1.pk,
-            },
-            {
-                "name": "zone5.example.com",
-                "status": "reserved",
-                **cls.zone_data,
-                "soa_mname": ns1.pk,
-            },
             {
                 "name": "zone6.example.com",
                 "status": "reserved",
                 **cls.zone_data,
                 "soa_mname": ns1.pk,
             },
+            {
+                "name": "zone7.example.com",
+                "status": "reserved",
+                **cls.zone_data,
+                "soa_mname": ns1.pk,
+            },
+            {
+                "name": "zone8.example.com",
+                "status": "reserved",
+                **cls.zone_data,
+                "soa_mname": ns1.pk,
+            },
+            {
+                "name": "zone9.example.com",
+                "status": "active",
+                **cls.zone_data,
+                "soa_mname": ns1.pk,
+                "view": views[0].pk,
+            },
+            {
+                "name": "zone9.example.com",
+                "status": "active",
+                **cls.zone_data,
+                "soa_mname": ns1.pk,
+                "view": views[1].pk,
+            },
+            {
+                "name": "zone9.example.com",
+                "status": "active",
+                **cls.zone_data,
+                "soa_mname": ns1.pk,
+            },
         ]
+
+        cls.bulk_update_data = {
+            "view": views[2].pk,
+            "status": "active",
+            "tags": [t.pk for t in tags],
+        }
