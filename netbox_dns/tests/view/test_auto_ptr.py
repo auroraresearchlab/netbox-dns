@@ -266,7 +266,6 @@ class AutoPTRTest(TestCase):
     def test_remove_ipv4_ptr_missing_view(self):
         f_zone1 = self.zones[0]
         f_zone2 = self.zones[1]
-        r_zone1 = self.zones[3]
         r_zone2 = self.zones[4]
 
         name = "test1"
@@ -303,7 +302,6 @@ class AutoPTRTest(TestCase):
     def test_remove_ipv4_ptr_different_view(self):
         f_zone1 = self.zones[1]
         f_zone2 = self.zones[2]
-        r_zone1 = self.zones[4]
         r_zone2 = self.zones[5]
 
         name = "test1"
@@ -340,7 +338,6 @@ class AutoPTRTest(TestCase):
     def test_remove_ipv4_ptr_added_view(self):
         f_zone1 = self.zones[1]
         f_zone2 = self.zones[0]
-        r_zone1 = self.zones[4]
         r_zone2 = self.zones[3]
 
         name = "test1"
@@ -629,7 +626,6 @@ class AutoPTRTest(TestCase):
     def test_remove_ipv6_ptr_missing_view(self):
         f_zone1 = self.zones[0]
         f_zone2 = self.zones[1]
-        r_zone1 = self.zones[6]
         r_zone2 = self.zones[7]
 
         name = "test1"
@@ -666,7 +662,6 @@ class AutoPTRTest(TestCase):
     def test_remove_ipv6_ptr_added_view(self):
         f_zone1 = self.zones[1]
         f_zone2 = self.zones[0]
-        r_zone1 = self.zones[7]
         r_zone2 = self.zones[6]
 
         name = "test1"
@@ -703,7 +698,6 @@ class AutoPTRTest(TestCase):
     def test_remove_ipv6_ptr_different_view(self):
         f_zone1 = self.zones[1]
         f_zone2 = self.zones[2]
-        r_zone1 = self.zones[7]
         r_zone2 = self.zones[8]
 
         name = "test1"

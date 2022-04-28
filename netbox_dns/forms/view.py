@@ -1,4 +1,4 @@
-from django.forms import CharField, NullBooleanField
+from django.forms import CharField
 
 from netbox.forms import (
     NetBoxModelBulkEditForm,
@@ -8,7 +8,7 @@ from netbox.forms import (
 )
 from netbox_dns.models import View
 
-from utilities.forms import TagFilterField, BulkEditNullBooleanSelect
+from utilities.forms import TagFilterField
 
 
 class ViewForm(NetBoxModelForm):

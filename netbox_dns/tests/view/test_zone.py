@@ -337,7 +337,7 @@ class ZoneMoveTest(TestCase):
         f_zone.save()
 
         with self.assertRaises(Record.DoesNotExist):
-            r_record = Record.objects.get(
+            Record.objects.get(
                 type=RecordTypeChoices.PTR, name=reverse_name(address, r_zone)
             )
 
@@ -685,7 +685,7 @@ class ZoneMoveTest(TestCase):
         f_zone.save()
 
         with self.assertRaises(Record.DoesNotExist):
-            r_record = Record.objects.get(
+            Record.objects.get(
                 type=RecordTypeChoices.PTR, name=reverse_name(address, r_zone)
             )
 

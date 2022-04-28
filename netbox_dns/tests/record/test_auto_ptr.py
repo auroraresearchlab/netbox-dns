@@ -1,7 +1,6 @@
 import ipaddress
 
 from django.test import TestCase
-from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
 
 
