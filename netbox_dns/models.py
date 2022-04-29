@@ -314,7 +314,7 @@ class Zone(NetBoxModel):
             f'{".".join(zone_fields[length:])}' for length in range(1, len(zone_fields))
         ]
 
-    def save(self, *args, **kwargs):
+    def clean(self, *args, **kwargs):
         if self.view is None:
             if (
                 Zone.objects.exclude(pk=self.pk)
@@ -323,6 +323,7 @@ class Zone(NetBoxModel):
             ):
                 raise ValidationError({"name": "A zone with this name already exists."})
 
+    def save(self, *args, **kwargs):
         new_zone = self.pk is None
         if not new_zone:
             old_zone = Zone.objects.get(pk=self.pk)
