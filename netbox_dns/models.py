@@ -262,15 +262,19 @@ class Zone(NetBoxModel):
         ns_errors = []
 
         if not nameservers:
-            ns_errors.append(f"No nameservers are configured for zone {self.name}")
+            ns_errors.append(f"No nameservers are configured for zone {self}")
 
         for nameserver in nameservers:
             ns_domain = ".".join(nameserver.name.split(".")[1:])
             if not ns_domain:
                 continue
 
+            view_condition = (
+                Q(view__isnull=True) if self.view is None else Q(view_id=self.view.pk)
+            )
+
             try:
-                ns_zone = Zone.objects.get(name=ns_domain)
+                ns_zone = Zone.objects.get(view_condition, name=ns_domain)
             except ObjectDoesNotExist:
                 continue
 
@@ -283,7 +287,7 @@ class Zone(NetBoxModel):
 
             if not address_records:
                 ns_warnings.append(
-                    f"Nameserver {nameserver.name} does not have an address record in zone {ns_zone.name}"
+                    f"Nameserver {nameserver.name} does not have an address record in zone {ns_zone}"
                 )
 
         return ns_warnings, ns_errors
