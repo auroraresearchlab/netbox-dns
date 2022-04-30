@@ -20,6 +20,9 @@ class RecordBaseTable(NetBoxTable):
     name = tables.Column(
         linkify=True,
     )
+    value = tables.TemplateColumn(
+        template_code="{{ value|truncatechars:64 }}",
+    )
     ttl = tables.Column(
         verbose_name="TTL",
     )
