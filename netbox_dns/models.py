@@ -358,6 +358,9 @@ class Zone(NetBoxModel):
 
             for record in address_records:
                 ptr_zone = record.ptr_zone(view=self.view)
+                if ptr_zone is None:
+                    continue
+
                 ptr_name = ipaddress.ip_address(record.value).reverse_pointer.replace(
                     f".{ptr_zone.name}", ""
                 )
