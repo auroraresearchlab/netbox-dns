@@ -203,6 +203,9 @@ class RecordCSVForm(NetBoxModelCSVForm):
 
         return None
 
+    def clean_type(self):
+        return self.cleaned_data["type"].upper()
+
     class Meta:
         model = Record
         fields = ("zone", "type", "name", "value", "ttl", "disable_ptr")
