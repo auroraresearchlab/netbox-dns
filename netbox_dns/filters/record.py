@@ -3,7 +3,7 @@ from django.db.models import Q
 
 from netbox.filtersets import NetBoxModelFilterSet
 
-from netbox_dns.models import Record, RecordTypeChoices, Zone
+from netbox_dns.models import View, Zone, Record, RecordTypeChoices
 
 
 class RecordFilter(NetBoxModelFilterSet):
@@ -22,6 +22,17 @@ class RecordFilter(NetBoxModelFilterSet):
         field_name="zone__name",
         to_field_name="name",
         label="Parent Zone",
+    )
+    view_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=View.objects.all(),
+        field_name="zone__view",
+        label="ID of the View the Parent Zone belongs to",
+    )
+    view = django_filters.ModelMultipleChoiceFilter(
+        queryset=View.objects.all(),
+        field_name="zone__view__name",
+        to_field_name="name",
+        label="View the Parent Zone belongs to",
     )
     managed = django_filters.BooleanFilter()
 
