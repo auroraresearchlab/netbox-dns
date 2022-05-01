@@ -16,7 +16,7 @@ class ZoneFilter(NetBoxModelFilterSet):
         queryset=View.objects.all(),
         label="View ID",
     )
-    zone = django_filters.ModelMultipleChoiceFilter(
+    view = django_filters.ModelMultipleChoiceFilter(
         queryset=View.objects.all(),
         field_name="view__name",
         to_field_name="name",
