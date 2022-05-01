@@ -429,7 +429,9 @@ class Zone(NetBoxModel):
                 record.update_ptr_record()
 
         elif renamed_zone or changed_view or changed_status:
-            for record in self.record_set.filter(ptr_record__isnull=False):
+            for record in self.record_set.filter(
+                type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA)
+            ):
                 record.update_ptr_record()
 
         self.update_soa_record()
