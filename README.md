@@ -1,6 +1,6 @@
-<h1 align="center">Netbox DNS</h1>
+<h1 align="center">NetBox DNS</h1>
 
-<p align="center"><i>Netbox Dns is a netbox plugin for managing zone, nameserver and record inventory.</i></p>
+<p align="center"><i>NetBox DNS is a NetBox plugin for managing DNS data.</i></p>
 
 <div align="center">
 <a href="https://pypi.org/project/netbox-dns/"><img src="https://img.shields.io/pypi/v/netbox-dns" alt="PyPi"/></a>
@@ -14,15 +14,16 @@
 
 ## Features
 
-* Manage zones (domains) you have.
-* Manage nameservers for zones.
-* Manage zone records.
-* Assign tags to zones, nameservers and records.
+* Manage name servers
+* Manage DNS zone information, automatically generating SOA and NS records
+* Automatically create and update PTR records for A and AAAA records
+
+NetBox DNS is using the standardized NetBox plugin interface, so it also takes advantage of the NetBox tagging and change log features.
 
 ## Requirements
 
-* Netbox 3.0
-* python 3.7
+* NetBox 3.2 or higher
+* Python 3.8 or higher
 
 ## Installation & Configuration
 
@@ -43,13 +44,13 @@ PLUGINS = [
 ]
 ```
 
-To permanently mount the plugin when updating netbox.
+To permanently mount the plugin when updating NetBox:
 
 ```
 echo netbox-dns >> ~/netbox/local_requirements.txt
 ```
 
-To add the required netbox-dns tables to your database run the following from your netbox directory:
+To add the required netbox_dns tables to your database run the following command from your NetBox directory:
 
 ```
 ./manage.py migrate
@@ -59,9 +60,13 @@ Full reference: [Using Plugins - NetBox Documentation](https://netbox.readthedoc
 
 ## Screenshots
 
-![Zones](https://raw.githubusercontent.com/auroraresearchlab/netbox-dns/main/media/zones.png)
+![Zones](https://raw.githubusercontent.com/auroraresearchlab/netbox-dns/main/docs/images/ZoneList.png)
 
-![Zone Detail](https://raw.githubusercontent.com/auroraresearchlab/netbox-dns/main/media/zone-detail.png)
+![Zone Detail](https://raw.githubusercontent.com/auroraresearchlab/netbox-dns/main/docs/images/ZoneDetail.png)
+
+![Records](https://raw.githubusercontent.com/auroraresearchlab/netbox-dns/main/docs/images/RecordList.png)
+
+![Record Detail](https://raw.githubusercontent.com/auroraresearchlab/netbox-dns/main/docs/images/RecordDetail.png)
 
 ## Contribute
 
