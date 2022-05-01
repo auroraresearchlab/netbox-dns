@@ -133,6 +133,11 @@ class RecordFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label="Zone",
     )
+    view_id = DynamicModelMultipleChoiceField(
+        queryset=View.objects.all(),
+        required=False,
+        label="View",
+    )
     tag = TagFilterField(Record)
 
     model = Record
