@@ -2,6 +2,7 @@ import ipaddress
 
 from math import ceil
 from datetime import datetime
+from dns import rdatatype
 
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -491,67 +492,23 @@ class RecordManager(models.Manager.from_queryset(RestrictedQuerySet)):
         )
 
 
+def initialize_choice_names(cls):
+    for choice in cls.CHOICES:
+        setattr(cls, choice[0], choice[0])
+    return cls
+
+@initialize_choice_names
 class RecordTypeChoices(ChoiceSet):
-    key = "Record.type"
-
-    A = "A"
-    AAAA = "AAAA"
-    CNAME = "CNAME"
-    MX = "MX"
-    TXT = "TXT"
-    NS = "NS"
-    SOA = "SOA"
-    SRV = "SRV"
-    PTR = "PTR"
-    SPF = "SPF"
-    CAA = "CAA"
-    DS = "DS"
-    SSHFP = "SSHFP"
-    TLSA = "TLSA"
-    AFSDB = "AFSDB"
-    APL = "APL"
-    DNSKEY = "DNSKEY"
-    CDNSKEY = "CDNSKEY"
-    CERT = "CERT"
-    DCHID = "DCHID"
-    DNAME = "DNAME"
-    HIP = "HIP"
-    IPSECKEY = "IPSECKEY"
-    LOC = "LOC"
-    NAPTR = "NAPTR"
-    NSEC = "NSEC"
-    RRSIG = "RRSIG"
-    RP = "RP"
-
     CHOICES = [
-        (A, A),
-        (AAAA, AAAA),
-        (CNAME, CNAME),
-        (MX, MX),
-        (TXT, TXT),
-        (SOA, SOA),
-        (NS, NS),
-        (SRV, SRV),
-        (PTR, PTR),
-        (SPF, SPF),
-        (CAA, CAA),
-        (DS, DS),
-        (SSHFP, SSHFP),
-        (TLSA, TLSA),
-        (AFSDB, AFSDB),
-        (APL, APL),
-        (DNSKEY, DNSKEY),
-        (CDNSKEY, CDNSKEY),
-        (CERT, CERT),
-        (DCHID, DCHID),
-        (DNAME, DNAME),
-        (HIP, HIP),
-        (IPSECKEY, IPSECKEY),
-        (LOC, LOC),
-        (NAPTR, NAPTR),
-        (NSEC, NSEC),
-        (RRSIG, RRSIG),
-        (RP, RP),
+        (rdtype.name, rdtype.name)
+        for rdtype in sorted(rdatatype.RdataType, key=lambda a: a.name)
+    ]
+
+
+@initialize_choice_names
+class RecordClassChoices(ChoiceSet):
+    CHOICES = [
+        (rdclass.name, rdclass.name) for rdclass in sorted(rdataclass.RdataClass)
     ]
 
 
