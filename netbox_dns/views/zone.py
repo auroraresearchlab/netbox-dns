@@ -1,8 +1,7 @@
 from netbox.views import generic
 
-from netbox_dns.filters import RecordFilter, ZoneFilter
+from netbox_dns.filters import ZoneFilter
 from netbox_dns.forms import (
-    RecordFilterForm,
     ZoneCSVForm,
     ZoneForm,
     ZoneFilterForm,

@@ -28,7 +28,7 @@ from utilities.forms import (
     add_blank_choice,
 )
 
-from netbox_dns.models import NameServer, Zone, ZoneStatusChoices
+from netbox_dns.models import View, Zone, ZoneStatusChoices, NameServer
 
 
 class ZoneForm(NetBoxModelForm):
@@ -94,6 +94,7 @@ class ZoneForm(NetBoxModelForm):
         (
             "Zone",
             (
+                "view",
                 "name",
                 "status",
                 "nameservers",
@@ -173,6 +174,7 @@ class ZoneForm(NetBoxModelForm):
         model = Zone
         fields = (
             "name",
+            "view",
             "status",
             "nameservers",
             "default_ttl",
@@ -188,10 +190,12 @@ class ZoneForm(NetBoxModelForm):
             "soa_minimum",
         )
         widgets = {
+            "view": StaticSelect(),
             "status": StaticSelect(),
             "soa_mname": StaticSelect(),
         }
         help_texts = {
+            "view": "View the zone belongs to",
             "soa_mname": "Primary name server for the zone",
         }
 
@@ -199,6 +203,11 @@ class ZoneForm(NetBoxModelForm):
 class ZoneFilterForm(NetBoxModelFilterSetForm):
     """Form for filtering Zone instances."""
 
+    view_id = DynamicModelMultipleChoiceField(
+        queryset=View.objects.all(),
+        required=False,
+        label="View",
+    )
     status = forms.ChoiceField(
         choices=add_blank_choice(ZoneStatusChoices),
         required=False,
@@ -218,6 +227,15 @@ class ZoneFilterForm(NetBoxModelFilterSetForm):
 
 
 class ZoneCSVForm(NetBoxModelCSVForm):
+    view = CSVModelChoiceField(
+        queryset=View.objects.all(),
+        required=False,
+        to_field_name="name",
+        help_text="View the zone belongs to",
+        error_messages={
+            "invalid_choice": "View not found.",
+        },
+    )
     status = CSVChoiceField(
         choices=ZoneStatusChoices,
         help_text="Zone status",
@@ -335,6 +353,7 @@ class ZoneCSVForm(NetBoxModelCSVForm):
     class Meta:
         model = Zone
         fields = (
+            "view",
             "name",
             "status",
             "default_ttl",
@@ -351,6 +370,14 @@ class ZoneCSVForm(NetBoxModelCSVForm):
 
 
 class ZoneBulkEditForm(NetBoxModelBulkEditForm):
+    view = DynamicModelChoiceField(
+        queryset=View.objects.all(),
+        required=False,
+        label="View",
+        widget=APISelect(
+            attrs={"data-url": reverse_lazy("plugins-api:netbox_dns-api:view-list")}
+        ),
+    )
     status = forms.ChoiceField(
         choices=add_blank_choice(ZoneStatusChoices),
         required=False,
@@ -416,10 +443,12 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
     )
 
     model = Zone
+    nullable_fields = ("view",)
     fieldsets = (
         (
             None,
             (
+                "view",
                 "status",
                 "nameservers",
                 "default_ttl",

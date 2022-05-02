@@ -16,6 +16,16 @@
                         <th scope="row">Name</th>
                         <td>{{ object.name }}</td>
                     </tr>
+                    {% if object.view %}
+                    <tr>
+                        <th scope="row">View</th>
+                        <td>
+                            <a href="{% url 'plugins:netbox_dns:view' pk=object.view.pk %}">
+                                {{ object.view }}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endif %}
                     <tr>
                         <th scope="row">Status</th>
                         <td>{{ object.status }}</td>

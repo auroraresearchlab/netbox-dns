@@ -1,32 +1,34 @@
 from rest_framework import serializers
 
 from netbox.api import WritableNestedSerializer
-from netbox_dns import models
 
+from netbox_dns.models import View, Zone, NameServer, Record
 
 #
-# Nameservers
+# Views
 #
-
-
-class NestedNameServerSerializer(WritableNestedSerializer):
+class NestedViewSerializer(WritableNestedSerializer):
     url = serializers.HyperlinkedIdentityField(
-        view_name="plugins-api:netbox_dns-api:nameserver-detail"
+        view_name="plugins-api:netbox_dns-api:view-detail"
     )
 
     class Meta:
-        model = models.NameServer
+        model = View
         fields = ["id", "url", "display", "name"]
 
 
 #
 # Zones
 #
-
-
 class NestedZoneSerializer(WritableNestedSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="plugins-api:netbox_dns-api:zone-detail"
+    )
+    view = NestedViewSerializer(
+        many=False,
+        required=False,
+        read_only=True,
+        help_text="View the zone belongs to",
     )
     active = serializers.BooleanField(
         required=False,
@@ -34,15 +36,26 @@ class NestedZoneSerializer(WritableNestedSerializer):
     )
 
     class Meta:
-        model = models.Zone
-        fields = ["id", "url", "display", "name", "status", "active"]
+        model = Zone
+        fields = ["id", "url", "display", "name", "view", "status", "active"]
+
+
+#
+# Nameservers
+#
+class NestedNameServerSerializer(WritableNestedSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="plugins-api:netbox_dns-api:nameserver-detail"
+    )
+
+    class Meta:
+        model = NameServer
+        fields = ["id", "url", "display", "name"]
 
 
 #
 # Records
 #
-
-
 class NestedRecordSerializer(WritableNestedSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="plugins-api:netbox_dns-api:record-detail"
@@ -58,7 +71,7 @@ class NestedRecordSerializer(WritableNestedSerializer):
     )
 
     class Meta:
-        model = models.Record
+        model = Record
         fields = [
             "id",
             "url",

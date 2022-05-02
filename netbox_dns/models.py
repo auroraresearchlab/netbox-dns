@@ -4,7 +4,7 @@ from math import ceil
 from datetime import datetime
 
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models, transaction
 from django.db.models import Q, Max, ExpressionWrapper, BooleanField
 from django.db.models.functions import Length
@@ -13,9 +13,10 @@ from django.urls import reverse
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
-from netbox.models import NetBoxModel
 from utilities.querysets import RestrictedQuerySet
 from utilities.choices import ChoiceSet
+
+from netbox.models import NetBoxModel
 
 
 def absolute_name(name):
@@ -76,8 +77,13 @@ class ZoneStatusChoices(ChoiceSet):
 class Zone(NetBoxModel):
     ACTIVE_STATUS_LIST = (ZoneStatusChoices.STATUS_ACTIVE,)
 
+    view = models.ForeignKey(
+        to="View",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+    )
     name = models.CharField(
-        unique=True,
         max_length=255,
     )
     status = models.CharField(
@@ -155,6 +161,7 @@ class Zone(NetBoxModel):
     objects = ZoneManager()
 
     clone_fields = [
+        "view",
         "name",
         "status",
         "nameservers",
@@ -169,9 +176,19 @@ class Zone(NetBoxModel):
     ]
 
     class Meta:
-        ordering = ("name",)
+        ordering = (
+            "view",
+            "name",
+        )
+        unique_together = (
+            "view",
+            "name",
+        )
 
     def __str__(self):
+        if self.view:
+            return f"[{self.view}] {self.name}"
+
         return str(self.name)
 
     def get_status_color(self):
@@ -245,15 +262,19 @@ class Zone(NetBoxModel):
         ns_errors = []
 
         if not nameservers:
-            ns_errors.append(f"No nameservers are configured for zone {self.name}")
+            ns_errors.append(f"No nameservers are configured for zone {self}")
 
         for nameserver in nameservers:
             ns_domain = ".".join(nameserver.name.split(".")[1:])
             if not ns_domain:
                 continue
 
+            view_condition = (
+                Q(view__isnull=True) if self.view is None else Q(view_id=self.view.pk)
+            )
+
             try:
-                ns_zone = Zone.objects.get(name=ns_domain)
+                ns_zone = Zone.objects.get(view_condition, name=ns_domain)
             except ObjectDoesNotExist:
                 continue
 
@@ -266,7 +287,7 @@ class Zone(NetBoxModel):
 
             if not address_records:
                 ns_warnings.append(
-                    f"Nameserver {nameserver.name} does not have an address record in zone {ns_zone.name}"
+                    f"Nameserver {nameserver.name} does not have an address record in zone {ns_zone}"
                 )
 
         return ns_warnings, ns_errors
@@ -297,30 +318,120 @@ class Zone(NetBoxModel):
             f'{".".join(zone_fields[length:])}' for length in range(1, len(zone_fields))
         ]
 
+    def check_name_conflict(self):
+        if self.view is None:
+            if (
+                Zone.objects.exclude(pk=self.pk)
+                .filter(name=self.name, view__isnull=True)
+                .exists()
+            ):
+                raise ValidationError(
+                    {"name": "A zone with name %(name)s and no view already exists."},
+                    params={"name": self.name},
+                )
+
+    def clean(self, *args, **kwargs):
+        self.check_name_conflict()
+
+        if self.pk is None:
+            return
+
+        old_zone = Zone.objects.get(pk=self.pk)
+        if old_zone.view == self.view and old_zone.status == self.status:
+            return
+
+        view_condition = (
+            Q(zone__view__isnull=True)
+            if self.view is None
+            else Q(zone__view_id=self.view.pk)
+        )
+
+        address_records = Record.objects.filter(
+            zone_id=self.pk,
+            type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA),
+        )
+
+        if address_records.exists():
+            view_ptr_records = Record.objects.filter(
+                view_condition,
+                type=RecordTypeChoices.PTR,
+                zone__status__in=Zone.ACTIVE_STATUS_LIST,
+            )
+
+            record_validation_errors = []
+
+            for record in address_records:
+                ptr_zone = record.ptr_zone(view=self.view)
+                if ptr_zone is None:
+                    continue
+
+                ptr_name = ipaddress.ip_address(record.value).reverse_pointer.replace(
+                    f".{ptr_zone.name}", ""
+                )
+                conflicts = view_ptr_records.filter(
+                    zone__id=ptr_zone.pk,
+                    name=ptr_name,
+                )
+
+                if conflicts.exists():
+                    for conflict in conflicts:
+                        record_validation_errors.append(
+                            ValidationError(
+                                "%(type)s record %(name)s already exists in zone %(zone)s",
+                                params={
+                                    "type": "PTR",
+                                    "name": ptr_name,
+                                    "zone": ptr_zone,
+                                },
+                            )
+                        )
+
+            if record_validation_errors:
+                record_validation_errors.insert(
+                    0,
+                    ValidationError(
+                        "Changing view to %(view)s would cause conflicting PTR records",
+                        params={"view": self.view},
+                    ),
+                )
+                raise ValidationError(record_validation_errors) from None
+
     def save(self, *args, **kwargs):
+        self.check_name_conflict()
+
         new_zone = self.pk is None
         if not new_zone:
-            renamed_zone = Zone.objects.get(pk=self.pk).name != self.name
+            old_zone = Zone.objects.get(pk=self.pk)
+            renamed_zone = old_zone.name != self.name
+            changed_view = old_zone.view != self.view
+            changed_status = old_zone.status != self.status
         else:
             renamed_zone = False
+            changed_view = False
+            changed_status = False
 
         if self.soa_serial_auto:
             self.soa_serial = self.get_auto_serial()
 
         super().save(*args, **kwargs)
 
-        if (new_zone or renamed_zone) and self.name.endswith(".arpa"):
+        if (
+            new_zone or renamed_zone or changed_view or changed_status
+        ) and self.name.endswith(".arpa"):
             address_records = Record.objects.filter(
                 Q(ptr_record__isnull=True)
-                | Q(ptr_record__zone__name__in=self.parent_zones()),
+                | Q(ptr_record__zone__name__in=self.parent_zones())
+                | Q(ptr_record__zone__name=self.name),
                 type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA),
                 disable_ptr=False,
             )
             for record in address_records:
                 record.update_ptr_record()
 
-        elif renamed_zone:
-            for record in self.record_set.filter(ptr_record__isnull=False):
+        elif renamed_zone or changed_view or changed_status:
+            for record in self.record_set.filter(
+                type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA)
+            ):
                 record.update_ptr_record()
 
         self.update_soa_record()
@@ -492,19 +603,6 @@ class Record(NetBoxModel):
 
     class Meta:
         ordering = ("zone", "name", "type", "value")
-        constraints = (
-            models.UniqueConstraint(
-                name="unique_pointer_for_address",
-                fields=["type", "value"],
-                condition=(
-                    models.Q(
-                        models.Q(disable_ptr=False),
-                        models.Q(type=RecordTypeChoices.A)
-                        | models.Q(type=RecordTypeChoices.AAAA),
-                    )
-                ),
-            ),
-        )
 
     def __str__(self):
         if self.name == "@":
@@ -521,7 +619,40 @@ class Record(NetBoxModel):
     def fqdn(self):
         return f"{self.name}.{self.zone.name}."
 
-    def ptr_zone(self):
+    @property
+    def address_conflicts(self):
+        if self.type not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
+            return False
+
+        if self.disable_ptr:
+            return False
+
+        if self.zone.view is None:
+            conflicts_qs = Q(zone__view__isnull=True)
+        else:
+            conflicts_qs = Q(zone__view_id=self.zone.view.pk)
+
+        return (
+            Record.objects.filter(type=self.type, disable_ptr=False, value=self.value)
+            .filter(conflicts_qs)
+            .exclude(pk=self.pk)
+            .exists()
+        )
+
+    @property
+    def pointer_conflicts(self):
+        if self.type != RecordTypeChoices.PTR:
+            return False
+
+        return (
+            Record.objects.filter(
+                type=RecordTypeChoices.PTR, zone=self.zone, name=self.name
+            )
+            .exclude(pk=self.pk)
+            .exists()
+        )
+
+    def ptr_zone(self, view=None):
         address = ipaddress.ip_address(self.value)
         if address.version == 4:
             lengths = range(1, 4)
@@ -532,9 +663,15 @@ class Record(NetBoxModel):
             ".".join(address.reverse_pointer.split(".")[length:]) for length in lengths
         ]
 
-        ptr_zones = Zone.objects.filter(Q(name__in=zone_names)).order_by(
-            Length("name").desc()
-        )
+        if view is None:
+            view = self.zone.view
+
+        if view is None:
+            ptr_zone_filter = Q(name__in=zone_names, view__isnull=True)
+        else:
+            ptr_zone_filter = Q(name__in=zone_names, view_id=view.pk)
+
+        ptr_zones = Zone.objects.filter(ptr_zone_filter).order_by(Length("name").desc())
         if len(ptr_zones):
             return ptr_zones[0]
 
@@ -590,6 +727,20 @@ class Record(NetBoxModel):
         if self.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             self.update_ptr_record()
 
+        if self.address_conflicts:
+            raise ValidationError(
+                {
+                    "name": f"There is already an address record with name {self.name} and value {self.value} in view {self.zone.view}."
+                }
+            ) from None
+
+        if self.pointer_conflicts:
+            raise ValidationError(
+                {
+                    "name": f"There is already a pointer record with name {self.name} in zone {self.zone}."
+                }
+            ) from None
+
         super().save(*args, **kwargs)
 
         zone = self.zone
@@ -605,3 +756,19 @@ class Record(NetBoxModel):
         zone = self.zone
         if zone.soa_serial_auto:
             zone.update_serial()
+
+
+class View(NetBoxModel):
+    name = models.CharField(
+        unique=True,
+        max_length=255,
+    )
+
+    def get_absolute_url(self):
+        return reverse("plugins:netbox_dns:view", kwargs={"pk": self.id})
+
+    def __str__(self):
+        return str(self.name)
+
+    class Meta:
+        ordering = ("name",)

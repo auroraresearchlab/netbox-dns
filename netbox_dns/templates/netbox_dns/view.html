@@ -1,10 +1,10 @@
 {% extends 'generic/object.html' %}
 
 {% block content %}
-    <div class="row">
+    <div class="row mb-3">
         <div class="col col-md-6">
             <div class="card">
-                <h5 class="card-header">Name Server</h5>
+                <h5 class="card-header">View</h5>
                 <div class="card-body">
                     <table class="table table-hover attr-table">
                         <tr>
@@ -14,6 +14,7 @@
                     </table>
                 </div>
             </div>
+        {% include 'inc/panels/custom_fields.html' %}
         </div>
         <div class="col col-md-6">
             {% include 'inc/panels/tags.html' %}
@@ -21,4 +22,4 @@
     </div>
 
     {% include 'netbox_dns/zone_table.html' %}
-{% endblock %}
+{% endblock content %}

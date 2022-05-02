@@ -15,6 +15,9 @@ class ZoneTable(NetBoxTable):
     name = tables.Column(
         linkify=True,
     )
+    view = tables.Column(
+        linkify=True,
+    )
     soa_mname = tables.Column(
         linkify=True,
     )
@@ -31,6 +34,7 @@ class ZoneTable(NetBoxTable):
         fields = (
             "pk",
             "name",
+            "view",
             "status",
             "tags",
             "default_ttl",
@@ -41,6 +45,7 @@ class ZoneTable(NetBoxTable):
         default_columns = (
             "pk",
             "name",
+            "view",
             "status",
             "tags",
         )

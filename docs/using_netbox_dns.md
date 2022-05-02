@@ -14,8 +14,8 @@ The installation of plugins in general is described in the [Netbox documentation
 ### Requirements
 The installation of Netbox DNS requires a Python interpreter and a working Netbox deployment. Supported versions are currently:
 
-* Netbox 3.0 or higher
-* Python 3.7 or higher
+* Netbox 3.2 or higher
+* Python 3.8 or higher
 
 ### Installation of Netbox DNS
 Netbox DNS is available as a PyPi module and can be installed using pip:
@@ -45,7 +45,41 @@ Netbox DNS requires some tables for its data models within the Netbox database. 
 Now Netbox DNS should show up under "Plugins" at the bottom of the left-hand side of the Netbox web GUI.
 
 ## Object types
-Currently Netbox DNS can manage three different object types: Name Servers, Zones, and Records.
+Currently Netbox DNS can manage four different object types: Views, Name Servers, Zones, and Records.
+
+### Views
+Views are a concept to optinally partition the DNS namespace into groups of zones that are isolated from each other. They are mainly used for split horizon DNS setups, for example in cases when there is is a different DNS resolution requirement for external and internal clients where external clients do not get the same set of names, or see different IP addresses than internal clients in case of NAT setups. Other scenarios are possible as well.
+
+When Views are defined, each zone can optionally be associated with a specific view. There are two consequences of using views:
+
+* Zone names do not need to be unique provided the zones with identical names are not in the same view (or one of them does not have a view assigned)
+* When a PTR record is created for an A or AAAA record, the record is created within a reverse zone that is in the same view, or that does not have a view associated with it when the source zone doesn't have one either.
+
+Views only affect zones (and consequentially records within them), not name servers.
+
+Views that have zones associated with them cannot be deleted, as this would incur a high risk of major data loss. If a view is to be deleted, move all zones from the view to a different one or remove the view from the zones and delete it afterwards. 
+
+When a zone is moved from one view to a different one or when a zone is removed from all views, NetBox DNS checks for conflicting zone names and PTR records and refuses to perform the action. In this case, manual intervention is required.
+
+#### Permissions
+The following Django permissions are applicable to View objects:
+
+Permission               | Action
+----------               | ------
+`netbox_dns.add_view`    | Create new view objects
+`netbox_dns.change_view` | Edit view information
+`netbox_dns.delete_view` | Delete a name server object
+`netbox_dns.view_view`   | View name server information
+
+To use tags, the `extras.view_tag` permission is required as well.
+
+#### Fields
+For name servers the following fields are defined:
+
+Field     | Required | Explanation
+-----     | -------- | -----------
+**Name**  | Yes      | The name of the view.
+**Tags**  | No       | Netbox tags assigned to the view. Tags can be used to categorise views by arbitrary criteria such as Production/Test/Development systems.
 
 ### Name servers
 Names erver objects correspond to name servers in the DNS infrastructure and are basically fully qualified domain names (FQDN) of hosts running name server instances. 
@@ -57,6 +91,10 @@ Without any name servers in the system, zones cannot be defined as a name server
 Optionally, name servers can be tagged using standard Netbox tags. Tags must be defined in Netbox before they can be assigned to any object.
 
 Name servers that are in use by zones for their SOA MNAME field cannot be deleted.
+
+A view detail view:
+
+![View Detail](images/ViewDetail.png)
 
 #### Permissions
 The following Django permissions are applicable to Name Server objects:
@@ -103,6 +141,7 @@ The following fields are defined for every zone object:
 Field           | Required | Default  | Explanation
 -----           | -------- | -------  | -----------
 **Name**        | Yes      |          | The name of the zone. This is an FQDN that represents the DNS domain containing host names to be resolved or one of the special zones `in-addr.arpa` or `ip6.arpa`, which are reserved for the resolution of IPv4 and IPv6 addresses by the DNS infrastructure
+**View**        | No       |          | If the zone is associated with a view, the name of that view. In this case, the zone name is also prefixed with the view name in brackets to make zones easier to distinguish in lists. If the zone is not associated with a view, this field is not displayed.
 **Status**      | Yes      | Active   | The zone's status. Possible values are "active", "reserved", "deprecated" or "parked". All zone status except "Active" are considered inactive, which has implications for the records in a zone as well as for PTR records in reverse zones that are automatically generated for address records in the zone.
 **Nameservers** | No       | see [Default Settings](#config)) | The list of authoritative name servers for the zone
 **Default TTL** | Yes      | see [Default Settings](#config)) | The default TTL for all records in the zone if none is specified

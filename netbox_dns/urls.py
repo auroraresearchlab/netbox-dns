@@ -1,8 +1,9 @@
 from django.urls import path
 
 from netbox.views.generic import ObjectChangeLogView
-from netbox_dns.models import Zone, Record, NameServer
-from .views import (
+
+from netbox_dns.models import View, Zone, Record, NameServer
+from netbox_dns.views import (
     # zone
     ZoneListView,
     ZoneView,
@@ -31,6 +32,14 @@ from .views import (
     RecordBulkDeleteView,
     # managed record
     ManagedRecordListView,
+    # view
+    ViewListView,
+    ViewView,
+    ViewDeleteView,
+    ViewEditView,
+    ViewBulkImportView,
+    ViewBulkEditView,
+    ViewBulkDeleteView,
 )
 
 app_name = "netbox_dns"
@@ -117,5 +126,22 @@ urlpatterns = [
     ),
     path(
         "managedrecords/", ManagedRecordListView.as_view(), name="managed_record_list"
+    ),
+    #
+    # View urls
+    #
+    path("views/", ViewListView.as_view(), name="view_list"),
+    path("views/add/", ViewEditView.as_view(), name="view_add"),
+    path("views/import/", ViewBulkImportView.as_view(), name="view_import"),
+    path("views/edit/", ViewBulkEditView.as_view(), name="view_bulk_edit"),
+    path("views/delete/", ViewBulkDeleteView.as_view(), name="view_bulk_delete"),
+    path("views/<int:pk>/", ViewView.as_view(), name="view"),
+    path("views/<int:pk>/edit/", ViewEditView.as_view(), name="view_edit"),
+    path("views/<int:pk>/delete/", ViewDeleteView.as_view(), name="view_delete"),
+    path(
+        "views/<int:pk>/changelog/",
+        ObjectChangeLogView.as_view(),
+        name="view_changelog",
+        kwargs={"model": View},
     ),
 ]

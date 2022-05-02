@@ -3,7 +3,7 @@ from django.db.models import Q
 
 from netbox.filtersets import NetBoxModelFilterSet
 
-from netbox_dns.models import Zone, ZoneStatusChoices
+from netbox_dns.models import View, Zone, ZoneStatusChoices
 
 
 class ZoneFilter(NetBoxModelFilterSet):
@@ -12,14 +12,28 @@ class ZoneFilter(NetBoxModelFilterSet):
     status = django_filters.ChoiceFilter(
         choices=ZoneStatusChoices,
     )
+    view_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=View.objects.all(),
+        label="View ID",
+    )
+    view = django_filters.ModelMultipleChoiceFilter(
+        queryset=View.objects.all(),
+        field_name="view__name",
+        to_field_name="name",
+        label="View",
+    )
 
     class Meta:
         model = Zone
-        fields = ("name", "status", "nameservers")
+        fields = ("name", "view", "status", "nameservers")
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
         if not value.strip():
             return queryset
-        qs_filter = Q(name__icontains=value) | Q(status__icontains=value)
+        qs_filter = (
+            Q(name__icontains=value)
+            | Q(status__icontains=value)
+            | Q(view__name__icontains=value)
+        )
         return queryset.filter(qs_filter)

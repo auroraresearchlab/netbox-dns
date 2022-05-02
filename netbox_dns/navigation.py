@@ -3,6 +3,26 @@ from utilities.choices import ButtonColorChoices
 
 menu_items = (
     PluginMenuItem(
+        link="plugins:netbox_dns:view_list",
+        link_text="Views",
+        buttons=(
+            PluginMenuButton(
+                "plugins:netbox_dns:view_add",
+                "Add",
+                "mdi mdi-plus-thick",
+                ButtonColorChoices.GREEN,
+                permissions=["netbox_dns.add_view"],
+            ),
+            PluginMenuButton(
+                "plugins:netbox_dns:view_import",
+                "Import",
+                "mdi mdi-upload",
+                ButtonColorChoices.CYAN,
+                permissions=["netbox_dns.add_view"],
+            ),
+        ),
+    ),
+    PluginMenuItem(
         link="plugins:netbox_dns:zone_list",
         link_text="Zones",
         buttons=(
