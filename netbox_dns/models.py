@@ -4,7 +4,16 @@ from math import ceil
 from datetime import datetime
 from dns import rdatatype, rdataclass
 
-from django.core.validators import MinValueValidator, MaxValueValidator
+import dns
+from dns import rdata, rdatatype, rdataclass
+
+from django.core.validators import (
+    MinValueValidator,
+    MaxValueValidator,
+    validate_ipv6_address,
+    validate_ipv4_address,
+)
+
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models, transaction
 from django.db.models import Q, Max, ExpressionWrapper, BooleanField
@@ -686,7 +695,30 @@ class Record(NetBoxModel):
         self.ptr_record = ptr_record
         super().save()
 
+    def clean(self, *args, **kwargs):
+        try:
+            if self.type == RecordTypeChoices.A:
+                ip_version = "4"
+                validate_ipv4_address(self.value)
+            elif self.type == RecordTypeChoices.AAAA:
+                ip_version = "6"
+                validate_ipv6_address(self.value)
+            else:
+                record = rdata.from_text(RecordClassChoices.IN, self.type, self.value)
+        except ValidationError:
+            raise ValidationError(
+                {
+                    "value": f"A valid IPv{ip_version} address is required for record type {self.type}."
+                }
+            ) from None
+        except dns.exception.SyntaxError as exc:
+            raise ValidationError(
+                {"value": f"Record value {self.value} is malformed: {exc}."}
+            ) from None
+
     def save(self, *args, **kwargs):
+        self.full_clean()
+
         if self.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             self.update_ptr_record()
 

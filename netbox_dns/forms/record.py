@@ -1,9 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from django.core.validators import (
-    validate_ipv6_address,
-    validate_ipv4_address,
-)
+
 from django.forms import (
     CharField,
     IntegerField,
@@ -47,34 +44,16 @@ class RecordForm(NetBoxModelForm):
     )
 
     def clean(self):
-        """
-        For A and AAA records, verify that a valid IPv4 or IPv6 was passed as
-        value and raise a ValidationError exception otherwise.
-        """
         cleaned_data = super().clean()
 
         type = cleaned_data.get("type")
         if type not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             return
 
-        value = cleaned_data.get("value")
-        ip_version = "4" if type == RecordTypeChoices.A else "6"
-        try:
-            if type == RecordTypeChoices.A:
-                validate_ipv4_address(value)
-            else:
-                validate_ipv6_address(value)
-
-        except ValidationError:
-            raise forms.ValidationError(
-                {
-                    "value": f"A valid IPv{ip_version} address is required for record type {type}."
-                }
-            ) from None
-
         if cleaned_data.get("disable_ptr"):
             return
 
+        value = cleaned_data.get("value")
         zone = cleaned_data.get("zone")
 
         conflicts = Record.objects.filter(value=value, type=type, disable_ptr=False)
@@ -210,24 +189,10 @@ class RecordCSVForm(NetBoxModelCSVForm):
         if type not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             return cleaned_data
 
-        value = cleaned_data.get("value")
-        ip_version = "4" if type == RecordTypeChoices.A else "6"
-        try:
-            if type == RecordTypeChoices.A:
-                validate_ipv4_address(value)
-            else:
-                validate_ipv6_address(value)
-
-        except ValidationError:
-            raise forms.ValidationError(
-                {
-                    "value": f"A valid IPv{ip_version} address is required for record type {type}."
-                }
-            ) from None
-
         if cleaned_data.get("disable_ptr"):
             return cleaned_data
 
+        value = cleaned_data.get("value")
         conflicts = Record.objects.filter(value=value, type=type, disable_ptr=False)
         if view is None:
             conflicts = conflicts.filter(zone__view__isnull=True)
@@ -272,9 +237,6 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
 
     def clean(self):
         """
-        For A and AAA records, verify that a valid IPv4 or IPv6 was passed as
-        value and raise a ValidationError exception otherwise.
-
         Check for internal clashes between A/AAAA records with the same value
         and for conflicts with existing A/AAAA records in the database as well.
         """
