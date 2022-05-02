@@ -6,9 +6,9 @@ from netbox.forms import (
     NetBoxModelCSVForm,
     NetBoxModelForm,
 )
-from netbox_dns.models import View
-
 from utilities.forms import TagFilterField
+
+from netbox_dns.models import View
 
 
 class ViewForm(NetBoxModelForm):

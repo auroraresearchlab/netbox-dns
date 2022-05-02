@@ -14,8 +14,8 @@ class ModelViewTestCase(NetBoxModelViewTestCase):
         Return the base format for a URL for the test's model. Override this to test for a model which belongs
         to a different app (e.g. testing Interfaces within the virtualization app).
         """
-        return "plugins:{}:{}_{{}}".format(
-            self.model._meta.app_label, self.model._meta.model_name
+        return (
+            f"plugins:{self.model._meta.app_label}:{self.model._meta.model_name}_{{}}"
         )
 
 

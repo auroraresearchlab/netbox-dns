@@ -2,7 +2,6 @@ import ipaddress
 
 from math import ceil
 from datetime import datetime
-from dns import rdatatype, rdataclass
 
 import dns
 from dns import rdata, rdatatype, rdataclass
@@ -381,20 +380,19 @@ class Zone(NetBoxModel):
                 conflicts = view_ptr_records.filter(
                     zone__id=ptr_zone.pk,
                     name=ptr_name,
-                )
+                ).exists()
 
-                if conflicts.exists():
-                    for conflict in conflicts:
-                        record_validation_errors.append(
-                            ValidationError(
-                                "%(type)s record %(name)s already exists in zone %(zone)s",
-                                params={
-                                    "type": "PTR",
-                                    "name": ptr_name,
-                                    "zone": ptr_zone,
-                                },
-                            )
+                if conflicts:
+                    record_validation_errors.append(
+                        ValidationError(
+                            "%(type)s record %(name)s already exists in zone %(zone)s",
+                            params={
+                                "type": "PTR",
+                                "name": ptr_name,
+                                "zone": ptr_zone,
+                            },
                         )
+                    )
 
             if record_validation_errors:
                 record_validation_errors.insert(
@@ -520,11 +518,6 @@ class RecordClassChoices(ChoiceSet):
     CHOICES = [
         (rdclass.name, rdclass.name) for rdclass in sorted(rdataclass.RdataClass)
     ]
-
-
-@initialize_choice_names
-class RecordClassChoices(ChoiceSet):
-    CHOICES = [(rdclass.name, rdclass.name) for rdclass in rdataclass.RdataClass]
 
 
 class Record(NetBoxModel):
@@ -696,6 +689,7 @@ class Record(NetBoxModel):
         super().save()
 
     def clean(self, *args, **kwargs):
+        ip_version = None
         try:
             if self.type == RecordTypeChoices.A:
                 ip_version = "4"
@@ -704,7 +698,7 @@ class Record(NetBoxModel):
                 ip_version = "6"
                 validate_ipv6_address(self.value)
             else:
-                record = rdata.from_text(RecordClassChoices.IN, self.type, self.value)
+                rdata.from_text(RecordClassChoices.IN, self.type, self.value)
         except ValidationError:
             raise ValidationError(
                 {
