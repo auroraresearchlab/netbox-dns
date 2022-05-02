@@ -2,7 +2,7 @@ import ipaddress
 
 from math import ceil
 from datetime import datetime
-from dns import rdatatype
+from dns import rdatatype, rdataclass
 
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -497,6 +497,7 @@ def initialize_choice_names(cls):
         setattr(cls, choice[0], choice[0])
     return cls
 
+
 @initialize_choice_names
 class RecordTypeChoices(ChoiceSet):
     CHOICES = [
@@ -510,6 +511,11 @@ class RecordClassChoices(ChoiceSet):
     CHOICES = [
         (rdclass.name, rdclass.name) for rdclass in sorted(rdataclass.RdataClass)
     ]
+
+
+@initialize_choice_names
+class RecordClassChoices(ChoiceSet):
+    CHOICES = [(rdclass.name, rdclass.name) for rdclass in rdataclass.RdataClass]
 
 
 class Record(NetBoxModel):
