@@ -510,13 +510,16 @@ class RecordTypeChoices(ChoiceSet):
     CHOICES = [
         (rdtype.name, rdtype.name)
         for rdtype in sorted(rdatatype.RdataType, key=lambda a: a.name)
+        if not rdatatype.is_metatype(rdtype)
     ]
 
 
 @initialize_choice_names
 class RecordClassChoices(ChoiceSet):
     CHOICES = [
-        (rdclass.name, rdclass.name) for rdclass in sorted(rdataclass.RdataClass)
+        (rdclass.name, rdclass.name)
+        for rdclass in sorted(rdataclass.RdataClass)
+        if not rdataclass.is_metaclass(rdclass)
     ]
 
 
