@@ -3,7 +3,16 @@ import ipaddress
 from math import ceil
 from datetime import datetime
 
-from django.core.validators import MinValueValidator, MaxValueValidator
+import dns
+from dns import rdata, rdatatype, rdataclass
+
+from django.core.validators import (
+    MinValueValidator,
+    MaxValueValidator,
+    validate_ipv6_address,
+    validate_ipv4_address,
+)
+
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models, transaction
 from django.db.models import Q, Max, ExpressionWrapper, BooleanField
@@ -371,20 +380,19 @@ class Zone(NetBoxModel):
                 conflicts = view_ptr_records.filter(
                     zone__id=ptr_zone.pk,
                     name=ptr_name,
-                )
+                ).exists()
 
-                if conflicts.exists():
-                    for conflict in conflicts:
-                        record_validation_errors.append(
-                            ValidationError(
-                                "%(type)s record %(name)s already exists in zone %(zone)s",
-                                params={
-                                    "type": "PTR",
-                                    "name": ptr_name,
-                                    "zone": ptr_zone,
-                                },
-                            )
+                if conflicts:
+                    record_validation_errors.append(
+                        ValidationError(
+                            "%(type)s record %(name)s already exists in zone %(zone)s",
+                            params={
+                                "type": "PTR",
+                                "name": ptr_name,
+                                "zone": ptr_zone,
+                            },
                         )
+                    )
 
             if record_validation_errors:
                 record_validation_errors.insert(
@@ -491,67 +499,24 @@ class RecordManager(models.Manager.from_queryset(RestrictedQuerySet)):
         )
 
 
+def initialize_choice_names(cls):
+    for choice in cls.CHOICES:
+        setattr(cls, choice[0], choice[0])
+    return cls
+
+
+@initialize_choice_names
 class RecordTypeChoices(ChoiceSet):
-    key = "Record.type"
-
-    A = "A"
-    AAAA = "AAAA"
-    CNAME = "CNAME"
-    MX = "MX"
-    TXT = "TXT"
-    NS = "NS"
-    SOA = "SOA"
-    SRV = "SRV"
-    PTR = "PTR"
-    SPF = "SPF"
-    CAA = "CAA"
-    DS = "DS"
-    SSHFP = "SSHFP"
-    TLSA = "TLSA"
-    AFSDB = "AFSDB"
-    APL = "APL"
-    DNSKEY = "DNSKEY"
-    CDNSKEY = "CDNSKEY"
-    CERT = "CERT"
-    DCHID = "DCHID"
-    DNAME = "DNAME"
-    HIP = "HIP"
-    IPSECKEY = "IPSECKEY"
-    LOC = "LOC"
-    NAPTR = "NAPTR"
-    NSEC = "NSEC"
-    RRSIG = "RRSIG"
-    RP = "RP"
-
     CHOICES = [
-        (A, A),
-        (AAAA, AAAA),
-        (CNAME, CNAME),
-        (MX, MX),
-        (TXT, TXT),
-        (SOA, SOA),
-        (NS, NS),
-        (SRV, SRV),
-        (PTR, PTR),
-        (SPF, SPF),
-        (CAA, CAA),
-        (DS, DS),
-        (SSHFP, SSHFP),
-        (TLSA, TLSA),
-        (AFSDB, AFSDB),
-        (APL, APL),
-        (DNSKEY, DNSKEY),
-        (CDNSKEY, CDNSKEY),
-        (CERT, CERT),
-        (DCHID, DCHID),
-        (DNAME, DNAME),
-        (HIP, HIP),
-        (IPSECKEY, IPSECKEY),
-        (LOC, LOC),
-        (NAPTR, NAPTR),
-        (NSEC, NSEC),
-        (RRSIG, RRSIG),
-        (RP, RP),
+        (rdtype.name, rdtype.name)
+        for rdtype in sorted(rdatatype.RdataType, key=lambda a: a.name)
+    ]
+
+
+@initialize_choice_names
+class RecordClassChoices(ChoiceSet):
+    CHOICES = [
+        (rdclass.name, rdclass.name) for rdclass in sorted(rdataclass.RdataClass)
     ]
 
 
@@ -723,7 +688,31 @@ class Record(NetBoxModel):
         self.ptr_record = ptr_record
         super().save()
 
+    def clean(self, *args, **kwargs):
+        ip_version = None
+        try:
+            if self.type == RecordTypeChoices.A:
+                ip_version = "4"
+                validate_ipv4_address(self.value)
+            elif self.type == RecordTypeChoices.AAAA:
+                ip_version = "6"
+                validate_ipv6_address(self.value)
+            else:
+                rdata.from_text(RecordClassChoices.IN, self.type, self.value)
+        except ValidationError:
+            raise ValidationError(
+                {
+                    "value": f"A valid IPv{ip_version} address is required for record type {self.type}."
+                }
+            ) from None
+        except dns.exception.SyntaxError as exc:
+            raise ValidationError(
+                {"value": f"Record value {self.value} is malformed: {exc}."}
+            ) from None
+
     def save(self, *args, **kwargs):
+        self.full_clean()
+
         if self.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             self.update_ptr_record()
 

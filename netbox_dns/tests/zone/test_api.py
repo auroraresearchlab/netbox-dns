@@ -32,7 +32,7 @@ class ZoneTest(
         "soa_expire": 2592000,
         "soa_ttl": 86400,
         "soa_minimum": 3600,
-        "soa_serial_auto": False,
+        "soa_serial_auto": True,
     }
 
     @classmethod
