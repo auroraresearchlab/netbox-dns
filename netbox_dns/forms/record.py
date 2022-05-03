@@ -46,8 +46,8 @@ class RecordForm(NetBoxModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
-        type = cleaned_data.get("type")
-        if type not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
+        rdtype = cleaned_data.get("type")
+        if rdtype not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             return
 
         if cleaned_data.get("disable_ptr"):
@@ -56,7 +56,7 @@ class RecordForm(NetBoxModelForm):
         value = cleaned_data.get("value")
         zone = cleaned_data.get("zone")
 
-        conflicts = Record.objects.filter(value=value, type=type, disable_ptr=False)
+        conflicts = Record.objects.filter(value=value, type=rdtype, disable_ptr=False)
         if zone.view is None:
             conflicts = conflicts.filter(zone__view__isnull=True)
         else:
@@ -67,7 +67,7 @@ class RecordForm(NetBoxModelForm):
         if len(conflicts):
             raise forms.ValidationError(
                 {
-                    "value": f"There is already an {type} record with value {value} and PTR enabled."
+                    "value": f"There is already an {rdtype} record with value {value} and PTR enabled."
                 }
             ) from None
 
@@ -185,15 +185,15 @@ class RecordCSVForm(NetBoxModelCSVForm):
         else:
             cleaned_data["ttl"] = cleaned_data["zone"].default_ttl
 
-        type = cleaned_data.get("type")
-        if type not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
+        rdtype = cleaned_data.get("type")
+        if rdtype not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             return cleaned_data
 
         if cleaned_data.get("disable_ptr"):
             return cleaned_data
 
         value = cleaned_data.get("value")
-        conflicts = Record.objects.filter(value=value, type=type, disable_ptr=False)
+        conflicts = Record.objects.filter(value=value, type=rdtype, disable_ptr=False)
         if view is None:
             conflicts = conflicts.filter(zone__view__isnull=True)
         else:
@@ -202,7 +202,7 @@ class RecordCSVForm(NetBoxModelCSVForm):
         if len(conflicts):
             raise forms.ValidationError(
                 {
-                    "value": f"There is already an {type} record with value {value} and PTR enabled."
+                    "value": f"There is already an {rdtype} record with value {value} and PTR enabled."
                 }
             ) from None
 
