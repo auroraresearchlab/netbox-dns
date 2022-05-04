@@ -512,6 +512,9 @@ class RecordTypeChoices(ChoiceSet):
         for rdtype in sorted(rdatatype.RdataType, key=lambda a: a.name)
         if not rdatatype.is_metatype(rdtype)
     ]
+    SINGLETONS = [
+        rdtype.name for rdtype in rdatatype.RdataType if rdatatype.is_singleton(rdtype)
+    ]
 
 
 @initialize_choice_names
@@ -712,6 +715,33 @@ class Record(NetBoxModel):
             raise ValidationError(
                 {"value": f"Record value {self.value} is malformed: {exc}."}
             ) from None
+
+        records = Record.objects.filter(name=self.name, zone=self.zone).exclude(
+            pk=self.pk
+        )
+
+        if self.type == RecordTypeChoices.CNAME:
+            if records.exists():
+                raise ValidationError(
+                    {
+                        "type": f"There is already a record for name {self.name} in zone {self.zone}, CNAME is not allowed."
+                    }
+                ) from None
+
+        elif records.filter(type=RecordTypeChoices.CNAME).exists():
+            raise ValidationError(
+                {
+                    "type": f"There is already a CNAME record for name {self.name} in zone {self.zone}, no other record allowed."
+                }
+            ) from None
+
+        elif self.type in RecordTypeChoices.SINGLETONS:
+            if records.filter(type=self.type).exists():
+                raise ValidationError(
+                    {
+                        "type": f"There is already a {self.type} record for name {self.name} in zone {self.zone}, more than one are not allowed."
+                    }
+                ) from None
 
     def save(self, *args, **kwargs):
         self.full_clean()

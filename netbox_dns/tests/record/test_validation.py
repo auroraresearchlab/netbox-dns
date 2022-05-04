@@ -176,3 +176,84 @@ class RecordValidationTest(TestCase):
 
             with self.assertRaises(ValidationError):
                 f_record.save()
+
+    def test_name_and_cname(self):
+        f_zone = self.zones[0]
+
+        name1 = "test1"
+        name2 = "test2"
+        address = "fe80:dead:beef:1::42"
+
+        f_record1 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.CNAME,
+            value=name2,
+            **self.record_data,
+        )
+
+        with self.assertRaises(ValidationError):
+            f_record2.save()
+
+    def test_cname_and_name(self):
+        f_zone = self.zones[0]
+
+        name1 = "test1"
+        name2 = "test2"
+        address = "fe80:dead:beef:1::42"
+
+        f_record1 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.CNAME,
+            value=name2,
+            **self.record_data,
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+
+        with self.assertRaises(ValidationError):
+            f_record2.save()
+
+    def test_double_singletons(self):
+        f_zone = self.zones[1]
+
+        name1 = "test1"
+        name2 = "test2"
+        name3 = "test3"
+
+        f_record1 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.DNAME,
+            value=name2,
+            **self.record_data,
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.DNAME,
+            value=name3,
+            **self.record_data,
+        )
+
+        with self.assertRaises(ValidationError):
+            f_record2.save()
