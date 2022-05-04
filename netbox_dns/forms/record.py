@@ -1,5 +1,4 @@
 from django import forms
-from django.core.exceptions import ValidationError
 
 from django.forms import (
     CharField,
@@ -43,44 +42,6 @@ class RecordForm(NetBoxModelForm):
         label="TTL",
     )
 
-    def clean(self):
-        cleaned_data = super().clean()
-
-        rdtype = cleaned_data.get("type")
-        if rdtype not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
-            return
-
-        if cleaned_data.get("disable_ptr"):
-            return
-
-        value = cleaned_data.get("value")
-        zone = cleaned_data.get("zone")
-
-        conflicts = Record.objects.filter(value=value, type=rdtype, disable_ptr=False)
-        if zone.view is None:
-            conflicts = conflicts.filter(zone__view__isnull=True)
-        else:
-            conflicts = conflicts.filter(zone__view_id=zone.view.pk)
-
-        if self.instance.pk:
-            conflicts = conflicts.exclude(pk=self.instance.pk)
-        if len(conflicts):
-            raise forms.ValidationError(
-                {
-                    "value": f"There is already an {rdtype} record with value {value} and PTR enabled."
-                }
-            ) from None
-
-    def clean_ttl(self):
-        ttl = self.cleaned_data["ttl"]
-        if ttl is not None:
-            if ttl <= 0:
-                raise ValidationError("TTL must be greater than zero")
-
-            return ttl
-
-        return self.cleaned_data["zone"].default_ttl
-
     class Meta:
         model = Record
         fields = ("zone", "type", "disable_ptr", "name", "value", "ttl", "tags")
@@ -123,10 +84,25 @@ class RecordFilterForm(NetBoxModelFilterSetForm):
 
 
 class RecordCSVForm(NetBoxModelCSVForm):
-    zone = CharField(
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        view = None
+        if self.is_bound and "view" in self.data:
+            try:
+                view = self.fields["view"].to_python(self.data["view"])
+            except forms.ValidationError:
+                pass
+
+        if view:
+            self.fields["zone"].queryset = Zone.objects.filter(view=view)
+        else:
+            self.fields["zone"].queryset = Zone.objects.filter(view__isnull=True)
+
+    zone = CSVModelChoiceField(
+        queryset=Zone.objects.all(),
+        to_field_name="name",
         required=True,
-        min_length=1,
-        max_length=255,
         help_text="Zone",
     )
     view = CSVModelChoiceField(
@@ -150,66 +126,13 @@ class RecordCSVForm(NetBoxModelCSVForm):
         help_text="Disable generation of a PTR record",
     )
 
-    def clean(self):
-        """
-        Determine the unique zone object (if any) from the value of "zone" and
-        "view".
+    def is_valid(self):
+        try:
+            is_valid = super().is_valid()
+        except Record.zone.RelatedObjectDoesNotExist:
+            is_valid = False
 
-        For A and AAA records, verify that a valid IPv4 or IPv6 was passed as
-        value and raise a ValidationError exception otherwise.
-        """
-        cleaned_data = super().clean()
-
-        zone_name = cleaned_data.get("zone")
-        view = cleaned_data.get("view", None)
-
-        if view is None:
-            zones = Zone.objects.filter(name=zone_name, view__isnull=True)
-        else:
-            zones = Zone.objects.filter(name=zone_name, view=view)
-
-        if len(zones):
-            cleaned_data["zone"] = zones[0]
-        else:
-            cleaned_data["zone"] = None
-            raise forms.ValidationError(
-                {"zone": f"Zone {zone_name} not found in view {view}."}
-            ) from None
-
-        ttl = cleaned_data.get("ttl", None)
-        if ttl is not None:
-            if ttl <= 0:
-                raise forms.ValidationError({"TTL must be greater than zero"}) from None
-
-            cleaned_data["ttl"] = ttl
-        else:
-            cleaned_data["ttl"] = cleaned_data["zone"].default_ttl
-
-        rdtype = cleaned_data.get("type")
-        if rdtype not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
-            return cleaned_data
-
-        if cleaned_data.get("disable_ptr"):
-            return cleaned_data
-
-        value = cleaned_data.get("value")
-        conflicts = Record.objects.filter(value=value, type=rdtype, disable_ptr=False)
-        if view is None:
-            conflicts = conflicts.filter(zone__view__isnull=True)
-        else:
-            conflicts = conflicts.filter(zone__view_id=view.pk)
-
-        if len(conflicts):
-            raise forms.ValidationError(
-                {
-                    "value": f"There is already an {rdtype} record with value {value} and PTR enabled."
-                }
-            ) from None
-
-        return cleaned_data
-
-    def clean_type(self):
-        return self.cleaned_data["type"].upper()
+        return is_valid
 
     class Meta:
         model = Record
@@ -234,61 +157,3 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
 
     model = Record
     fieldsets = ((None, ("zone", "disable_ptr", "ttl")),)
-
-    def clean(self):
-        """
-        Check for internal clashes between A/AAAA records with the same value
-        and for conflicts with existing A/AAAA records in the database as well.
-        """
-        cleaned_data = super().clean()
-
-        disable_ptr = cleaned_data.get("disable_ptr")
-        zone = cleaned_data.get("zone")
-
-        if zone is None and (disable_ptr is None or disable_ptr):
-            return
-
-        address_values = [
-            (record.value, record.zone.view)
-            for record in cleaned_data.get("pk")
-            if record.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA)
-        ]
-
-        conflicts = [
-            f"Multiple records with value {value[0]} and PTR enabled in view {value[1]}."
-            for value in set(address_values)
-            if address_values.count(value) > 1
-        ]
-        if conflicts:
-            raise forms.ValidationError({"disable_ptr": conflicts})
-
-        for record in cleaned_data.get("pk"):
-            if record.zone.view is None:
-                conflicts = (
-                    Record.objects.filter(Record.unique_ptr_qs)
-                    .filter(value=record.value, zone__view__isnull=True)
-                    .exclude(pk=record.pk)
-                )
-            else:
-                conflicts = (
-                    Record.objects.filter(Record.unique_ptr_qs)
-                    .filter(value=record.value, zone__view_id=record.zone.view.pk)
-                    .exclude(pk=record.pk)
-                )
-
-            if len(conflicts):
-                raise forms.ValidationError(
-                    {
-                        "disable_ptr": f"Multiple {record.type} records with value {record.value} and PTR enabled in view {record.zone.view}."
-                    }
-                )
-
-    def clean_ttl(self):
-        ttl = self.cleaned_data["ttl"]
-        if ttl is not None:
-            if ttl <= 0:
-                raise ValidationError("TTL must be greater than zero")
-
-            return ttl
-
-        return None

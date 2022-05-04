@@ -694,8 +694,16 @@ class Record(NetBoxModel):
         self.ptr_record = ptr_record
         super().save()
 
+    def clean_fields(self, *args, **kwargs):
+        self.type = self.type.upper()
+        super().clean_fields(*args, **kwargs)
+
     def clean(self, *args, **kwargs):
         ip_version = None
+
+        if self.ttl is None:
+            self.ttl = self.zone.default_ttl
+
         try:
             if self.type == RecordTypeChoices.A:
                 ip_version = "4"
@@ -705,12 +713,14 @@ class Record(NetBoxModel):
                 validate_ipv6_address(self.value)
             else:
                 rdata.from_text(RecordClassChoices.IN, self.type, self.value)
+
         except ValidationError:
             raise ValidationError(
                 {
                     "value": f"A valid IPv{ip_version} address is required for record type {self.type}."
                 }
             ) from None
+
         except dns.exception.SyntaxError as exc:
             raise ValidationError(
                 {"value": f"Record value {self.value} is malformed: {exc}."}
@@ -740,6 +750,25 @@ class Record(NetBoxModel):
                 raise ValidationError(
                     {
                         "type": f"There is already a {self.type} record for name {self.name} in zone {self.zone}, more than one are not allowed."
+                    }
+                ) from None
+
+        if (
+            self.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA)
+            and not self.disable_ptr
+        ):
+            ptr_conflicts = Record.objects.filter(
+                value=self.value, type=self.type, disable_ptr=False
+            ).exclude(pk=self.pk)
+            if self.zone.view is None:
+                ptr_conflicts = ptr_conflicts.filter(zone__view__isnull=True)
+            else:
+                ptr_conflicts = ptr_conflicts.filter(zone__view_id=self.zone.view.pk)
+
+            if ptr_conflicts.exists():
+                raise ValidationError(
+                    {
+                        "value": f"There is already an {self.type} record with value {self.value} and PTR enabled."
                     }
                 ) from None
 
