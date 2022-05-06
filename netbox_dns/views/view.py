@@ -7,7 +7,7 @@ from netbox_dns.tables import ViewTable, ZoneTable
 
 
 class ViewView(generic.ObjectView):
-    queryset = View.objects.all()
+    queryset = View.objects.all().prefetch_related("zone_set")
 
     def get_extra_context(self, request, instance):
         zones = instance.zone_set.all()
