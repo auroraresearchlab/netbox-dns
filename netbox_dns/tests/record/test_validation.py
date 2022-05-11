@@ -257,3 +257,47 @@ class RecordValidationTest(TestCase):
 
         with self.assertRaises(ValidationError):
             f_record2.save()
+
+    def test_lowercase_type(self):
+        f_zone1 = self.zones[0]
+        r_zone1 = self.zones[1]
+        r_zone2 = self.zones[2]
+
+        records = [
+            {"zone": f_zone1, "name": "name1", "type": "a", "value": "10.0.1.1"},
+            {
+                "zone": f_zone1,
+                "name": "name2",
+                "type": "aaaa",
+                "value": "fe80:dead:beef:42::1",
+            },
+            {
+                "zone": f_zone1,
+                "name": "name3",
+                "type": "aAaA",
+                "value": "fe80:dead:beef:42::2",
+            },
+            {"zone": f_zone1, "name": "name4", "type": "cname", "value": "name101"},
+            {
+                "zone": r_zone1,
+                "name": "3",
+                "type": "pTr",
+                "value": "name3.example.com.",
+            },
+            {
+                "zone": r_zone2,
+                "name": "1.0.0.0.2.4.0.0.0.0.0.0.0.0.0.0",
+                "type": "ptr",
+                "value": "name2.example.com.",
+            },
+        ]
+
+        for record in records:
+            f_record = Record(
+                **record,
+                **self.record_data,
+            )
+            f_record.save()
+
+            test_record = Record.objects.get(zone=record["zone"], name=record["name"])
+            self.assertEqual(test_record.type, record["type"].upper())
