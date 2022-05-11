@@ -18,7 +18,7 @@ from netbox_dns.tables import (
 class ZoneListView(generic.ObjectListView):
     """View for listing all existing Zones."""
 
-    queryset = Zone.objects.all()
+    queryset = Zone.objects.all().prefetch_related("view", "tags")
     filterset = ZoneFilter
     filterset_form = ZoneFilterForm
     table = ZoneTable
@@ -27,7 +27,9 @@ class ZoneListView(generic.ObjectListView):
 class ZoneView(generic.ObjectView):
     """Display Zone details"""
 
-    queryset = Zone.objects.all()
+    queryset = Zone.objects.all().prefetch_related(
+        "view", "tags", "nameservers", "soa_mname"
+    )
 
     def get_extra_context(self, request, instance):
         ns_warnings, ns_errors = instance.check_nameservers()
@@ -41,7 +43,9 @@ class ZoneView(generic.ObjectView):
 class ZoneEditView(generic.ObjectEditView):
     """View for editing and creating a Zone instance."""
 
-    queryset = Zone.objects.all()
+    queryset = Zone.objects.all().prefetch_related(
+        "view", "tags", "nameservers", "soa_mname"
+    )
     form = ZoneForm
 
 
@@ -52,13 +56,17 @@ class ZoneDeleteView(generic.ObjectDeleteView):
 
 
 class ZoneBulkImportView(generic.BulkImportView):
-    queryset = Zone.objects.all()
+    queryset = Zone.objects.all().prefetch_related(
+        "view", "tags", "nameservers", "soa_mname"
+    )
     model_form = ZoneCSVForm
     table = ZoneTable
 
 
 class ZoneBulkEditView(generic.BulkEditView):
-    queryset = Zone.objects.all()
+    queryset = Zone.objects.all().prefetch_related(
+        "view", "tags", "nameservers", "soa_mname"
+    )
     filterset = ZoneFilter
     table = ZoneTable
     form = ZoneBulkEditForm

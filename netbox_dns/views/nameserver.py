@@ -21,7 +21,7 @@ class NameServerListView(generic.ObjectListView):
 class NameServerView(generic.ObjectView):
     """Display NameServer details"""
 
-    queryset = NameServer.objects.all()
+    queryset = NameServer.objects.all().prefetch_related("zones")
 
     def get_extra_context(self, request, instance):
         zones = instance.zones.all()

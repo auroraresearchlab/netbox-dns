@@ -12,14 +12,18 @@ from netbox_dns.tables import RecordTable, ManagedRecordTable
 
 
 class RecordListView(generic.ObjectListView):
-    queryset = Record.objects.filter(managed=False)
+    queryset = Record.objects.filter(managed=False).prefetch_related(
+        "zone", "ptr_record"
+    )
     filterset = RecordFilter
     filterset_form = RecordFilterForm
     table = RecordTable
 
 
 class ManagedRecordListView(generic.ObjectListView):
-    queryset = Record.objects.filter(managed=True)
+    queryset = Record.objects.filter(managed=True).prefetch_related(
+        "zone", "address_record"
+    )
     filterset = RecordFilter
     filterset_form = RecordFilterForm
     table = ManagedRecordTable
@@ -30,13 +34,15 @@ class ManagedRecordListView(generic.ObjectListView):
 class RecordView(generic.ObjectView):
     """Display Record details"""
 
-    queryset = Record.objects.all()
+    queryset = Record.objects.all().prefetch_related("zone", "ptr_record")
 
 
 class RecordEditView(generic.ObjectEditView):
     """View for editing a Record instance."""
 
-    queryset = Record.objects.filter(managed=False)
+    queryset = Record.objects.filter(managed=False).prefetch_related(
+        "zone", "ptr_record"
+    )
     form = RecordForm
 
 
@@ -45,13 +51,15 @@ class RecordDeleteView(generic.ObjectDeleteView):
 
 
 class RecordBulkImportView(generic.BulkImportView):
-    queryset = Record.objects.filter(managed=False)
+    queryset = Record.objects.filter(managed=False).prefetch_related(
+        "zone", "ptr_record"
+    )
     model_form = RecordCSVForm
     table = RecordTable
 
 
 class RecordBulkEditView(generic.BulkEditView):
-    queryset = Record.objects.filter(managed=False)
+    queryset = Record.objects.filter(managed=False).prefetch_related("zone")
     filterset = RecordFilter
     table = RecordTable
     form = RecordBulkEditForm
