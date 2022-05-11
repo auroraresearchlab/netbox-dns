@@ -44,7 +44,7 @@ class RecordForm(NetBoxModelForm):
 
     class Meta:
         model = Record
-        fields = ("zone", "type", "disable_ptr", "name", "value", "ttl", "tags")
+        fields = ("name", "zone", "type", "value", "ttl", "disable_ptr", "tags")
 
         widgets = {
             "zone": StaticSelect(),
@@ -147,13 +147,22 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
             attrs={"data-url": reverse_lazy("plugins-api:netbox_dns-api:zone-list")}
         ),
     )
-    disable_ptr = NullBooleanField(
-        required=False, widget=BulkEditNullBooleanSelect(), label="Disable PTR"
+    type = forms.ChoiceField(
+        choices=RecordTypeChoices,
+        required=False,
+        widget=StaticSelect(),
+    )
+    value = CharField(
+        required=False,
+        label="Value",
     )
     ttl = IntegerField(
         required=False,
         label="TTL",
     )
+    disable_ptr = NullBooleanField(
+        required=False, widget=BulkEditNullBooleanSelect(), label="Disable PTR"
+    )
 
     model = Record
-    fieldsets = ((None, ("zone", "disable_ptr", "ttl")),)
+    fieldsets = ((None, ("zone", "type", "value", "ttl", "disable_ptr")),)
