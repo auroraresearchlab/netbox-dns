@@ -777,6 +777,9 @@ class Record(NetBoxModel):
 
         if self.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
             self.update_ptr_record()
+        elif self.ptr_record is not None:
+            self.ptr_record.delete()
+            self.ptr_record = None
 
         if self.address_conflicts:
             raise ValidationError(

@@ -821,3 +821,69 @@ class AutoPTRTest(TestCase):
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
+
+    def test_ipv4_remove_ptr_on_type_change(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[1]
+
+        name1 = "name1"
+        name2 = "name2"
+        address = "10.0.1.1"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+        )
+        self.assertEqual(r_record.value, f"{name1}.{f_zone.name}.")
+
+        f_record.type = RecordTypeChoices.CNAME
+        f_record.value = name2
+        f_record.save()
+
+        with self.assertRaises(Record.DoesNotExist):
+            r_record = Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+
+    def test_ipv6_remove_ptr_on_type_change(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[6]
+
+        name1 = "name1"
+        name2 = "name2"
+        address = "fe80:dead:beef:1::42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+        )
+        self.assertEqual(r_record.value, f"{name1}.{f_zone.name}.")
+
+        f_record.type = RecordTypeChoices.CNAME
+        f_record.value = name2
+        f_record.save()
+
+        with self.assertRaises(Record.DoesNotExist):
+            r_record = Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
