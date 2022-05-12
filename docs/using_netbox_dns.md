@@ -267,7 +267,7 @@ For the address record types A and AAAA, Netbox DNS can automatically generate a
 
 If, for instance, there is a zone `0.0.10.in-addr.arpa` is defined in Netbox DNS and an address record is created in a forward zone `example.com` with the address `10.0.0.1`, the corresponding PTR record will be created in the former zone as the reverse RR name for the IPv4 address `10.0.0.1` is `1.0.0.10.in-addr.arpa`.
 
-If another A record with the same IPv4 address as its value is created, Netbox DNS will not accept it as the PTR record must be unique. In that case, the "Disable PTR" flag must be set for one of the A records.
+When an A record is created for which a PTR record is not necessary or desired, the "Disable PTR" option can be used to inhibit the creation of the corresponding PTR record even if a reverse zone matching the address is present.
 
 If the reverse zone does not exist in Netbox DNS, it will not be created automatically as it is not certain that the authority for that zone lies with the user. If, however, a matching reverse zone is created later on, the PTR records for all A or AAAA records in Netbox DNS that match the new reverse zone will be created automatically (unless "Disable PTR" is set for a record).
 
