@@ -349,61 +349,6 @@ class Zone(NetBoxModel):
         if old_zone.view == self.view and old_zone.status == self.status:
             return
 
-        view_condition = (
-            Q(zone__view__isnull=True)
-            if self.view is None
-            else Q(zone__view_id=self.view.pk)
-        )
-
-        address_records = Record.objects.filter(
-            zone_id=self.pk,
-            type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA),
-        )
-
-        if address_records.exists():
-            view_ptr_records = Record.objects.filter(
-                view_condition,
-                type=RecordTypeChoices.PTR,
-                zone__status__in=Zone.ACTIVE_STATUS_LIST,
-            )
-
-            record_validation_errors = []
-
-            for record in address_records:
-                ptr_zone = record.ptr_zone(view=self.view)
-                if ptr_zone is None:
-                    continue
-
-                ptr_name = ipaddress.ip_address(record.value).reverse_pointer.replace(
-                    f".{ptr_zone.name}", ""
-                )
-                conflicts = view_ptr_records.filter(
-                    zone__id=ptr_zone.pk,
-                    name=ptr_name,
-                ).exists()
-
-                if conflicts:
-                    record_validation_errors.append(
-                        ValidationError(
-                            "%(type)s record %(name)s already exists in zone %(zone)s",
-                            params={
-                                "type": "PTR",
-                                "name": ptr_name,
-                                "zone": ptr_zone,
-                            },
-                        )
-                    )
-
-            if record_validation_errors:
-                record_validation_errors.insert(
-                    0,
-                    ValidationError(
-                        "Changing view to %(view)s would cause conflicting PTR records",
-                        params={"view": self.view},
-                    ),
-                )
-                raise ValidationError(record_validation_errors) from None
-
     def save(self, *args, **kwargs):
         self.check_name_conflict()
 
@@ -590,39 +535,6 @@ class Record(NetBoxModel):
     def fqdn(self):
         return f"{self.name}.{self.zone.name}."
 
-    @property
-    def address_conflicts(self):
-        if self.type not in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
-            return False
-
-        if self.disable_ptr:
-            return False
-
-        if self.zone.view is None:
-            conflicts_qs = Q(zone__view__isnull=True)
-        else:
-            conflicts_qs = Q(zone__view_id=self.zone.view.pk)
-
-        return (
-            Record.objects.filter(type=self.type, disable_ptr=False, value=self.value)
-            .filter(conflicts_qs)
-            .exclude(pk=self.pk)
-            .exists()
-        )
-
-    @property
-    def pointer_conflicts(self):
-        if self.type != RecordTypeChoices.PTR:
-            return False
-
-        return (
-            Record.objects.filter(
-                type=RecordTypeChoices.PTR, zone=self.zone, name=self.name
-            )
-            .exclude(pk=self.pk)
-            .exists()
-        )
-
     def ptr_zone(self, view=None):
         address = ipaddress.ip_address(self.value)
         if address.version == 4:
@@ -753,25 +665,6 @@ class Record(NetBoxModel):
                     }
                 ) from None
 
-        if (
-            self.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA)
-            and not self.disable_ptr
-        ):
-            ptr_conflicts = Record.objects.filter(
-                value=self.value, type=self.type, disable_ptr=False
-            ).exclude(pk=self.pk)
-            if self.zone.view is None:
-                ptr_conflicts = ptr_conflicts.filter(zone__view__isnull=True)
-            else:
-                ptr_conflicts = ptr_conflicts.filter(zone__view_id=self.zone.view.pk)
-
-            if ptr_conflicts.exists():
-                raise ValidationError(
-                    {
-                        "value": f"There is already an {self.type} record with value {self.value} and PTR enabled."
-                    }
-                ) from None
-
     def save(self, *args, **kwargs):
         self.full_clean()
 
@@ -780,20 +673,6 @@ class Record(NetBoxModel):
         elif self.ptr_record is not None:
             self.ptr_record.delete()
             self.ptr_record = None
-
-        if self.address_conflicts:
-            raise ValidationError(
-                {
-                    "name": f"There is already an address record with name {self.name} and value {self.value} in view {self.zone.view}."
-                }
-            ) from None
-
-        if self.pointer_conflicts:
-            raise ValidationError(
-                {
-                    "name": f"There is already a pointer record with name {self.name} in zone {self.zone}."
-                }
-            ) from None
 
         super().save(*args, **kwargs)
 
