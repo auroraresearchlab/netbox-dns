@@ -1,7 +1,6 @@
 import ipaddress
 
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 
 
 from netbox_dns.models import View, Zone, NameServer, Record, RecordTypeChoices
@@ -371,30 +370,32 @@ class AutoPTRTest(TestCase):
 
         self.assertEqual(r_record2.value, f"{name}.{f_zone2.name}.")
 
-    def test_create_duplicate_ipv4_with_view(self):
+    def test_create_multiple_ipv4_with_view(self):
         f_zone = self.zones[1]
+        r_zone = self.zones[4]
 
-        name1 = "test1"
-        name2 = "test2"
+        names = ["test1", "test2", "test3", "test4"]
         address = "10.0.1.42"
 
-        f_record1 = Record(
-            zone=f_zone,
-            name=name1,
-            type=RecordTypeChoices.A,
-            value=address,
-            **self.record_data,
-        )
-        f_record1.save()
+        for name in names:
+            f_record = Record(
+                zone=f_zone,
+                name=name,
+                type=RecordTypeChoices.A,
+                value=address,
+                **self.record_data,
+            )
+            f_record.save()
 
-        f_record2 = Record(
-            zone=f_zone,
-            name=name2,
-            type=RecordTypeChoices.A,
-            value=address,
-            **self.record_data,
+        r_records = Record.objects.filter(
+            type=RecordTypeChoices.PTR,
+            zone=r_zone,
+            name=reverse_name(address, r_zone),
         )
-        self.assertRaises(ValidationError, f_record2.save)
+        for r_record in r_records:
+            self.assertTrue(
+                r_record.value in [f"{name}.{f_zone.name}." for name in names]
+            )
 
     def test_create_duplicate_ipv4_with_view_disable_ptr_1(self):
         f_zone = self.zones[1]
@@ -731,30 +732,32 @@ class AutoPTRTest(TestCase):
 
         self.assertEqual(r_record2.value, f"{name}.{f_zone2.name}.")
 
-    def test_create_duplicate_ipv6_with_view(self):
+    def test_create_multiple_ipv6(self):
         f_zone = self.zones[1]
+        r_zone = self.zones[7]
 
-        name1 = "test1"
-        name2 = "test2"
+        names = ["test1", "test2", "test3", "test4"]
         address = "fe80:dead:beef:1::42"
 
-        f_record1 = Record(
-            zone=f_zone,
-            name=name1,
-            type=RecordTypeChoices.AAAA,
-            value=address,
-            **self.record_data,
-        )
-        f_record1.save()
+        for name in names:
+            f_record = Record(
+                zone=f_zone,
+                name=name,
+                type=RecordTypeChoices.AAAA,
+                value=address,
+                **self.record_data,
+            )
+            f_record.save()
 
-        f_record2 = Record(
-            zone=f_zone,
-            name=name2,
-            type=RecordTypeChoices.AAAA,
-            value=address,
-            **self.record_data,
+        r_records = Record.objects.filter(
+            type=RecordTypeChoices.PTR,
+            zone=r_zone,
+            name=reverse_name(address, r_zone),
         )
-        self.assertRaises(ValidationError, f_record2.save)
+        for r_record in r_records:
+            self.assertTrue(
+                r_record.value in [f"{name}.{f_zone.name}." for name in names]
+            )
 
     def test_create_duplicate_ipv6_with_view_disable_ptr_1(self):
         f_zone = self.zones[1]
