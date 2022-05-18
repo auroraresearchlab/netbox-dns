@@ -44,6 +44,7 @@ class ViewEditView(generic.ObjectEditView):
 
 class ViewDeleteView(generic.ObjectDeleteView):
     queryset = View.objects.all()
+    default_return_url = "plugins:netbox_dns:view_list"
 
 
 class ViewBulkImportView(generic.BulkImportView):

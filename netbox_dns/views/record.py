@@ -48,6 +48,7 @@ class RecordEditView(generic.ObjectEditView):
 
 class RecordDeleteView(generic.ObjectDeleteView):
     queryset = Record.objects.filter(managed=False)
+    default_return_url = "plugins:netbox_dns:record_list"
 
 
 class RecordBulkImportView(generic.BulkImportView):

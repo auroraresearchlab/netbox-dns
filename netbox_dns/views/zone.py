@@ -53,6 +53,7 @@ class ZoneDeleteView(generic.ObjectDeleteView):
     """View for deleting a Zone instance"""
 
     queryset = Zone.objects.all()
+    default_return_url = "plugins:netbox_dns:zone_list"
 
 
 class ZoneBulkImportView(generic.BulkImportView):
