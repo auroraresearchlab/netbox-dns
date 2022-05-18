@@ -697,6 +697,8 @@ class View(NetBoxModel):
         max_length=255,
     )
 
+    clone_fields = ["name"]
+
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:view", kwargs={"pk": self.id})
 
