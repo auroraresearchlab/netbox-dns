@@ -53,6 +53,7 @@ class NameServerEditView(generic.ObjectEditView):
 
 class NameServerDeleteView(generic.ObjectDeleteView):
     queryset = NameServer.objects.all()
+    default_return_url = "plugins:netbox_dns:nameserver_list"
 
 
 class NameServerBulkImportView(generic.BulkImportView):
