@@ -343,8 +343,15 @@ class Zone(NetBoxModel):
     def clean(self, *args, **kwargs):
         self.check_name_conflict()
 
+        if self.soa_serial is None and not self.soa_serial_auto:
+            raise ValidationError(
+                {
+                    "soa_serial": f"soa_serial is not defined and soa_serial_auto is disabled for zone {self.name}."
+                }
+            )
+
     def save(self, *args, **kwargs):
-        self.check_name_conflict()
+        self.full_clean()
 
         new_zone = self.pk is None
         if not new_zone:
