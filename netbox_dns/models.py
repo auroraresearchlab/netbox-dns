@@ -335,8 +335,9 @@ class Zone(NetBoxModel):
                 .exists()
             ):
                 raise ValidationError(
-                    {"name": "A zone with name %(name)s and no view already exists."},
-                    params={"name": self.name},
+                    {
+                        "name": f"A zone with name {self.name} and no view already exists."
+                    }
                 )
 
     def clean(self, *args, **kwargs):
