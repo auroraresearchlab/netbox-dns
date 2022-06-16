@@ -343,13 +343,6 @@ class Zone(NetBoxModel):
     def clean(self, *args, **kwargs):
         self.check_name_conflict()
 
-        if self.pk is None:
-            return
-
-        old_zone = Zone.objects.get(pk=self.pk)
-        if old_zone.view == self.view and old_zone.status == self.status:
-            return
-
     def save(self, *args, **kwargs):
         self.check_name_conflict()
 
