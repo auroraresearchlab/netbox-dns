@@ -97,12 +97,8 @@ class AutoSOASerialTest(TestCase):
         )
         f_record.save()
 
-        r_record = Record.objects.get(
-            type=RecordTypeChoices.PTR,
-            value=f"{f_record.name}.{f_zone.name}.",
-            zone=r_zone,
-        )
-        r_zone = Zone.objects.get(pk=r_record.zone.pk)
+        f_zone.refresh_from_db()
+        r_zone.refresh_from_db()
 
         self.assertTrue(int(r_zone.soa_serial) >= int(f_zone.soa_serial))
 
