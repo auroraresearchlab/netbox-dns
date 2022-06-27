@@ -1,6 +1,7 @@
 from time import time
 
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 
 from netbox_dns.models import NameServer, Record, RecordTypeChoices, Zone
 
@@ -96,12 +97,8 @@ class AutoSOASerialTest(TestCase):
         )
         f_record.save()
 
-        r_record = Record.objects.get(
-            type=RecordTypeChoices.PTR,
-            value=f"{f_record.name}.{f_zone.name}.",
-            zone=r_zone,
-        )
-        r_zone = Zone.objects.get(pk=r_record.zone.pk)
+        f_zone.refresh_from_db()
+        r_zone.refresh_from_db()
 
         self.assertTrue(int(r_zone.soa_serial) >= int(f_zone.soa_serial))
 
@@ -126,3 +123,11 @@ class AutoSOASerialTest(TestCase):
         r_zone = Zone.objects.get(pk=r_record.zone.pk)
 
         self.assertEqual(r_zone.soa_serial, 1)
+
+    def test_missing_soa_serial(self):
+        zone = self.zones[0]
+        zone.soa_serial = None
+        zone.soa_serial_auto = False
+
+        with self.assertRaises(ValidationError):
+            zone.save()

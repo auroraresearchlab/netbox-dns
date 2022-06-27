@@ -917,7 +917,7 @@ class ZoneMoveTest(TestCase):
 
         f_zone.view = self.views[0]
 
-        with self.assertRaises(IntegrityError):
+        with self.assertRaises(ValidationError):
             f_zone.save()
 
     def test_remove_view_from_zone_zone_conflict(self):
@@ -941,7 +941,7 @@ class ZoneMoveTest(TestCase):
 
         f_zone1.view = self.views[1]
 
-        with self.assertRaises(IntegrityError):
+        with self.assertRaises(ValidationError):
             f_zone1.save()
 
     def test_delete_view_with_zones(self):
