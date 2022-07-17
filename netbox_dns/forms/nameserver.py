@@ -17,11 +17,13 @@ class NameServerForm(NetBoxModelForm):
 
     class Meta:
         model = NameServer
-        fields = ("name", "tags")
+        fields = ("name", "description", "tags")
 
 
 class NameServerFilterForm(NetBoxModelFilterSetForm):
     """Form for filtering NameServer instances."""
+
+    model = NameServer
 
     name = CharField(
         required=False,
@@ -29,14 +31,18 @@ class NameServerFilterForm(NetBoxModelFilterSetForm):
     )
     tag = TagFilterField(NameServer)
 
-    model = NameServer
-
 
 class NameServerCSVForm(NetBoxModelCSVForm):
     class Meta:
         model = NameServer
-        fields = ("name",)
+
+        fields = ("name", "description")
 
 
 class NameServerBulkEditForm(NetBoxModelBulkEditForm):
     model = NameServer
+
+    description = CharField(max_length=200, required=False)
+
+    class Meta:
+        nullable_fields = ("description",)

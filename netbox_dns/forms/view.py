@@ -16,7 +16,7 @@ class ViewForm(NetBoxModelForm):
 
     class Meta:
         model = View
-        fields = ("name", "tags")
+        fields = ("name", "description", "tags")
 
 
 class ViewFilterForm(NetBoxModelFilterSetForm):
@@ -34,8 +34,13 @@ class ViewFilterForm(NetBoxModelFilterSetForm):
 class ViewCSVForm(NetBoxModelCSVForm):
     class Meta:
         model = View
-        fields = ("name",)
+        fields = ("name", "description")
 
 
 class ViewBulkEditForm(NetBoxModelBulkEditForm):
     model = View
+
+    description = CharField(max_length=200, required=False)
+
+    class Meta:
+        nullable_fields = ["description"]

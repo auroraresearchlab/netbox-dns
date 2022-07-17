@@ -44,7 +44,17 @@ class RecordForm(NetBoxModelForm):
 
     class Meta:
         model = Record
-        fields = ("name", "zone", "type", "value", "ttl", "disable_ptr", "tags")
+
+        fields = (
+            "name",
+            "zone",
+            "type",
+            "value",
+            "ttl",
+            "disable_ptr",
+            "description",
+            "tags",
+        )
 
         widgets = {
             "zone": StaticSelect(),
@@ -54,6 +64,8 @@ class RecordForm(NetBoxModelForm):
 
 class RecordFilterForm(NetBoxModelFilterSetForm):
     """Form for filtering Record instances."""
+
+    model = Record
 
     type = forms.MultipleChoiceField(
         choices=add_blank_choice(RecordTypeChoices),
@@ -79,8 +91,6 @@ class RecordFilterForm(NetBoxModelFilterSetForm):
         label="View",
     )
     tag = TagFilterField(Record)
-
-    model = Record
 
 
 class RecordCSVForm(NetBoxModelCSVForm):
@@ -136,10 +146,22 @@ class RecordCSVForm(NetBoxModelCSVForm):
 
     class Meta:
         model = Record
-        fields = ("zone", "view", "type", "name", "value", "ttl", "disable_ptr")
+
+        fields = (
+            "zone",
+            "view",
+            "type",
+            "name",
+            "value",
+            "ttl",
+            "disable_ptr",
+            "description",
+        )
 
 
 class RecordBulkEditForm(NetBoxModelBulkEditForm):
+    model = Record
+
     zone = DynamicModelChoiceField(
         queryset=Zone.objects.all(),
         required=False,
@@ -163,6 +185,9 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
     disable_ptr = NullBooleanField(
         required=False, widget=BulkEditNullBooleanSelect(), label="Disable PTR"
     )
+    description = CharField(max_length=200, required=False)
 
-    model = Record
-    fieldsets = ((None, ("zone", "type", "value", "ttl", "disable_ptr")),)
+    fieldsets = (
+        (None, ("zone", "type", "value", "ttl", "disable_ptr", "description")),
+    )
+    nullable_fields = ("description",)

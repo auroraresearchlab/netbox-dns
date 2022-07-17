@@ -36,6 +36,7 @@ class ZoneTable(NetBoxTable):
             "name",
             "view",
             "status",
+            "description",
             "tags",
             "default_ttl",
             "soa_mname",
