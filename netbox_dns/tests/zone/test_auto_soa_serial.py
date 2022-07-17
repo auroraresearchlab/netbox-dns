@@ -1,5 +1,7 @@
 from time import time
 
+from unittest import skip
+
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
@@ -84,6 +86,7 @@ class AutoSOASerialTest(TestCase):
 
         self.assertEqual(zone.soa_serial, 42)
 
+    @skip("This test still has timing issues")
     def test_create_ptr_soa_serial_auto(self):
         f_zone = self.zones[0]
         r_zone = self.zones[2]
