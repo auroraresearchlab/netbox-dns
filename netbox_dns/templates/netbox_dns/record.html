@@ -80,6 +80,9 @@
                 </table>
             </div>
         </div>
+        {% if not object.managed %}
+        {% include 'inc/panels/custom_fields.html' %}
+        {% endif %}
     </div>
     {% if not object.managed %}
     <div class="col col-md-4">
