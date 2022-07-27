@@ -77,6 +77,12 @@
                         <td><a href="{% url 'plugins:netbox_dns:record' pk=object.address_record.pk %}">{{ object.address_record }}</td>
                     </tr>
                     {% endif %}
+                    {% if not object.managed %}
+                    <tr>
+                        <th scope="row">Description</th>
+                        <td style="word-break:break-all;">{{ object.description }}</td>
+                    </tr>
+                    {% endif %}
                 </table>
             </div>
         </div>

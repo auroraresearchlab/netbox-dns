@@ -11,5 +11,5 @@ class ViewTable(NetBoxTable):
 
     class Meta(NetBoxTable.Meta):
         model = View
-        fields = ("name",)
+        fields = ("name", "description")
         default_columns = ("name",)

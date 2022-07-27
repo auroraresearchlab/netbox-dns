@@ -20,5 +20,11 @@ class NameServerTable(NetBoxTable):
         fields = (
             "pk",
             "name",
+            "description",
+            "tags",
+        )
+        default_columns = (
+            "pk",
+            "name",
             "tags",
         )

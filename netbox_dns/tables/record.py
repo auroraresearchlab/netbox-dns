@@ -59,6 +59,7 @@ class RecordTable(RecordBaseTable):
             "ptr_record",
             "tags",
             "active",
+            "description",
         )
         default_columns = (
             "zone",
@@ -124,6 +125,14 @@ class ZoneRecordTable(RecordBaseTable):
             "disable_ptr",
             "ptr_record",
             "tags",
+            "active",
+            "description",
+        )
+        default_columns = (
+            "name",
+            "ttl",
+            "type",
+            "value",
             "active",
         )
 

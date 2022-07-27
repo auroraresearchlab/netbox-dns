@@ -39,8 +39,12 @@ class NameServer(NetBoxModel):
         unique=True,
         max_length=255,
     )
+    description = models.CharField(
+        max_length=200,
+        blank=True,
+    )
 
-    clone_fields = ["name"]
+    clone_fields = ["name", "description"]
 
     class Meta:
         ordering = ("name",)
@@ -166,6 +170,10 @@ class Zone(NetBoxModel):
         help_text="Automatically generate the SOA Serial field",
         default=True,
     )
+    description = models.CharField(
+        max_length=200,
+        blank=True,
+    )
 
     objects = ZoneManager()
 
@@ -182,6 +190,7 @@ class Zone(NetBoxModel):
         "soa_retry",
         "soa_expire",
         "soa_minimum",
+        "description",
     ]
 
     class Meta:
@@ -512,11 +521,23 @@ class Record(NetBoxModel):
         help_text="Disable PTR record creation",
         default=False,
     )
+    description = models.CharField(
+        max_length=200,
+        blank=True,
+    )
 
     objects = RecordManager()
     raw_objects = RestrictedQuerySet.as_manager()
 
-    clone_fields = ["zone", "type", "name", "value", "ttl", "disable_ptr"]
+    clone_fields = [
+        "zone",
+        "type",
+        "name",
+        "value",
+        "ttl",
+        "disable_ptr",
+        "description",
+    ]
 
     class Meta:
         ordering = ("zone", "name", "type", "value")
@@ -697,8 +718,12 @@ class View(NetBoxModel):
         unique=True,
         max_length=255,
     )
+    description = models.CharField(
+        max_length=200,
+        blank=True,
+    )
 
-    clone_fields = ["name"]
+    clone_fields = ["name", "description"]
 
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:view", kwargs={"pk": self.id})

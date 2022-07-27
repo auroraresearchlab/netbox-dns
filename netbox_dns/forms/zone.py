@@ -99,6 +99,7 @@ class ZoneForm(NetBoxModelForm):
                 "status",
                 "nameservers",
                 "default_ttl",
+                "description",
             ),
         ),
         (
@@ -172,12 +173,14 @@ class ZoneForm(NetBoxModelForm):
 
     class Meta:
         model = Zone
+
         fields = (
             "name",
             "view",
             "status",
             "nameservers",
             "default_ttl",
+            "description",
             "tags",
             "soa_ttl",
             "soa_mname",
@@ -203,6 +206,8 @@ class ZoneForm(NetBoxModelForm):
 class ZoneFilterForm(NetBoxModelFilterSetForm):
     """Form for filtering Zone instances."""
 
+    model = Zone
+
     view_id = DynamicModelMultipleChoiceField(
         queryset=View.objects.all(),
         required=False,
@@ -222,8 +227,6 @@ class ZoneFilterForm(NetBoxModelFilterSetForm):
         required=False,
     )
     tag = TagFilterField(Zone)
-
-    model = Zone
 
 
 class ZoneCSVForm(NetBoxModelCSVForm):
@@ -352,11 +355,13 @@ class ZoneCSVForm(NetBoxModelCSVForm):
 
     class Meta:
         model = Zone
+
         fields = (
             "view",
             "name",
             "status",
             "default_ttl",
+            "description",
             "soa_ttl",
             "soa_mname",
             "soa_rname",
@@ -392,6 +397,7 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
         label="Default TTL",
         validators=[MinValueValidator(1)],
     )
+    description = CharField(max_length=200, required=False)
     soa_ttl = IntegerField(
         required=False,
         label="SOA TTL",
@@ -443,7 +449,7 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
     )
 
     model = Zone
-    nullable_fields = ("view",)
+
     fieldsets = (
         (
             None,
@@ -452,6 +458,7 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
                 "status",
                 "nameservers",
                 "default_ttl",
+                "description",
             ),
         ),
         (
@@ -469,6 +476,7 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
             ),
         ),
     )
+    nullable_fields = ("view", "description")
 
     def clean(self):
         """
