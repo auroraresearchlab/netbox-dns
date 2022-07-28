@@ -79,6 +79,7 @@ class NestedRecordSerializer(WritableNestedSerializer):
             "type",
             "name",
             "value",
+            "status",
             "ttl",
             "zone",
             "active",

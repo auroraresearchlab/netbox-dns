@@ -299,13 +299,14 @@ class Zone(NetBoxModel):
             ns_name = nameserver.name.split(".")[0]
             address_records = Record.objects.filter(
                 Q(zone=ns_zone),
+                Q(status__in=Record.ACTIVE_STATUS_LIST),
                 Q(Q(name=f"{nameserver.name}.") | Q(name=ns_name)),
                 Q(Q(type=RecordTypeChoices.A) | Q(type=RecordTypeChoices.AAAA)),
             )
 
             if not address_records:
                 ns_warnings.append(
-                    f"Nameserver {nameserver.name} does not have an address record in zone {ns_zone}"
+                    f"Nameserver {nameserver.name} does not have an active address record in zone {ns_zone}"
                 )
 
         return ns_warnings, ns_errors
@@ -447,6 +448,7 @@ class RecordManager(models.Manager.from_queryset(RestrictedQuerySet)):
                                 address_record__zone__status__in=Zone.ACTIVE_STATUS_LIST
                             )
                         )
+                        & Q(status__in=Record.ACTIVE_STATUS_LIST)
                     ),
                     output_field=BooleanField(),
                 )
@@ -481,7 +483,21 @@ class RecordClassChoices(ChoiceSet):
     ]
 
 
+class RecordStatusChoices(ChoiceSet):
+    key = "Record.status"
+
+    STATUS_ACTIVE = "active"
+    STATUS_INACTIVE = "inactive"
+
+    CHOICES = [
+        (STATUS_ACTIVE, "Active", "blue"),
+        (STATUS_INACTIVE, "Inactive", "red"),
+    ]
+
+
 class Record(NetBoxModel):
+    ACTIVE_STATUS_LIST = (RecordStatusChoices.STATUS_ACTIVE,)
+
     unique_ptr_qs = Q(
         Q(disable_ptr=False),
         Q(Q(type=RecordTypeChoices.A) | Q(type=RecordTypeChoices.AAAA)),
@@ -500,6 +516,12 @@ class Record(NetBoxModel):
     )
     value = models.CharField(
         max_length=1000,
+    )
+    status = models.CharField(
+        max_length=50,
+        choices=RecordStatusChoices,
+        default=RecordStatusChoices.STATUS_ACTIVE,
+        blank=False,
     )
     ttl = models.PositiveIntegerField(
         verbose_name="TTL",
@@ -534,13 +556,14 @@ class Record(NetBoxModel):
         "type",
         "name",
         "value",
+        "status",
         "ttl",
         "disable_ptr",
         "description",
     ]
 
     class Meta:
-        ordering = ("zone", "name", "type", "value")
+        ordering = ("zone", "name", "type", "value", "status")
 
     def __str__(self):
         if self.name == "@":
@@ -551,11 +574,21 @@ class Record(NetBoxModel):
 
         return f"{self.name}.{self.zone.name} [{self.type}]"
 
+    def get_status_color(self):
+        return RecordStatusChoices.colors.get(self.status)
+
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:record", kwargs={"pk": self.id})
 
     def fqdn(self):
         return f"{self.name}.{self.zone.name}."
+
+    @property
+    def is_active(self):
+        return (
+            self.status in Record.ACTIVE_STATUS_LIST
+            and self.zone.status in Zone.ACTIVE_STATUS_LIST
+        )
 
     def ptr_zone(self, view=None):
         address = ipaddress.ip_address(self.value)
@@ -585,7 +618,7 @@ class Record(NetBoxModel):
     def update_ptr_record(self):
         ptr_zone = self.ptr_zone()
 
-        if ptr_zone is None or self.disable_ptr:
+        if ptr_zone is None or self.disable_ptr or not self.is_active:
             if self.ptr_record is not None:
                 with transaction.atomic():
                     self.ptr_record.delete()
@@ -660,22 +693,27 @@ class Record(NetBoxModel):
                 {"value": f"Record value {self.value} is malformed: {exc}."}
             ) from None
 
-        records = Record.objects.filter(name=self.name, zone=self.zone).exclude(
-            pk=self.pk
+        if not self.is_active:
+            return
+
+        records = (
+            Record.objects.filter(name=self.name, zone=self.zone)
+            .exclude(pk=self.pk)
+            .exclude(active=False)
         )
 
         if self.type == RecordTypeChoices.CNAME:
             if records.exists():
                 raise ValidationError(
                     {
-                        "type": f"There is already a record for name {self.name} in zone {self.zone}, CNAME is not allowed."
+                        "type": f"There is already an active record for name {self.name} in zone {self.zone}, CNAME is not allowed."
                     }
                 ) from None
 
         elif records.filter(type=RecordTypeChoices.CNAME).exists():
             raise ValidationError(
                 {
-                    "type": f"There is already a CNAME record for name {self.name} in zone {self.zone}, no other record allowed."
+                    "type": f"There is already an active CNAME record for name {self.name} in zone {self.zone}, no other record allowed."
                 }
             ) from None
 
@@ -683,7 +721,7 @@ class Record(NetBoxModel):
             if records.filter(type=self.type).exists():
                 raise ValidationError(
                     {
-                        "type": f"There is already a {self.type} record for name {self.name} in zone {self.zone}, more than one are not allowed."
+                        "type": f"There is already an active {self.type} record for name {self.name} in zone {self.zone}, more than one are not allowed."
                     }
                 ) from None
 

@@ -2,6 +2,7 @@ import django_tables2 as tables
 
 from netbox.tables import (
     NetBoxTable,
+    ChoiceFieldColumn,
     ToggleColumn,
     TagColumn,
     ActionsColumn,
@@ -35,6 +36,7 @@ class RecordTable(RecordBaseTable):
     """Table for displaying Record objects."""
 
     pk = ToggleColumn()
+    status = ChoiceFieldColumn()
     disable_ptr = tables.BooleanColumn(
         verbose_name="Disable PTR",
     )
@@ -55,6 +57,7 @@ class RecordTable(RecordBaseTable):
             "ttl",
             "type",
             "value",
+            "status",
             "disable_ptr",
             "ptr_record",
             "tags",
@@ -122,6 +125,7 @@ class ZoneRecordTable(RecordBaseTable):
             "ttl",
             "type",
             "value",
+            "status",
             "disable_ptr",
             "ptr_record",
             "tags",

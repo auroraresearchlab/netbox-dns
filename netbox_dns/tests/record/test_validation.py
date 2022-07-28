@@ -258,6 +258,162 @@ class RecordValidationTest(TestCase):
         with self.assertRaises(ValidationError):
             f_record2.save()
 
+    def test_inactive_name_and_active_cname(self):
+        f_zone = self.zones[0]
+
+        name1 = "test1"
+        name2 = "test2"
+        address = "fe80:dead:beef:1::42"
+
+        f_record1 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+            status="inactive",
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.CNAME,
+            value=name2,
+            **self.record_data,
+        )
+        f_record2.save()
+
+    def test_inactive_cname_and_active_name(self):
+        f_zone = self.zones[0]
+
+        name1 = "test1"
+        name2 = "test2"
+        address = "fe80:dead:beef:1::42"
+
+        f_record1 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.CNAME,
+            value=name2,
+            **self.record_data,
+            status="inactive",
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record2.save()
+
+    def test_double_singletons_inactive_active(self):
+        f_zone = self.zones[1]
+
+        name1 = "test1"
+        name2 = "test2"
+        name3 = "test3"
+
+        f_record1 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.DNAME,
+            value=name2,
+            **self.record_data,
+            status="inactive",
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.DNAME,
+            value=name3,
+            **self.record_data,
+        )
+        f_record2.save()
+
+    def test_active_name_and_inactive_cname(self):
+        f_zone = self.zones[0]
+
+        name1 = "test1"
+        name2 = "test2"
+        address = "fe80:dead:beef:1::42"
+
+        f_record1 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.CNAME,
+            value=name2,
+            **self.record_data,
+            status="inactive",
+        )
+        f_record2.save()
+
+    def test_active_cname_and_inactive_name(self):
+        f_zone = self.zones[0]
+
+        name1 = "test1"
+        name2 = "test2"
+        address = "fe80:dead:beef:1::42"
+
+        f_record1 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.CNAME,
+            value=name2,
+            **self.record_data,
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+            status="inactive",
+        )
+        f_record2.save()
+
+    def test_double_singletons_active_inactive(self):
+        f_zone = self.zones[1]
+
+        name1 = "test1"
+        name2 = "test2"
+        name3 = "test3"
+
+        f_record1 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.DNAME,
+            value=name2,
+            **self.record_data,
+        )
+        f_record1.save()
+
+        f_record2 = Record(
+            zone=f_zone,
+            name=name1,
+            type=RecordTypeChoices.DNAME,
+            value=name3,
+            **self.record_data,
+            status="inactive",
+        )
+        f_record2.save()
+
     def test_lowercase_type(self):
         f_zone1 = self.zones[0]
         r_zone1 = self.zones[1]
