@@ -1,23 +1,20 @@
-import re
+from dns import rdata
 
 from django.test import TestCase
 
-from netbox_dns.models import NameServer, Record, RecordTypeChoices, Zone
+from netbox_dns.models import (
+    NameServer,
+    Record,
+    RecordClassChoices,
+    RecordTypeChoices,
+    Zone,
+)
 
 
 def parse_soa_value(soa):
-    soa_match = re.match(
-        r"^\((\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\)", soa
+    return rdata.from_text(
+        rdclass=RecordClassChoices.IN, rdtype=RecordTypeChoices.SOA, tok=soa
     )
-    return {
-        "soa_mname": soa_match.group(1),
-        "soa_rname": soa_match.group(2),
-        "soa_serial": int(soa_match.group(3)),
-        "soa_refresh": int(soa_match.group(4)),
-        "soa_retry": int(soa_match.group(5)),
-        "soa_expire": int(soa_match.group(6)),
-        "soa_minimum": int(soa_match.group(7)),
-    }
 
 
 class AutoSOATest(TestCase):
@@ -56,13 +53,13 @@ class AutoSOATest(TestCase):
         self.assertTrue(
             all(
                 (
-                    zone.soa_mname.name + "." == soa.get("soa_mname"),
-                    zone.soa_rname + "." == soa.get("soa_rname"),
-                    zone.soa_serial == soa.get("soa_serial"),
-                    zone.soa_refresh == soa.get("soa_refresh"),
-                    zone.soa_retry == soa.get("soa_retry"),
-                    zone.soa_expire == soa.get("soa_expire"),
-                    zone.soa_minimum == soa.get("soa_minimum"),
+                    zone.soa_mname.name + "." == soa.mname.to_text(),
+                    zone.soa_rname + "." == soa.rname.to_text(),
+                    zone.soa_serial == soa.serial,
+                    zone.soa_refresh == soa.refresh,
+                    zone.soa_retry == soa.retry,
+                    zone.soa_expire == soa.expire,
+                    zone.soa_minimum == soa.minimum,
                     zone.soa_ttl == soa_records[0].ttl,
                     len(soa_records) == 1,
                 )
@@ -79,7 +76,7 @@ class AutoSOATest(TestCase):
         soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
-        self.assertEqual(nameserver2.name + ".", soa.get("soa_mname"))
+        self.assertEqual(nameserver2.name + ".", soa.mname.to_text())
 
     def test_zone_soa_change_mname_dot(self):
         zone = self.zone
@@ -91,7 +88,7 @@ class AutoSOATest(TestCase):
         soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
-        self.assertEqual(nameserver3.name, soa.get("soa_mname"))
+        self.assertEqual(nameserver3.name, soa.mname.to_text())
 
     def test_zone_soa_change_rname_no_dot(self):
         zone = self.zone
@@ -103,7 +100,7 @@ class AutoSOATest(TestCase):
         soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
-        self.assertEqual(rname + ".", soa.get("soa_rname"))
+        self.assertEqual(rname + ".", soa.rname.to_text())
 
     def test_zone_soa_change_rname_dot(self):
         zone = self.zone
@@ -115,7 +112,7 @@ class AutoSOATest(TestCase):
         soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
-        self.assertEqual(rname, soa.get("soa_rname"))
+        self.assertEqual(rname, soa.rname.to_text())
 
     def test_zone_soa_change_serial(self):
         zone = self.zone
@@ -127,7 +124,7 @@ class AutoSOATest(TestCase):
         soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
-        self.assertEqual(serial, soa.get("soa_serial"))
+        self.assertEqual(serial, soa.serial)
 
     def test_zone_soa_change_refresh(self):
         zone = self.zone
@@ -139,7 +136,7 @@ class AutoSOATest(TestCase):
         soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
-        self.assertEqual(refresh, soa.get("soa_refresh"))
+        self.assertEqual(refresh, soa.refresh)
 
     def test_zone_soa_change_retry(self):
         zone = self.zone
@@ -151,7 +148,7 @@ class AutoSOATest(TestCase):
         soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
-        self.assertEqual(retry, soa.get("soa_retry"))
+        self.assertEqual(retry, soa.retry)
 
     def test_zone_soa_change_expire(self):
         zone = self.zone
@@ -163,7 +160,7 @@ class AutoSOATest(TestCase):
         soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
-        self.assertEqual(expire, soa.get("soa_expire"))
+        self.assertEqual(expire, soa.expire)
 
     def test_zone_soa_change_minimum(self):
         zone = self.zone
@@ -175,7 +172,7 @@ class AutoSOATest(TestCase):
         soa_record = Record.objects.get(type=RecordTypeChoices.SOA, zone=zone)
         soa = parse_soa_value(soa_record.value)
 
-        self.assertEqual(minimum, soa.get("soa_minimum"))
+        self.assertEqual(minimum, soa.minimum)
 
     def test_zone_soa_change_ttl(self):
         zone = self.zone
