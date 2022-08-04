@@ -113,8 +113,6 @@ class AutoNSTest(TestCase):
         )
         ns_record.save()
 
-        print(ns_record)
-
         ns_warnings = ns_zone.check_nameservers()[0]
         self.assertEqual([], ns_warnings)
 
