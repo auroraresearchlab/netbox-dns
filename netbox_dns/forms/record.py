@@ -15,6 +15,7 @@ from netbox.forms import (
     NetBoxModelForm,
 )
 from utilities.forms import (
+    add_blank_choice,
     BulkEditNullBooleanSelect,
     DynamicModelMultipleChoiceField,
     TagFilterField,
@@ -170,7 +171,7 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
         ),
     )
     type = forms.ChoiceField(
-        choices=RecordTypeChoices,
+        choices=add_blank_choice(RecordTypeChoices),
         required=False,
         widget=StaticSelect(),
     )
