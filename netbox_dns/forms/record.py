@@ -28,7 +28,7 @@ from utilities.forms import (
     add_blank_choice,
 )
 
-from netbox_dns.models import View, Zone, Record, RecordTypeChoices
+from netbox_dns.models import View, Zone, Record, RecordTypeChoices, RecordStatusChoices
 
 
 class RecordForm(NetBoxModelForm):
@@ -51,6 +51,7 @@ class RecordForm(NetBoxModelForm):
             "zone",
             "type",
             "value",
+            "status",
             "ttl",
             "disable_ptr",
             "description",
@@ -60,6 +61,7 @@ class RecordForm(NetBoxModelForm):
         widgets = {
             "zone": StaticSelect(),
             "type": StaticSelect(),
+            "status": StaticSelect(),
         }
 
 
@@ -80,6 +82,11 @@ class RecordFilterForm(NetBoxModelFilterSetForm):
     value = CharField(
         required=False,
         label="Value",
+    )
+    status = forms.ChoiceField(
+        choices=add_blank_choice(RecordStatusChoices),
+        required=False,
+        widget=StaticSelect(),
     )
     zone_id = DynamicModelMultipleChoiceField(
         queryset=Zone.objects.all(),
@@ -126,6 +133,11 @@ class RecordCSVForm(NetBoxModelCSVForm):
         choices=RecordTypeChoices,
         required=True,
         help_text="Record Type",
+    )
+    status = CSVChoiceField(
+        choices=RecordStatusChoices,
+        required=False,
+        help_text="Record status",
     )
     ttl = IntegerField(
         required=False,
@@ -179,6 +191,11 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
         required=False,
         label="Value",
     )
+    status = forms.ChoiceField(
+        choices=add_blank_choice(RecordStatusChoices),
+        required=False,
+        widget=StaticSelect(),
+    )
     ttl = IntegerField(
         required=False,
         label="TTL",
@@ -189,6 +206,9 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
     description = CharField(max_length=200, required=False)
 
     fieldsets = (
-        (None, ("zone", "type", "value", "ttl", "disable_ptr", "description")),
+        (
+            None,
+            ("zone", "type", "value", "status", "ttl", "disable_ptr", "description"),
+        ),
     )
     nullable_fields = ("description",)

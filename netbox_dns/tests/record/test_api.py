@@ -18,6 +18,7 @@ class RecordTest(
         "display",
         "id",
         "name",
+        "status",
         "ttl",
         "type",
         "url",

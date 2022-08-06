@@ -1,12 +1,14 @@
 # Using Netbox DNS
-Netbox DNS is a plugin for Netbox designed to manage DNS data. In the current version it supports Name Server, Zone, and Record objects for simple DNS deployments. Its main features include:
+Netbox DNS is a plugin for Netbox designed to manage DNS data. In the current version it supports View, Name Server, Zone, and Record objects for simple DNS deployments. Its main features include:
 
 * Generation of the NS records for a zone from the assigned Name Server objects as defined in [RFC 1035, Section 3.3.11](https://datatracker.ietf.org/doc/html/rfc1035#section-3.3.11)
 * Generation of the SOA record for a zone from the component fields defined in [RFC 1035, Section 3.3.13](https://datatracker.ietf.org/doc/html/rfc1035#section-3.3.13)
 * Optional management of PTR records for A and AAAA records if the reverse zones are also in Netbox DNS
 * Optional generation and update of the SOA serial number for a zone if zone data or data of any record within the zone is updated
-* API endpoints that can be used to export Name Server, Zone and Record data
+* API endpoints that can be used to export View, Name Server, Zone and Record data via the NetBox REST or GraphQL APIs
 * Basic integrity checks of the entered data
+* Optional organisation of zones in views, i.e. to facilitate split-horizon DNS setups
+* Support for NetBox custom fields, custom links, export templates etc.
 
 ## Installation and Configuration
 The installation of plugins in general is described in the [Netbox documentation](https://netbox.readthedocs.io/en/stable/plugins/).
@@ -61,6 +63,10 @@ Views that have zones associated with them cannot be deleted, as this would incu
 
 When a zone is moved from one view to a different one or when a zone is removed from all views, NetBox DNS checks for conflicting zone names and PTR records and refuses to perform the action. In this case, manual intervention is required.
 
+A view detail view:
+
+![View Detail](images/ViewDetail.png)
+
 #### Permissions
 The following Django permissions are applicable to View objects:
 
@@ -74,12 +80,13 @@ Permission               | Action
 To use tags, the `extras.view_tag` permission is required as well.
 
 #### Fields
-For name servers the following fields are defined:
+The following fields are defined for views:
 
-Field     | Required | Explanation
------     | -------- | -----------
-**Name**  | Yes      | The name of the view.
-**Tags**  | No       | Netbox tags assigned to the view. Tags can be used to categorise views by arbitrary criteria such as Production/Test/Development systems.
+Field           | Required | Explanation
+-----           | -------- | -----------
+**Name**        | Yes      | The name of the view
+**Description** | No       | A short textual description of the view
+**Tags**        | No       | Netbox tags assigned to the view. Tags can be used to categorise views by arbitrary criteria such as Production/Test/Development systems
 
 ### Name servers
 Names erver objects correspond to name servers in the DNS infrastructure and are basically fully qualified domain names (FQDN) of hosts running name server instances. 
@@ -91,10 +98,6 @@ Without any name servers in the system, zones cannot be defined as a name server
 Optionally, name servers can be tagged using standard Netbox tags. Tags must be defined in Netbox before they can be assigned to any object.
 
 Name servers that are in use by zones for their SOA MNAME field cannot be deleted.
-
-A view detail view:
-
-![View Detail](images/ViewDetail.png)
 
 #### Permissions
 The following Django permissions are applicable to Name Server objects:
@@ -111,10 +114,11 @@ To use tags, the `extras.view_tag` permission is required as well.
 #### Fields
 For name servers the following fields are defined:
 
-Field     | Required | Explanation
------     | -------- | -----------
-**Name**  | Yes      | The fully qualified domain name (FQDN) of the name server. 
-**Tags**  | No       | Netbox tags assigned to the name server. Tags can be used to categorise name servers by arbitrary criteria such as Production/Test/Development systems.
+Field           | Required | Explanation
+-----           | -------- | -----------
+**Name**        | Yes      | The fully qualified domain name (FQDN) of the name server
+**Description** | No       | A short textual description of the name server
+**Tags**        | No       | Netbox tags assigned to the name server. Tags can be used to categorise name servers by arbitrary criteria such as Production/Test/Development systems
 
 A name server detail view:
 
@@ -141,11 +145,12 @@ The following fields are defined for every zone object:
 Field           | Required | Default  | Explanation
 -----           | -------- | -------  | -----------
 **Name**        | Yes      |          | The name of the zone. This is an FQDN that represents the DNS domain containing host names to be resolved or one of the special zones `in-addr.arpa` or `ip6.arpa`, which are reserved for the resolution of IPv4 and IPv6 addresses by the DNS infrastructure
-**View**        | No       |          | If the zone is associated with a view, the name of that view. In this case, the zone name is also prefixed with the view name in brackets to make zones easier to distinguish in lists. If the zone is not associated with a view, this field is not displayed.
-**Status**      | Yes      | Active   | The zone's status. Possible values are "active", "reserved", "deprecated" or "parked". All zone status except "Active" are considered inactive, which has implications for the records in a zone as well as for PTR records in reverse zones that are automatically generated for address records in the zone.
+**View**        | No       |          | If the zone is associated with a view, the name of that view. In this case, the zone name is also prefixed with the view name in brackets to make zones easier to distinguish in lists. If the zone is not associated with a view, this field is not displayed
+**Status**      | Yes      | Active   | The zone's status. Possible values are "active", "reserved", "deprecated" or "parked". All zone status except "Active" are considered inactive, which has implications for the records in a zone as well as for PTR records in reverse zones that are automatically generated for address records in the zone
 **Nameservers** | No       | see [Default Settings](#config)) | The list of authoritative name servers for the zone
 **Default TTL** | Yes      | see [Default Settings](#config)) | The default TTL for all records in the zone if none is specified
-**Tags**        | No       |          | Netbox tags assigned to the zone. Tags can be used to categorise zones by arbitrary criteria.
+**Description** | No       |          | A short textual description of the zone
+**Tags**        | No       |          | Netbox tags assigned to the zone. Tags can be used to categorise zones by arbitrary criteria
 
 ##### Zones without name servers
 
@@ -255,21 +260,24 @@ Field           | Required | Explanation
 **Disable PTR** | Yes      | A checkbox indicating whether a PTR record should be generated for an A or AAAA record automatically if there is a zone suitable for the PTR in Netbox DNS
 **Name**        | Yes      | The name of the record, e.g. the simple host name for A and AAAA records
 **Value**       | Yes      | The value of the record, e.g. the IPv4 or IPv6 addreess
+**Status**      | No       | The status of a record. Pre-defined choices are "Active" (which is the default) and "Inactive"
 **TTL**         | No       | The time to live for the record. Defaults to the zone's default TTL
+**Description** | No       | A short textual description of the record
 **Tags**        | No       | Netbox tags assigned to the name server. Tags can be used to categorise name servers by arbitrary criteria such as Production/Test/Development systems
-**Active**      | N/A      | This field is not an input field, but it is created from the zone status. Records in zones not marked as "Active" are themselves marked as inactive (the boolean field value is False). Managed PTR records that have been created from inactive A or AAAA records are marked inactive as well.
+**Active**      | N/A      | This field is not an input field, but it is created from the zone and record status. A record is marked inactive when either the zone that contains it or the record itself is not in an active status. **No PTR records are created for inactive A or AAAA records**
 
 #### Automatic generation of PTR records
 For the address record types A and AAAA, Netbox DNS can automatically generate and maintain the corresponding PTR records. For this to work, the following conditions must be met:
 
 * The corresponding `in-addr.arpa` or `ip6.arpa` zone must be present in Netbox DNS
 * The "Disable PTR" field must not be set to False (default is True)
+* The address record and the zone containing it are in an active state
 
 If, for instance, there is a zone `0.0.10.in-addr.arpa` is defined in Netbox DNS and an address record is created in a forward zone `example.com` with the address `10.0.0.1`, the corresponding PTR record will be created in the former zone as the reverse RR name for the IPv4 address `10.0.0.1` is `1.0.0.10.in-addr.arpa`.
 
 When an A record is created for which a PTR record is not necessary or desired, the "Disable PTR" option can be used to inhibit the creation of the corresponding PTR record even if a reverse zone matching the address is present.
 
-If the reverse zone does not exist in Netbox DNS, it will not be created automatically as it is not certain that the authority for that zone lies with the user. If, however, a matching reverse zone is created later on, the PTR records for all A or AAAA records in Netbox DNS that match the new reverse zone will be created automatically (unless "Disable PTR" is set for a record).
+If the reverse zone does not exist in Netbox DNS, it will not be created automatically as it is not certain that the authority for that zone lies with the user. If, however, a matching reverse zone is created later on, the PTR records for all active A or AAAA records in Netbox DNS that match the new reverse zone will be created automatically (unless "Disable PTR" is set for a record).
 
 Changing the name and/or value of an A record results in updating, moving or deleting the corresponding PTR record. Deleting an A record results in the corresponding PTR record getting deleted as well. 
 

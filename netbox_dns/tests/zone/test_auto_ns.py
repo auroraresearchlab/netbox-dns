@@ -74,7 +74,71 @@ class AutoNSTest(TestCase):
         zone.nameservers.add(nameserver)
         ns_warnings = zone.check_nameservers()[0]
         self.assertIn(
-            f"Nameserver {nameserver.name} does not have an address record in zone {ns_zone.name}",
+            f"Nameserver {nameserver.name} does not have an active address record in zone {ns_zone.name}",
+            ns_warnings,
+        )
+
+    def test_inactive_zone_with_ns_warning(self):
+        nameserver = self.nameservers[0]
+        ns_zone = Zone.objects.create(
+            name="example.com",
+            **self.zone_data,
+            soa_mname=nameserver,
+            status="reserved",
+        )
+        ns_zone.nameservers.add(nameserver)
+
+        ns_warnings = ns_zone.check_nameservers()[0]
+        self.assertIn(
+            f"Nameserver {nameserver.name} does not have an active address record in zone {ns_zone.name}",
+            ns_warnings,
+        )
+
+    def test_inactive_zone_with_ns_and_address_no_warning(self):
+        nameserver = self.nameservers[0]
+        ns_zone = Zone.objects.create(
+            name="example.com",
+            **self.zone_data,
+            soa_mname=nameserver,
+            status="reserved",
+        )
+        ns_zone.nameservers.add(nameserver)
+
+        ns_record = Record.objects.create(
+            zone=ns_zone,
+            name="ns1",
+            type="A",
+            value="10.0.0.23",
+            ttl=86400,
+        )
+        ns_record.save()
+
+        ns_warnings = ns_zone.check_nameservers()[0]
+        self.assertEqual([], ns_warnings)
+
+    def test_inactive_zone_with_ns_and_inactive_address_warning(self):
+        nameserver = self.nameservers[0]
+        ns_zone = Zone.objects.create(
+            name="example.com",
+            **self.zone_data,
+            soa_mname=nameserver,
+            status="reserved",
+        )
+        ns_zone.nameservers.add(nameserver)
+
+        ns_record = Record.objects.create(
+            zone=ns_zone,
+            name="ns1",
+            type="A",
+            value="10.0.0.23",
+            ttl=86400,
+            status="inactive",
+        )
+        ns_record.save()
+
+        ns_warnings = ns_zone.check_nameservers()[0]
+        self.assertIn(
+            f"Nameserver {nameserver.name} does not have an active address record in zone {ns_zone.name}",
             ns_warnings,
         )
 

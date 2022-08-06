@@ -38,7 +38,7 @@ class RecordFilter(NetBoxModelFilterSet):
 
     class Meta:
         model = Record
-        fields = ("type", "name", "value", "zone", "managed")
+        fields = ("type", "name", "value", "status", "zone", "managed")
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""

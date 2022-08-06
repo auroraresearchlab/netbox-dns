@@ -158,6 +158,7 @@ class RecordSerializer(NetBoxModelSerializer):
             "type",
             "name",
             "value",
+            "status",
             "ttl",
             "description",
             "tags",

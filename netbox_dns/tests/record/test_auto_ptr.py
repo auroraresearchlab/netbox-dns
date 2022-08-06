@@ -890,3 +890,190 @@ class AutoPTRTest(TestCase):
                 zone=r_zone,
                 name=reverse_name(address, r_zone),
             )
+
+    def test_ipv4_create_inactive_record_no_ptr(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[1]
+
+        name = "test1"
+        address = "10.0.1.42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            status="inactive",
+            **self.record_data,
+        )
+        f_record.save()
+
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+
+    def test_ipv4_deactivate_record_delete_ptr(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[1]
+
+        name = "test1"
+        address = "10.0.1.42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+        )
+
+        self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
+
+        f_record.status = "inactive"
+        f_record.save()
+
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+
+    def test_ipv4_activate_record_create_ptr(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[1]
+
+        name = "test1"
+        address = "10.0.1.42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            status="inactive",
+            **self.record_data,
+        )
+        f_record.save()
+
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+
+        f_record.status = "active"
+        f_record.save()
+
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+        )
+
+        self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
+
+    def test_ipv6_create_inactive_record_no_ptr(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[6]
+
+        name = "test1"
+        address = "fe80:dead:beef:1::42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            status="inactive",
+            **self.record_data,
+        )
+        f_record.save()
+
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+
+        f_record.status = "active"
+        f_record.save()
+
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+        )
+
+        self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
+
+    def test_ipv6_deactivate_record_delete_ptr(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[6]
+
+        name = "test1"
+        address = "fe80:dead:beef:1::42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+        )
+
+        self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
+
+        f_record.status = "inactive"
+        f_record.save()
+
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+
+    def test_ipv6_activate_record_create_ptr(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[6]
+
+        name = "test1"
+        address = "fe80:dead:beef:1::42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            status="inactive",
+            **self.record_data,
+        )
+        f_record.save()
+
+        with self.assertRaises(Record.DoesNotExist):
+            Record.objects.get(
+                type=RecordTypeChoices.PTR,
+                zone=r_zone,
+                name=reverse_name(address, r_zone),
+            )
+
+        f_record.status = "active"
+        f_record.save()
+
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+        )
+
+        self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")

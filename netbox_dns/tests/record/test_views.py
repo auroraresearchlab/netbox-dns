@@ -102,6 +102,7 @@ class RecordTestCase(
             "value": "fe80::dead:beef",
             "ttl": 300,
             "tags": [t.pk for t in tags],
+            "status": "active",
         }
 
         cls.bulk_edit_data = {
