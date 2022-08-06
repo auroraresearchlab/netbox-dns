@@ -5,6 +5,7 @@ from datetime import datetime
 
 import dns
 from dns import rdata, rdatatype, rdataclass
+from dns.rdtypes.ANY import SOA
 
 from django.core.validators import (
     MinValueValidator,
@@ -26,12 +27,6 @@ from utilities.querysets import RestrictedQuerySet
 from utilities.choices import ChoiceSet
 
 from netbox.models import NetBoxModel
-
-
-def absolute_name(name):
-    if name.endswith("."):
-        return name
-    return f"{name}."
 
 
 class NameServer(NetBoxModel):
@@ -221,11 +216,16 @@ class Zone(NetBoxModel):
     def update_soa_record(self):
         soa_name = "@"
         soa_ttl = self.soa_ttl
-        soa_value = (
-            f"({absolute_name(self.soa_mname.name)} {absolute_name(self.soa_rname)}"
-            f" {self.soa_serial}"
-            f" {self.soa_refresh} {self.soa_retry} {self.soa_expire}"
-            f" {self.soa_minimum})"
+        soa_rdata = dns.rdtypes.ANY.SOA.SOA(
+            rdclass=RecordClassChoices.IN,
+            rdtype=RecordTypeChoices.SOA,
+            mname=self.soa_mname.name,
+            rname=self.soa_rname,
+            serial=self.soa_serial,
+            refresh=self.soa_refresh,
+            retry=self.soa_retry,
+            expire=self.soa_expire,
+            minimum=self.soa_minimum,
         )
 
         old_soa_records = self.record_set.filter(
@@ -238,9 +238,9 @@ class Zone(NetBoxModel):
                     record.delete()
                     continue
 
-                if record.ttl != soa_ttl or record.value != soa_value:
+                if record.ttl != soa_ttl or record.value != soa_rdata.to_text():
                     record.ttl = soa_ttl
-                    record.value = soa_value
+                    record.value = soa_rdata.to_text()
                     record.managed = True
                     record.save()
         else:
@@ -249,7 +249,7 @@ class Zone(NetBoxModel):
                 type=RecordTypeChoices.SOA,
                 name=soa_name,
                 ttl=soa_ttl,
-                value=soa_value,
+                value=soa_rdata.to_text(),
                 managed=True,
             )
 
