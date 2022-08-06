@@ -241,6 +241,7 @@ class ZoneCSVForm(NetBoxModelCSVForm):
     )
     status = CSVChoiceField(
         choices=ZoneStatusChoices,
+        required=False,
         help_text="Zone status",
     )
     default_ttl = IntegerField(
@@ -316,7 +317,14 @@ class ZoneCSVForm(NetBoxModelCSVForm):
         return self._clean_field_with_defaults("soa_ttl")
 
     def clean_soa_mname(self):
-        return self._clean_field_with_defaults("soa_mname")
+        soa_mname = self._clean_field_with_defaults("soa_mname")
+        if type(soa_mname) == str:
+            try:
+                soa_mname = NameServer.objects.get(name=soa_mname)
+            except NameServer.DoesNotExist:
+                raise ValidationError(f"Default name server {soa_mname} does not exist")
+
+        return soa_mname
 
     def clean_soa_rname(self):
         return self._clean_field_with_defaults("soa_rname")

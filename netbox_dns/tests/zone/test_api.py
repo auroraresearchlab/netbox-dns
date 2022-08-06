@@ -84,21 +84,18 @@ class ZoneTest(
             },
             {
                 "name": "zone9.example.com",
-                "status": "active",
                 **cls.zone_data,
                 "soa_mname": ns1.pk,
                 "view": views[0].pk,
             },
             {
                 "name": "zone9.example.com",
-                "status": "active",
                 **cls.zone_data,
                 "soa_mname": ns1.pk,
                 "view": views[1].pk,
             },
             {
                 "name": "zone9.example.com",
-                "status": "active",
                 **cls.zone_data,
                 "soa_mname": ns1.pk,
             },
@@ -106,6 +103,5 @@ class ZoneTest(
 
         cls.bulk_update_data = {
             "view": views[2].pk,
-            "status": "active",
             "tags": [t.pk for t in tags],
         }
