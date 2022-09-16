@@ -27,6 +27,7 @@ class ViewSerializer(NetBoxModelSerializer):
             "description",
             "created",
             "last_updated",
+            "custom_fields",
         )
 
 
@@ -100,6 +101,7 @@ class ZoneSerializer(NetBoxModelSerializer):
             "soa_expire",
             "soa_minimum",
             "active",
+            "custom_fields",
         )
 
 
@@ -119,6 +121,7 @@ class NameServerSerializer(NetBoxModelSerializer):
             "tags",
             "created",
             "last_updated",
+            "custom_fields",
         )
 
 
@@ -169,4 +172,5 @@ class RecordSerializer(NetBoxModelSerializer):
             "ptr_record",
             "address_record",
             "active",
+            "custom_fields",
         )
