@@ -22,10 +22,13 @@ class ZoneFilter(NetBoxModelFilterSet):
         to_field_name="name",
         label="View",
     )
+    active = django_filters.BooleanFilter(
+        label="Zone is active",
+    )
 
     class Meta:
         model = Zone
-        fields = ("name", "view", "status", "nameservers")
+        fields = ("name", "view", "status", "nameservers", "active")
 
     def search(self, queryset, name, value):
         """Perform the filtered search."""
