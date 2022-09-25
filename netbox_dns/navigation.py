@@ -5,6 +5,7 @@ menu_items = (
     PluginMenuItem(
         link="plugins:netbox_dns:view_list",
         link_text="Views",
+        permissions=["netbox_dns.view_view"],
         buttons=(
             PluginMenuButton(
                 "plugins:netbox_dns:view_add",
@@ -25,6 +26,7 @@ menu_items = (
     PluginMenuItem(
         link="plugins:netbox_dns:zone_list",
         link_text="Zones",
+        permissions=["netbox_dns.view_zone"],
         buttons=(
             PluginMenuButton(
                 "plugins:netbox_dns:zone_add",
@@ -45,6 +47,7 @@ menu_items = (
     PluginMenuItem(
         link="plugins:netbox_dns:nameserver_list",
         link_text="Nameservers",
+        permissions=["netbox_dns.view_nameserver"],
         buttons=(
             PluginMenuButton(
                 "plugins:netbox_dns:nameserver_add",
@@ -65,6 +68,7 @@ menu_items = (
     PluginMenuItem(
         link="plugins:netbox_dns:record_list",
         link_text="Records",
+        permissions=["netbox_dns.view_record"],
         buttons=(
             PluginMenuButton(
                 "plugins:netbox_dns:record_add",
@@ -85,5 +89,6 @@ menu_items = (
     PluginMenuItem(
         link="plugins:netbox_dns:managed_record_list",
         link_text="Managed Records",
+        permissions=["netbox_dns.view_record"],
     ),
 )
