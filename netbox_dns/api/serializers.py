@@ -109,7 +109,7 @@ class NameServerSerializer(NetBoxModelSerializer):
     url = serializers.HyperlinkedIdentityField(
         view_name="plugins-api:netbox_dns-api:nameserver-detail"
     )
-    zones =  NestedZoneSerializer(
+    zones = NestedZoneSerializer(
         many=True,
         read_only=True,
         required=False,
