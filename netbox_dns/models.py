@@ -659,7 +659,8 @@ class Record(NetBoxModel):
                 )
 
         self.ptr_record = ptr_record
-        super().save()
+        if self.pk:
+            super().save()
 
     def clean_fields(self, *args, **kwargs):
         self.type = self.type.upper()
