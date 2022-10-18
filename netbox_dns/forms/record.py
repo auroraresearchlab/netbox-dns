@@ -211,4 +211,4 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
             ("zone", "type", "value", "status", "ttl", "disable_ptr", "description"),
         ),
     )
-    nullable_fields = ("description",)
+    nullable_fields = ("description", "ttl")
