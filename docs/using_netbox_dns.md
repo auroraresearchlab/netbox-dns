@@ -261,7 +261,7 @@ Field           | Required | Explanation
 **Name**        | Yes      | The name of the record, e.g. the simple host name for A and AAAA records
 **Value**       | Yes      | The value of the record, e.g. the IPv4 or IPv6 addreess
 **Status**      | No       | The status of a record. Pre-defined choices are "Active" (which is the default) and "Inactive"
-**TTL**         | No       | The time to live for the record. Defaults to the zone's default TTL
+**TTL**         | No       | The time to live for the record. If empty, the zone's SOA MINIMUM value or an explicitly defined zone default TTL value ($TTL in the master zone file) will be used. See [RFC 2308, Section 4](https://datatracker.ietf.org/doc/html/rfc2308#section-4)
 **Description** | No       | A short textual description of the record
 **Tags**        | No       | Netbox tags assigned to the name server. Tags can be used to categorise name servers by arbitrary criteria such as Production/Test/Development systems
 **Active**      | N/A      | This field is not an input field, but it is created from the zone and record status. A record is marked inactive when either the zone that contains it or the record itself is not in an active status. **No PTR records are created for inactive A or AAAA records**

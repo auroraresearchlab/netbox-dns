@@ -525,6 +525,8 @@ class Record(NetBoxModel):
     )
     ttl = models.PositiveIntegerField(
         verbose_name="TTL",
+        null=True,
+        blank=True,
     )
     managed = models.BooleanField(
         null=False,
@@ -668,9 +670,6 @@ class Record(NetBoxModel):
 
     def clean(self, *args, **kwargs):
         ip_version = None
-
-        if self.ttl is None:
-            self.ttl = self.zone.default_ttl
 
         try:
             if self.type == RecordTypeChoices.A:
