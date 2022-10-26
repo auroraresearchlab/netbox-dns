@@ -228,22 +228,16 @@ class Zone(NetBoxModel):
             minimum=self.soa_minimum,
         )
 
-        old_soa_records = self.record_set.filter(
-            type=RecordTypeChoices.SOA, name=soa_name
-        )
+        try:
+            soa_record = self.record_set.get(type=RecordTypeChoices.SOA, name=soa_name)
 
-        if len(old_soa_records):
-            for index, record in enumerate(old_soa_records):
-                if index > 0:
-                    record.delete()
-                    continue
+            if soa_record.ttl != soa_ttl or soa_record.value != soa_rdata.to_text():
+                soa_record.ttl = soa_ttl
+                soa_record.value = soa_rdata.to_text()
+                soa_record.managed = True
+                soa_record.save()
 
-                if record.ttl != soa_ttl or record.value != soa_rdata.to_text():
-                    record.ttl = soa_ttl
-                    record.value = soa_rdata.to_text()
-                    record.managed = True
-                    record.save()
-        else:
+        except Record.DoesNotExist:
             Record.objects.create(
                 zone_id=self.pk,
                 type=RecordTypeChoices.SOA,
@@ -329,7 +323,9 @@ class Zone(NetBoxModel):
 
     def update_serial(self):
         self.last_updated = datetime.now()
-        self.save()
+        self.soa_serial = ceil(datetime.now().timestamp())
+        self.update_soa_record()
+        super().save()
 
     def parent_zones(self):
         zone_fields = self.name.split(".")
