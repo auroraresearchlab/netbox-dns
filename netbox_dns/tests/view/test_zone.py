@@ -96,7 +96,8 @@ class ZoneMoveTest(TestCase):
                 view=cls.views[1],
             ),
         ]
-        Zone.objects.bulk_create(cls.zones)
+        for zone in cls.zones:
+            zone.save()
 
     def test_ipv4_add_view_to_zone_new_ptr_added(self):
         f_zone = self.zones[0]

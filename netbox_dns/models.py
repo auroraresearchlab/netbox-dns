@@ -7,6 +7,8 @@ import dns
 from dns import rdata, rdatatype, rdataclass
 from dns.rdtypes.ANY import SOA
 
+from netaddr import IPNetwork, AddrFormatError, IPAddress
+
 from django.core.validators import (
     MinValueValidator,
     MaxValueValidator,
@@ -27,6 +29,8 @@ from utilities.querysets import RestrictedQuerySet
 from utilities.choices import ChoiceSet
 
 from netbox.models import NetBoxModel
+
+from netbox_dns.fields import NetworkField
 
 
 class NameServer(NetBoxModel):
@@ -169,6 +173,12 @@ class Zone(NetBoxModel):
         max_length=200,
         blank=True,
     )
+    arpa_network = NetworkField(
+        verbose_name="ARPA Network",
+        help_text="Network related to a reverse lookup zone (.arpa)",
+        blank=True,
+        null=True,
+    )
 
     objects = ZoneManager()
 
@@ -212,6 +222,20 @@ class Zone(NetBoxModel):
 
     def get_status_class(self):
         return self.CSS_CLASSES.get(self.status)
+
+    @property
+    def is_active(self):
+        return self.status in Zone.ACTIVE_STATUS_LIST
+
+    @property
+    def is_reverse_zone(self):
+        return self.name.endswith(".arpa")
+
+    @property
+    def view_filter(self):
+        if self.view is None:
+            return Q(view__isnull=True)
+        return Q(view=self.view)
 
     def update_soa_record(self):
         soa_name = "@"
@@ -337,6 +361,33 @@ class Zone(NetBoxModel):
             f'{".".join(zone_fields[length:])}' for length in range(1, len(zone_fields))
         ]
 
+    def get_network(self):
+        name = self.name.rstrip(".")
+
+        if name.endswith(".in-addr.arpa"):
+            address = ".".join(reversed(name.replace(".in-addr.arpa", "").split(".")))
+            mask = len(address.split(".")) * 8
+
+            try:
+                return IPNetwork(f"{address}/{mask}")
+            except AddrFormatError:
+                return None
+
+        elif name.endswith("ip6.arpa"):
+            address = "".join(reversed(name.replace(".ip6.arpa", "").split(".")))
+            mask = len(address)
+            address = address + "0" * (32 - mask)
+
+            try:
+                return IPNetwork(
+                    f"{':'.join([(address[i:i+4]) for i in range(0, mask, 4)])}::/{mask*4}"
+                )
+            except AddrFormatError:
+                return None
+
+        else:
+            return None
+
     def check_name_conflict(self):
         if self.view is None:
             if (
@@ -366,22 +417,22 @@ class Zone(NetBoxModel):
         new_zone = self.pk is None
         if not new_zone:
             old_zone = Zone.objects.get(pk=self.pk)
-            renamed_zone = old_zone.name != self.name
-            changed_view = old_zone.view != self.view
-            changed_status = old_zone.status != self.status
-        else:
-            renamed_zone = False
-            changed_view = False
-            changed_status = False
+
+        name_changed = not new_zone and old_zone.name != self.name
+        view_changed = not new_zone and old_zone.view != self.view
+        status_changed = not new_zone and old_zone.status != self.status
 
         if self.soa_serial_auto:
             self.soa_serial = self.get_auto_serial()
 
+        if self.is_reverse_zone:
+            self.arpa_network = self.get_network()
+
         super().save(*args, **kwargs)
 
         if (
-            new_zone or renamed_zone or changed_view or changed_status
-        ) and self.name.endswith(".arpa"):
+            new_zone or name_changed or view_changed or status_changed
+        ) and self.is_reverse_zone:
             address_records = Record.objects.filter(
                 Q(ptr_record__isnull=True)
                 | Q(ptr_record__zone__name__in=self.parent_zones())
@@ -392,7 +443,7 @@ class Zone(NetBoxModel):
             for record in address_records:
                 record.update_ptr_record()
 
-        elif renamed_zone or changed_view or changed_status:
+        elif name_changed or view_changed or status_changed:
             for record in self.record_set.filter(
                 type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA)
             ):
@@ -592,26 +643,11 @@ class Record(NetBoxModel):
             and self.zone.status in Zone.ACTIVE_STATUS_LIST
         )
 
-    def ptr_zone(self, view=None):
-        address = ipaddress.ip_address(self.value)
-        if address.version == 4:
-            lengths = range(1, 4)
-        else:
-            lengths = range(16, 32)
+    def ptr_zone(self):
+        ptr_zones = Zone.objects.filter(
+            self.zone.view_filter, arpa_network__net_contains=self.value
+        ).order_by(Length("name").desc())
 
-        zone_names = [
-            ".".join(address.reverse_pointer.split(".")[length:]) for length in lengths
-        ]
-
-        if view is None:
-            view = self.zone.view
-
-        if view is None:
-            ptr_zone_filter = Q(name__in=zone_names, view__isnull=True)
-        else:
-            ptr_zone_filter = Q(name__in=zone_names, view_id=view.pk)
-
-        ptr_zones = Zone.objects.filter(ptr_zone_filter).order_by(Length("name").desc())
         if len(ptr_zones):
             return ptr_zones[0]
 
