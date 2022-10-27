@@ -355,12 +355,6 @@ class Zone(NetBoxModel):
         self.last_updated = datetime.now()
         self.save()
 
-    def parent_zones(self):
-        zone_fields = self.name.split(".")
-        return [
-            f'{".".join(zone_fields[length:])}' for length in range(1, len(zone_fields))
-        ]
-
     def get_network(self):
         name = self.name.rstrip(".")
 
@@ -433,10 +427,12 @@ class Zone(NetBoxModel):
         if (
             new_zone or name_changed or view_changed or status_changed
         ) and self.is_reverse_zone:
+            zones = Zone.objects.filter(
+                self.view_filter,
+                arpa_network__net_contains_or_equals=self.arpa_network,
+            )
             address_records = Record.objects.filter(
-                Q(ptr_record__isnull=True)
-                | Q(ptr_record__zone__name__in=self.parent_zones())
-                | Q(ptr_record__zone__name=self.name),
+                Q(ptr_record__isnull=True) | Q(ptr_record__zone__in=zones),
                 type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA),
                 disable_ptr=False,
             )
