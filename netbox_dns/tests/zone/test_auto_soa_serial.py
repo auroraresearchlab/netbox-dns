@@ -53,7 +53,8 @@ class AutoSOASerialTest(TestCase):
                 soa_serial_auto=False,
             ),
         ]
-        Zone.objects.bulk_create(cls.zones)
+        for zone in cls.zones:
+            zone.save()
 
     def test_soa_serial_auto(self):
         zone = self.zones[0]

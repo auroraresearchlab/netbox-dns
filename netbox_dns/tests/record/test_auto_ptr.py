@@ -69,7 +69,8 @@ class AutoPTRTest(TestCase):
                 soa_mname=cls.nameserver,
             ),
         ]
-        Zone.objects.bulk_create(cls.zones)
+        for zone in cls.zones:
+            zone.save()
 
     def test_create_ipv4_ptr(self):
         f_zone = self.zones[0]

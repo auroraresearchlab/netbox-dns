@@ -99,7 +99,8 @@ class AutoPTRTest(TestCase):
                 view=cls.views[1],
             ),
         ]
-        Zone.objects.bulk_create(cls.zones)
+        for zone in cls.zones:
+            zone.save()
 
     def test_create_ipv4_ptr_no_view(self):
         f_zone = self.zones[0]
