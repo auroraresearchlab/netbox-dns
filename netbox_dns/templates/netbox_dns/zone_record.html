@@ -65,8 +65,10 @@
         <div class="card">
           <div class="card-body">
             <div class="table-responsive">
-              {% render_table table %}
+              {% render_table table "inc/table.html" %}
             </div>
+            {# Paginator #}
+            {% include 'inc/paginator.html' with paginator=table.paginator page=table.page %}
           </div>
         </div>
 
@@ -92,9 +94,6 @@
         {% endif %}
 
       </form>
-
-      {# Paginator #}
-      {% include 'inc/paginator.html' with paginator=table.paginator page=table.page %}
     </div>
   </div>
 
