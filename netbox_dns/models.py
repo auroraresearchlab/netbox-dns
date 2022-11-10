@@ -273,7 +273,6 @@ class Zone(NetBoxModel):
 
     def update_ns_records(self, nameservers):
         ns_name = "@"
-        ns_ttl = self.default_ttl
 
         delete_ns = self.record_set.filter(
             type=RecordTypeChoices.NS, managed=True
@@ -286,7 +285,6 @@ class Zone(NetBoxModel):
                 zone_id=self.pk,
                 type=RecordTypeChoices.NS,
                 name=ns_name,
-                ttl=ns_ttl,
                 value=ns,
                 managed=True,
             )
