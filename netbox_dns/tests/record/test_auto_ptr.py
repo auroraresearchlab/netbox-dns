@@ -93,6 +93,27 @@ class AutoPTRTest(TestCase):
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
 
+    def test_create_apex_ipv4_ptr(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[1]
+
+        name = "@"
+        address = "10.0.1.42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.A,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+        )
+
+        self.assertEqual(r_record.value, f"{f_zone.name}.")
+
     def test_remove_ipv4_ptr(self):
         f_zone = self.zones[0]
         r_zone = self.zones[1]
@@ -467,6 +488,27 @@ class AutoPTRTest(TestCase):
         )
 
         self.assertEqual(r_record.value, f"{name}.{f_zone.name}.")
+
+    def test_create_apex_ipv6_ptr(self):
+        f_zone = self.zones[0]
+        r_zone = self.zones[6]
+
+        name = "@"
+        address = "fe80:dead:beef:1::42"
+
+        f_record = Record(
+            zone=f_zone,
+            name=name,
+            type=RecordTypeChoices.AAAA,
+            value=address,
+            **self.record_data,
+        )
+        f_record.save()
+        r_record = Record.objects.get(
+            type=RecordTypeChoices.PTR, zone=r_zone, name=reverse_name(address, r_zone)
+        )
+
+        self.assertEqual(r_record.value, f"{f_zone.name}.")
 
     def test_remove_ipv6_ptr(self):
         f_zone = self.zones[0]

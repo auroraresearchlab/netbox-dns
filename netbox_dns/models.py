@@ -624,7 +624,10 @@ class Record(NetBoxModel):
         return reverse("plugins:netbox_dns:record", kwargs={"pk": self.id})
 
     def fqdn(self):
-        return f"{self.name}.{self.zone.name}."
+        if self.name == "@":
+            return f"{self.zone.name}."
+        else:
+            return f"{self.name}.{self.zone.name}."
 
     @property
     def is_active(self):
