@@ -114,7 +114,7 @@ A simple Jinja2 template to create a zone file is stored as `zone.db.j2`:
 $TTL {{ zone.default_ttl }}
 
 {% for record in records %}
-{{ record.name.ljust(32) }}    {{ (record.ttl|string).ljust(8) }} IN {{ record.type.ljust(8) }}    {{ record.value }}
+{{ record.name.ljust(32) }}    {{ (record.ttl|string if record.ttl is not none else '').ljust(8) }} IN {{ record.type.ljust(8) }}    {{ record.value }}
 {% endfor %}
 ```
 
