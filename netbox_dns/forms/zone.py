@@ -13,7 +13,7 @@ from django.urls import reverse_lazy
 from netbox.forms import (
     NetBoxModelBulkEditForm,
     NetBoxModelFilterSetForm,
-    NetBoxModelCSVForm,
+    NetBoxModelImportForm,
     NetBoxModelForm,
 )
 from utilities.forms import (
@@ -229,7 +229,7 @@ class ZoneFilterForm(NetBoxModelFilterSetForm):
     tag = TagFilterField(Zone)
 
 
-class ZoneCSVForm(NetBoxModelCSVForm):
+class ZoneCSVForm(NetBoxModelImportForm):
     view = CSVModelChoiceField(
         queryset=View.objects.all(),
         required=False,
