@@ -1,16 +1,18 @@
 import logging
 
-from netbox_dns.models import Record
-
 from django.db import migrations
 from django.db.models import Q
+
+from netbox_dns.models import ZoneStatusChoices
 
 
 def delete_ptr_records_for_inactive_zones(apps, schema_editor):
     logger = logging.getLogger("django")
 
+    Record = apps.get_model("netbox_dns", "Record")
+
     for record in Record.objects.exclude(
-        Q(Q(ptr_record__isnull=True) | Q(zone__status__in=Record.ACTIVE_STATUS_LIST))
+        Q(Q(ptr_record__isnull=True) | Q(zone__status=ZoneStatusChoices.STATUS_ACTIVE))
     ):
         logger.warning(
             "Deleting PTR for record %s:%s in zone %s",
