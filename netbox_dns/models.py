@@ -29,6 +29,7 @@ from utilities.querysets import RestrictedQuerySet
 from utilities.choices import ChoiceSet
 
 from netbox.models import NetBoxModel
+from netbox.search import SearchIndex, register_search
 
 from netbox_dns.fields import NetworkField
 
@@ -53,6 +54,15 @@ class NameServer(NetBoxModel):
 
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:nameserver", kwargs={"pk": self.pk})
+
+
+@register_search
+class NameServerIndex(SearchIndex):
+    model = NameServer
+    fields = (
+        ("name", 100),
+        ("description", 500),
+    )
 
 
 class ZoneManager(models.Manager.from_queryset(RestrictedQuerySet)):
@@ -472,6 +482,19 @@ def update_ns_records(**kwargs):
     zone.update_ns_records(new_nameservers)
 
 
+@register_search
+class ZoneIndex(SearchIndex):
+    model = Zone
+    fields = (
+        ("name", 100),
+        ("view", 150),
+        ("description", 500),
+        ("soa_rname", 1000),
+        ("soa_mname", 1000),
+        ("arpa_network", 1000),
+    )
+
+
 class RecordManager(models.Manager.from_queryset(RestrictedQuerySet)):
     """Special Manager for records providing the activity status annotation"""
 
@@ -780,6 +803,17 @@ class Record(NetBoxModel):
             zone.update_serial()
 
 
+@register_search
+class RecordIndex(SearchIndex):
+    model = Record
+    fields = (
+        ("name", 100),
+        ("value", 150),
+        ("zone", 200),
+        ("type", 200),
+    )
+
+
 class View(NetBoxModel):
     name = models.CharField(
         unique=True,
@@ -800,3 +834,12 @@ class View(NetBoxModel):
 
     class Meta:
         ordering = ("name",)
+
+
+@register_search
+class ViewIndex(SearchIndex):
+    model = View
+    fields = (
+        ("name", 100),
+        ("description", 500),
+    )
