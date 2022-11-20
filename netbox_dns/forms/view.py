@@ -31,7 +31,7 @@ class ViewFilterForm(NetBoxModelFilterSetForm):
     model = View
 
 
-class ViewCSVForm(NetBoxModelImportForm):
+class ViewImportForm(NetBoxModelImportForm):
     class Meta:
         model = View
         fields = ("name", "description")

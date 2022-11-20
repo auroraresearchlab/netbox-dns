@@ -101,7 +101,7 @@ class RecordFilterForm(NetBoxModelFilterSetForm):
     tag = TagFilterField(Record)
 
 
-class RecordCSVForm(NetBoxModelImportForm):
+class RecordImportForm(NetBoxModelImportForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

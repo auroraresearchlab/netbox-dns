@@ -32,7 +32,7 @@ class NameServerFilterForm(NetBoxModelFilterSetForm):
     tag = TagFilterField(NameServer)
 
 
-class NameServerCSVForm(NetBoxModelImportForm):
+class NameServerImportForm(NetBoxModelImportForm):
     class Meta:
         model = NameServer
 

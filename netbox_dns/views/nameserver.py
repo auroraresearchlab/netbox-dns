@@ -2,7 +2,7 @@ from netbox.views import generic
 
 from netbox_dns.filters import NameServerFilter
 from netbox_dns.forms import (
-    NameServerCSVForm,
+    NameServerImportForm,
     NameServerFilterForm,
     NameServerForm,
     NameServerBulkEditForm,
@@ -58,7 +58,7 @@ class NameServerDeleteView(generic.ObjectDeleteView):
 
 class NameServerBulkImportView(generic.BulkImportView):
     queryset = NameServer.objects.all()
-    model_form = NameServerCSVForm
+    model_form = NameServerImportForm
     table = NameServerTable
 
 

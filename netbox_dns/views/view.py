@@ -2,7 +2,7 @@ from netbox.views import generic
 
 from netbox_dns.models import View, Zone
 from netbox_dns.filters import ViewFilter
-from netbox_dns.forms import ViewForm, ViewFilterForm, ViewCSVForm, ViewBulkEditForm
+from netbox_dns.forms import ViewForm, ViewFilterForm, ViewImportForm, ViewBulkEditForm
 from netbox_dns.tables import ViewTable, ZoneTable
 
 
@@ -49,7 +49,7 @@ class ViewDeleteView(generic.ObjectDeleteView):
 
 class ViewBulkImportView(generic.BulkImportView):
     queryset = View.objects.all()
-    model_form = ViewCSVForm
+    model_form = ViewImportForm
     table = ViewTable
 
 

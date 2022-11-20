@@ -229,7 +229,7 @@ class ZoneFilterForm(NetBoxModelFilterSetForm):
     tag = TagFilterField(Zone)
 
 
-class ZoneCSVForm(NetBoxModelImportForm):
+class ZoneImportForm(NetBoxModelImportForm):
     view = CSVModelChoiceField(
         queryset=View.objects.all(),
         required=False,

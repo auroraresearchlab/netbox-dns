@@ -2,7 +2,7 @@ from netbox.views import generic
 
 from netbox_dns.filters import RecordFilter
 from netbox_dns.forms import (
-    RecordCSVForm,
+    RecordImportForm,
     RecordFilterForm,
     RecordForm,
     RecordBulkEditForm,
@@ -55,7 +55,7 @@ class RecordBulkImportView(generic.BulkImportView):
     queryset = Record.objects.filter(managed=False).prefetch_related(
         "zone", "ptr_record"
     )
-    model_form = RecordCSVForm
+    model_form = RecordImportForm
     table = RecordTable
 
 

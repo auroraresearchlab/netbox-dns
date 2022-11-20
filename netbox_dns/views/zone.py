@@ -2,7 +2,7 @@ from netbox.views import generic
 
 from netbox_dns.filters import ZoneFilter
 from netbox_dns.forms import (
-    ZoneCSVForm,
+    ZoneImportForm,
     ZoneForm,
     ZoneFilterForm,
     ZoneBulkEditForm,
@@ -60,7 +60,7 @@ class ZoneBulkImportView(generic.BulkImportView):
     queryset = Zone.objects.all().prefetch_related(
         "view", "tags", "nameservers", "soa_mname"
     )
-    model_form = ZoneCSVForm
+    model_form = ZoneImportForm
     table = ZoneTable
 
 
