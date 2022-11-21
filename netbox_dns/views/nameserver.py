@@ -1,6 +1,6 @@
 from netbox.views import generic
 
-from netbox_dns.filters import NameServerFilter
+from netbox_dns.filters import NameServerFilter, ZoneFilter
 from netbox_dns.forms import (
     NameServerImportForm,
     NameServerFilterForm,
@@ -9,6 +9,8 @@ from netbox_dns.forms import (
 )
 from netbox_dns.models import Zone, NameServer
 from netbox_dns.tables import NameServerTable, ZoneTable
+
+from utilities.views import ViewTab, register_model_view
 
 
 class NameServerListView(generic.ObjectListView):
@@ -19,29 +21,7 @@ class NameServerListView(generic.ObjectListView):
 
 
 class NameServerView(generic.ObjectView):
-    """Display NameServer details"""
-
     queryset = NameServer.objects.all().prefetch_related("zones")
-
-    def get_extra_context(self, request, instance):
-        zones = instance.zones.all()
-        zone_table = ZoneTable(list(zones), user=request.user)
-
-        change_zone = request.user.has_perm("netbox_dns.change_zone")
-        delete_zone = request.user.has_perm("netbox_dns.delete_zone")
-
-        if change_zone or delete_zone:
-            zone_table.columns.show("pk")
-        zone_table.configure(request)
-
-        return {
-            "zone_table": zone_table,
-            "permissions": {
-                "change": change_zone,
-                "delete": delete_zone,
-            },
-            "model": Zone,
-        }
 
 
 class NameServerEditView(generic.ObjectEditView):
@@ -72,3 +52,43 @@ class NameServerBulkEditView(generic.BulkEditView):
 class NameServerBulkDeleteView(generic.BulkDeleteView):
     queryset = NameServer.objects.all()
     table = NameServerTable
+
+
+@register_model_view(NameServer, "zones")
+class NameServerZoneListView(generic.ObjectChildrenView):
+    queryset = NameServer.objects.all().prefetch_related("zones")
+    child_model = Zone
+    table = ZoneTable
+    filterset = ZoneFilter
+    template_name = "netbox_dns/zone/child.html"
+    hide_if_empty = True
+
+    tab = ViewTab(
+        label="Zones",
+        permission="netbox_dns.view_zone",
+        badge=lambda obj: obj.zones.count(),
+        hide_if_empty=True,
+    )
+
+    def get_children(self, request, parent):
+        return parent.zones
+
+
+@register_model_view(NameServer, "soa_zones")
+class NameServerSOAZoneListView(generic.ObjectChildrenView):
+    queryset = NameServer.objects.all().prefetch_related("zones_soa")
+    child_model = Zone
+    table = ZoneTable
+    filterset = ZoneFilter
+    template_name = "netbox_dns/zone/child.html"
+    hide_if_empty = True
+
+    tab = ViewTab(
+        label="SOA Zones",
+        permission="netbox_dns.view_zone",
+        badge=lambda obj: obj.zones_soa.count(),
+        hide_if_empty=True,
+    )
+
+    def get_children(self, request, parent):
+        return parent.zones_soa

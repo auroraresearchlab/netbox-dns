@@ -1,6 +1,8 @@
 from netbox.views import generic
+from utilities.views import ViewTab, register_model_view
 
-from netbox_dns.filters import ZoneFilter
+
+from netbox_dns.filters import ZoneFilter, RecordFilter
 from netbox_dns.forms import (
     ZoneImportForm,
     ZoneForm,
@@ -10,8 +12,8 @@ from netbox_dns.forms import (
 from netbox_dns.models import Record, Zone
 from netbox_dns.tables import (
     ZoneTable,
-    ZoneManagedRecordTable,
-    ZoneRecordTable,
+    RecordTable,
+    ManagedRecordTable,
 )
 
 
@@ -28,7 +30,11 @@ class ZoneView(generic.ObjectView):
     """Display Zone details"""
 
     queryset = Zone.objects.all().prefetch_related(
-        "view", "tags", "nameservers", "soa_mname"
+        "view",
+        "tags",
+        "nameservers",
+        "soa_mname",
+        "record_set",
     )
 
     def get_extra_context(self, request, instance):
@@ -78,45 +84,45 @@ class ZoneBulkDeleteView(generic.BulkDeleteView):
     table = ZoneTable
 
 
-class ZoneRecordListView(generic.ObjectView):
+@register_model_view(Zone, "records")
+class ZoneRecordListView(generic.ObjectChildrenView):
     queryset = Zone.objects.all()
-    template_name = "netbox_dns/zone_record.html"
+    child_model = Record
+    table = RecordTable
+    filterset = RecordFilter
+    template_name = "netbox_dns/zone/record.html"
+    hide_if_empty = True
 
-    def get_extra_context(self, request, instance):
-        zone_records = Record.objects.filter(managed=False, zone_id=instance.pk)
+    tab = ViewTab(
+        label="Records",
+        permission="netbox_dns.view_record",
+        badge=lambda obj: obj.record_count(managed=False),
+        hide_if_empty=True,
+    )
 
-        table = ZoneRecordTable(list(zone_records), user=request.user)
-        if request.user.has_perm("netbox_dns.change_record") or request.user.has_perm(
-            "netbox_dns.delete_record"
-        ):
-            table.columns.show("pk")
-        table.configure(request)
-
-        permissions = {
-            "change": request.user.has_perm("netbox_dns.change_record"),
-            "delete": request.user.has_perm("netbox_dns.delete_record"),
-        }
-        bulk_querystring = f"zone_id={instance.pk}"
-
-        return {
-            "active_tab": "record_list",
-            "table": table,
-            "permissions": permissions,
-            "bulk_querystring": bulk_querystring,
-        }
+    def get_children(self, request, parent):
+        return Record.objects.restrict(request.user, "view").filter(
+            zone=parent, managed=False
+        )
 
 
-class ZoneManagedRecordListView(generic.ObjectView):
+@register_model_view(Zone, "managed_records")
+class ZoneManagedRecordListView(generic.ObjectChildrenView):
     queryset = Zone.objects.all()
-    template_name = "netbox_dns/zone_managed_record.html"
+    child_model = Record
+    table = ManagedRecordTable
+    filterset = RecordFilter
+    template_name = "netbox_dns/zone/managed_record.html"
+    actions = ("changelog",)
 
-    def get_extra_context(self, request, instance):
-        zone_records = Record.objects.filter(managed=True, zone_id=instance.pk)
+    tab = ViewTab(
+        label="Managed Records",
+        permission="netbox_dns.view_record",
+        badge=lambda obj: obj.record_count(managed=True),
+        hide_if_empty=True,
+    )
 
-        table = ZoneManagedRecordTable(list(zone_records), user=request.user)
-        table.configure(request)
-
-        return {
-            "active_tab": "managed_record_list",
-            "table": table,
-        }
+    def get_children(self, request, parent):
+        return Record.objects.restrict(request.user, "view").filter(
+            zone=parent, managed=True
+        )

@@ -247,6 +247,9 @@ class Zone(NetBoxModel):
             return Q(view__isnull=True)
         return Q(view=self.view)
 
+    def record_count(self, managed=False):
+        return Record.objects.filter(zone=self, managed=managed).count()
+
     def update_soa_record(self):
         soa_name = "@"
         soa_ttl = self.soa_ttl
