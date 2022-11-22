@@ -23,6 +23,7 @@ from netbox_dns.views import (
     NameServerBulkEditView,
     NameServerBulkDeleteView,
     NameServerZoneListView,
+    NameServerSOAZoneListView,
     # record
     RecordListView,
     RecordView,
@@ -111,6 +112,11 @@ urlpatterns = [
         "nameservers/<int:pk>/zones/",
         NameServerZoneListView.as_view(),
         name="nameserver_zones",
+    ),
+    path(
+        "nameservers/<int:pk>/soazones/",
+        NameServerSOAZoneListView.as_view(),
+        name="nameserver_soa_zones",
     ),
     #
     # Record urls
