@@ -1,6 +1,7 @@
+from django.urls import reverse
+
 from netbox.views import generic
 from utilities.views import ViewTab, register_model_view
-
 
 from netbox_dns.filters import ZoneFilter, RecordFilter
 from netbox_dns.forms import (
@@ -53,6 +54,7 @@ class ZoneEditView(generic.ObjectEditView):
         "view", "tags", "nameservers", "soa_mname"
     )
     form = ZoneForm
+    default_return_url = "plugins:netbox_dns:zone_list"
 
 
 class ZoneDeleteView(generic.ObjectDeleteView):
@@ -68,6 +70,7 @@ class ZoneBulkImportView(generic.BulkImportView):
     )
     model_form = ZoneImportForm
     table = ZoneTable
+    default_return_url = "plugins:netbox_dns:zone_list"
 
 
 class ZoneBulkEditView(generic.BulkEditView):
@@ -77,6 +80,7 @@ class ZoneBulkEditView(generic.BulkEditView):
     filterset = ZoneFilter
     table = ZoneTable
     form = ZoneBulkEditForm
+    default_return_url = "plugins:netbox_dns:zone_list"
 
 
 class ZoneBulkDeleteView(generic.BulkDeleteView):

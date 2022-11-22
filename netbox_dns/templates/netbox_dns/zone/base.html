@@ -6,7 +6,7 @@
 
 {% block extra_controls %}
 {% if perms.netbox_dns.add_record %}
-<a href="{% url 'plugins:netbox_dns:record_add' %}?zone={{ object.id }}" class="btn btn-sm btn-primary" role="button">
+<a href="{% url 'plugins:netbox_dns:record_add' %}?zone={{ object.id }}&return_url={{ object.get_absolute_url }}" class="btn btn-sm btn-primary" role="button">
     <i class="mdi mdi-plus-thick"></i> Add Record
 </a>
 {% endif %}

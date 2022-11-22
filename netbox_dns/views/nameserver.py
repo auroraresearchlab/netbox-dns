@@ -25,10 +25,9 @@ class NameServerView(generic.ObjectView):
 
 
 class NameServerEditView(generic.ObjectEditView):
-    """View for editing a Name Server instance."""
-
     queryset = NameServer.objects.all()
     form = NameServerForm
+    default_return_url = "plugins:netbox_dns:nameserver_list"
 
 
 class NameServerDeleteView(generic.ObjectDeleteView):
@@ -40,6 +39,7 @@ class NameServerBulkImportView(generic.BulkImportView):
     queryset = NameServer.objects.all()
     model_form = NameServerImportForm
     table = NameServerTable
+    default_return_url = "plugins:netbox_dns:nameserver_list"
 
 
 class NameServerBulkEditView(generic.BulkEditView):

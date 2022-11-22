@@ -44,6 +44,7 @@ class RecordEditView(generic.ObjectEditView):
         "zone", "ptr_record"
     )
     form = RecordForm
+    default_return_url = "plugins:netbox_dns:record_list"
 
 
 class RecordDeleteView(generic.ObjectDeleteView):
@@ -57,6 +58,7 @@ class RecordBulkImportView(generic.BulkImportView):
     )
     model_form = RecordImportForm
     table = RecordTable
+    default_return_url = "plugins:netbox_dns:record_list"
 
 
 class RecordBulkEditView(generic.BulkEditView):

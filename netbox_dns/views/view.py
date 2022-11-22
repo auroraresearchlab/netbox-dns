@@ -22,6 +22,7 @@ class ViewListView(generic.ObjectListView):
 class ViewEditView(generic.ObjectEditView):
     queryset = View.objects.all()
     form = ViewForm
+    default_return_url = "plugins:netbox_dns:view_list"
 
 
 class ViewDeleteView(generic.ObjectDeleteView):
@@ -33,6 +34,7 @@ class ViewBulkImportView(generic.BulkImportView):
     queryset = View.objects.all()
     model_form = ViewImportForm
     table = ViewTable
+    default_return_url = "plugins:netbox_dns:view_list"
 
 
 class ViewBulkEditView(generic.BulkEditView):
