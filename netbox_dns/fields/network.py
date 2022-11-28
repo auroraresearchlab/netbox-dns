@@ -1,3 +1,4 @@
+from django import forms
 from django.db import models
 from django.db.models import Lookup
 
@@ -44,7 +45,7 @@ class NetContainedOrEqual(Lookup):
         return "%s <<= %s" % (lhs, rhs), params
 
 
-class NetworkFormField(models.Field):
+class NetworkFormField(forms.Field):
     def to_python(self, value):
         if not value:
             return None
