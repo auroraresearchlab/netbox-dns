@@ -31,7 +31,8 @@ from utilities.choices import ChoiceSet
 from netbox.models import NetBoxModel
 from netbox.search import SearchIndex, register_search
 
-from netbox_dns.fields import NetworkField
+from netbox_dns.fields import NetworkField, AddressField
+from netbox_dns.utilities import arpa_to_prefix
 
 
 class NameServer(NetBoxModel):
@@ -362,32 +363,9 @@ class Zone(NetBoxModel):
         self.update_soa_record()
         super().save()
 
-    def get_network(self):
-        name = self.name.rstrip(".")
-
-        if name.endswith(".in-addr.arpa"):
-            address = ".".join(reversed(name.replace(".in-addr.arpa", "").split(".")))
-            mask = len(address.split(".")) * 8
-
-            try:
-                return IPNetwork(f"{address}/{mask}")
-            except AddrFormatError:
-                return None
-
-        elif name.endswith("ip6.arpa"):
-            address = "".join(reversed(name.replace(".ip6.arpa", "").split(".")))
-            mask = len(address)
-            address = address + "0" * (32 - mask)
-
-            try:
-                return IPNetwork(
-                    f"{':'.join([(address[i:i+4]) for i in range(0, mask, 4)])}::/{mask*4}"
-                )
-            except AddrFormatError:
-                return None
-
-        else:
-            return None
+    @property
+    def network_from_name(self):
+        return arpa_to_prefix(self.name)
 
     def check_name_conflict(self):
         if self.view is None:
@@ -427,7 +405,7 @@ class Zone(NetBoxModel):
             self.soa_serial = self.get_auto_serial()
 
         if self.is_reverse_zone:
-            self.arpa_network = self.get_network()
+            self.arpa_network = self.network_from_name
 
         super().save(*args, **kwargs)
 
@@ -616,6 +594,12 @@ class Record(NetBoxModel):
         max_length=200,
         blank=True,
     )
+    ip_address = AddressField(
+        verbose_name="Related IP Address",
+        help_text="IP address related to an address (A/AAAA) or PTR record",
+        blank=True,
+        null=True,
+    )
 
     objects = RecordManager()
     raw_objects = RestrictedQuerySet.as_manager()
@@ -649,6 +633,7 @@ class Record(NetBoxModel):
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:record", kwargs={"pk": self.id})
 
+    @property
     def fqdn(self):
         if self.name == "@":
             return f"{self.zone.name}."
@@ -656,11 +641,35 @@ class Record(NetBoxModel):
             return f"{self.name}.{self.zone.name}."
 
     @property
+    def address_from_name(self):
+        prefix = arpa_to_prefix(self.fqdn)
+        if prefix is not None:
+            return prefix.ip
+
+        return None
+
+    @property
     def is_active(self):
         return (
             self.status in Record.ACTIVE_STATUS_LIST
             and self.zone.status in Zone.ACTIVE_STATUS_LIST
         )
+
+    @property
+    def is_ipv4_address_record(self):
+        return self.type == RecordTypeChoices.A
+
+    @property
+    def is_ipv6_address_record(self):
+        return self.type == RecordTypeChoices.AAAA
+
+    @property
+    def is_address_record(self):
+        return self.is_ipv4_address_record or self.is_ipv6_address_record
+
+    @property
+    def is_ptr_record(self):
+        return self.type == RecordTypeChoices.PTR
 
     def ptr_zone(self):
         ptr_zones = Zone.objects.filter(
@@ -685,7 +694,7 @@ class Record(NetBoxModel):
         ptr_name = ipaddress.ip_address(self.value).reverse_pointer.replace(
             f".{ptr_zone.name}", ""
         )
-        ptr_value = self.fqdn()
+        ptr_value = self.fqdn
         ptr_record = self.ptr_record
 
         with transaction.atomic():
@@ -727,10 +736,10 @@ class Record(NetBoxModel):
         ip_version = None
 
         try:
-            if self.type == RecordTypeChoices.A:
+            if self.is_ipv4_address_record:
                 ip_version = "4"
                 validate_ipv4_address(self.value)
-            elif self.type == RecordTypeChoices.AAAA:
+            elif self.is_ipv6_address_record:
                 ip_version = "6"
                 validate_ipv6_address(self.value)
             else:
@@ -783,7 +792,14 @@ class Record(NetBoxModel):
     def save(self, *args, **kwargs):
         self.full_clean()
 
-        if self.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
+        if self.is_ptr_record:
+            self.ip_address = self.address_from_name
+        elif self.is_address_record:
+            self.ip_address = self.value
+        else:
+            self.ip_address=None
+
+        if self.is_address_record:
             self.update_ptr_record()
         elif self.ptr_record is not None:
             self.ptr_record.delete()

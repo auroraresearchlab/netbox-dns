@@ -103,3 +103,7 @@ class ManagedRecordTable(RecordBaseTable):
             "value",
             "active",
         )
+
+
+class RelatedRecordTable(RecordBaseTable):
+    pass
