@@ -106,4 +106,19 @@ class ManagedRecordTable(RecordBaseTable):
 
 
 class RelatedRecordTable(RecordBaseTable):
-    pass
+    actions = ActionsColumn(actions=())
+
+    class Meta(NetBoxTable.Meta):
+        model = Record
+        fields = (
+            "name",
+            "zone",
+            "type",
+            "value",
+        )
+        default_columns = (
+            "name",
+            "zone",
+            "type",
+            "value",
+        )

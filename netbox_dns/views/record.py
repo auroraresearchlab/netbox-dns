@@ -28,7 +28,7 @@ class ManagedRecordListView(generic.ObjectListView):
     filterset_form = RecordFilterForm
     table = ManagedRecordTable
     actions = ("export",)
-    template_name = "netbox_dns/managed_record_list.html"
+    template_name = "netbox_dns/record/managed.html"
 
 
 class RecordView(generic.ObjectView):
