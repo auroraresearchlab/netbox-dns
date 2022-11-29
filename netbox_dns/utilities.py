@@ -1,5 +1,6 @@
 from netaddr import IPNetwork, AddrFormatError
 
+
 def arpa_to_prefix(arpa_name):
     name = arpa_name.rstrip(".")
 

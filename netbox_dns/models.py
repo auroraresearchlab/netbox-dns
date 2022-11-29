@@ -797,7 +797,7 @@ class Record(NetBoxModel):
         elif self.is_address_record:
             self.ip_address = self.value
         else:
-            self.ip_address=None
+            self.ip_address = None
 
         if self.is_address_record:
             self.update_ptr_record()

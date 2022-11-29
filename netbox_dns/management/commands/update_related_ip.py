@@ -12,7 +12,14 @@ class Command(BaseCommand):
         )
 
     def handle(self, *model_names, **options):
-        records = Record.objects.filter(type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA, RecordTypeChoices.PTR), ip_address__isnull=True)
+        records = Record.objects.filter(
+            type__in=(
+                RecordTypeChoices.A,
+                RecordTypeChoices.AAAA,
+                RecordTypeChoices.PTR,
+            ),
+            ip_address__isnull=True,
+        )
 
         for record in records:
             if options["verbose"]:
