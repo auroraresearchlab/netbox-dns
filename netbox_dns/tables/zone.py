@@ -4,6 +4,7 @@ from netbox.tables import (
     ChoiceFieldColumn,
     NetBoxTable,
     TagColumn,
+    ActionsColumn,
 )
 
 from netbox_dns.models import Zone
@@ -49,4 +50,31 @@ class ZoneTable(NetBoxTable):
             "view",
             "status",
             "tags",
+        )
+
+
+class RelatedZoneTable(NetBoxTable):
+    actions = ActionsColumn(actions=())
+
+    name = tables.Column(
+        linkify=True,
+    )
+    view = tables.Column(
+        linkify=True,
+    )
+    arpa_network = tables.Column(
+        verbose_name="Covered Prefix",
+    )
+
+    class Meta(NetBoxTable.Meta):
+        model = Zone
+        fields = (
+            "name",
+            "view",
+            "arpa_network",
+        )
+        default_columns = (
+            "name",
+            "view",
+            "arpa_network",
         )
