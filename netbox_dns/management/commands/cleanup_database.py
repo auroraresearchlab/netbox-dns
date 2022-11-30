@@ -1,7 +1,7 @@
 import dns
 from dns import rdtypes, rdata, rdatatype, rdataclass
 
-from netaddr import IPNetwork, AddrFormatError
+from netaddr import IPAddress, IPNetwork, AddrFormatError
 
 from django.core.management.base import BaseCommand
 
@@ -142,6 +142,28 @@ def record_update_ptr_records(verbose=False):
         record.update_ptr_record()
 
 
+def record_update_ip_address(verbose=False):
+    for record in Record.objects.filter(
+        type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA, RecordTypeChoices.PTR)
+    ):
+        if record.is_ptr_record:
+            if record.ip_address != record.address_from_name:
+                if verbose:
+                    print(
+                        f"Updating IP address of pointer record {record} to {record.address_from_name}"
+                    )
+                record.ip_address = record.address_from_name
+                record.save()
+        else:
+            if record.ip_address != IPAddress(record.value):
+                if verbose:
+                    print(
+                        f"Updating IP address of address record {record} to {IPAddress(record.value)}"
+                    )
+                record.ip_address = record.value
+                record.save()
+
+
 class Command(BaseCommand):
     help = "Clean up NetBox DNS database"
 
@@ -157,5 +179,6 @@ class Command(BaseCommand):
         zone_update_arpa_network(options["verbose"])
         record_cleanup_disable_ptr(options["verbose"])
         record_update_ptr_records(options["verbose"])
+        record_update_ip_address(options["verbose"])
 
         self.stdout.write("Database cleanup completed.")

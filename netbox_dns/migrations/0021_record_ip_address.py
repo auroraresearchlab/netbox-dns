@@ -6,6 +6,36 @@ import django.db.models.deletion
 import netbox_dns.fields.address
 import taggit.managers
 
+from netbox_dns.models import RecordTypeChoices
+from netbox_dns.utilities import arpa_to_prefix
+
+
+def fqdn(record):
+    if record.name == "@":
+        return f"{record.zone.name}."
+    else:
+        return f"{record.name}.{record.zone.name}."
+
+
+def address_from_name(record):
+    prefix = arpa_to_prefix(fqdn(record))
+    if prefix is not None:
+        return prefix.ip
+
+    return None
+
+
+def update_ip_addresses(apps, schema_editor):
+    Record = apps.get_model("netbox_dns", "Record")
+
+    for record in Record.objects.filter(type=RecordTypeChoices.PTR):
+        record.ip_address = address_from_name(record)
+        record.save()
+
+    for record in Record.objects.filter(type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA)):
+        record.ip_address = record.value
+        record.save()
+
 
 class Migration(migrations.Migration):
 
@@ -76,4 +106,5 @@ class Migration(migrations.Migration):
                 validators=[django.core.validators.MinValueValidator(1)]
             ),
         ),
+        migrations.RunPython(update_ip_addresses),
     ]
