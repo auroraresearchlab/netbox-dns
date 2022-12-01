@@ -32,7 +32,9 @@ def update_ip_addresses(apps, schema_editor):
         record.ip_address = address_from_name(record)
         record.save()
 
-    for record in Record.objects.filter(type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA)):
+    for record in Record.objects.filter(
+        type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA)
+    ):
         record.ip_address = record.value
         record.save()
 
