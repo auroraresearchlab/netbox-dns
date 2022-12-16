@@ -3,7 +3,7 @@ from django.forms import CharField
 from netbox.forms import (
     NetBoxModelBulkEditForm,
     NetBoxModelFilterSetForm,
-    NetBoxModelCSVForm,
+    NetBoxModelImportForm,
     NetBoxModelForm,
 )
 
@@ -32,7 +32,7 @@ class NameServerFilterForm(NetBoxModelFilterSetForm):
     tag = TagFilterField(NameServer)
 
 
-class NameServerCSVForm(NetBoxModelCSVForm):
+class NameServerImportForm(NetBoxModelImportForm):
     class Meta:
         model = NameServer
 

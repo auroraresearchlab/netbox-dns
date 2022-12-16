@@ -105,58 +105,20 @@ class ManagedRecordTable(RecordBaseTable):
         )
 
 
-class ZoneRecordTable(RecordBaseTable):
-    """Table for displaying Record objects for a given zone."""
-
-    pk = ToggleColumn()
-    tags = TagColumn(
-        url_name="plugins:netbox_dns:record_list",
-    )
-    ptr_record = tables.Column(
-        verbose_name="PTR Record",
-        linkify=True,
-    )
+class RelatedRecordTable(RecordBaseTable):
+    actions = ActionsColumn(actions=())
 
     class Meta(NetBoxTable.Meta):
         model = Record
         fields = (
-            "pk",
             "name",
-            "ttl",
+            "zone",
             "type",
             "value",
-            "status",
-            "disable_ptr",
-            "ptr_record",
-            "tags",
-            "active",
-            "description",
         )
         default_columns = (
             "name",
-            "ttl",
+            "zone",
             "type",
             "value",
-            "active",
-        )
-
-
-class ZoneManagedRecordTable(RecordBaseTable):
-    """Table for displaying managed Record objects for a given zone."""
-
-    address_record = tables.Column(
-        verbose_name="Address Record",
-        linkify=True,
-    )
-    actions = ActionsColumn(actions=("changelog",))
-
-    class Meta(NetBoxTable.Meta):
-        model = Record
-        fields = (
-            "name",
-            "ttl",
-            "type",
-            "value",
-            "address_record",
-            "active",
         )

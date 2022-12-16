@@ -1,6 +1,7 @@
 from django import forms
 from django.db import models
 from django.db.models import Lookup
+from django.core.exceptions import ValidationError
 
 from netaddr import AddrFormatError, IPNetwork
 
@@ -76,7 +77,7 @@ class NetworkField(models.Field):
 
         try:
             ip_network = IPNetwork(value)
-        except (AddressFormatError, TypeError, ValueError) as exc:
+        except (AddrFormatError, TypeError, ValueError) as exc:
             raise ValidationError(exc)
 
         return ip_network

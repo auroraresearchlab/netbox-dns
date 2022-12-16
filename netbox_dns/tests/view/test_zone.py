@@ -18,7 +18,7 @@ def reverse_name(address, reverse_zone):
     return f"{reverse_pointer}."
 
 
-class ZoneMoveTest(TestCase):
+class ZoneTestCase(TestCase):
 
     zone_data = {
         "default_ttl": 86400,

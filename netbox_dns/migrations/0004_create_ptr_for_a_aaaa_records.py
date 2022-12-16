@@ -3,15 +3,22 @@
 import logging
 
 from django.db import migrations, models
-import django.db.models.deletion
+from django.db.models import Q, deletion
 
-from netbox_dns.models import Record, RecordTypeChoices
+from netbox_dns.models import RecordTypeChoices
 
 
 def cleanup_disable_ptr(apps, schema_editor):
     logger = logging.getLogger("django")
 
-    for record in Record.objects.filter(Record.unique_ptr_qs):
+    Record = apps.get_model("netbox_dns", "Record")
+
+    unique_ptr_qs = Q(
+        Q(disable_ptr=False),
+        Q(Q(type=RecordTypeChoices.A) | Q(type=RecordTypeChoices.AAAA)),
+    )
+
+    for record in Record.objects.filter(unique_ptr_qs):
         logger.warning(
             "Disabling PTR generation for record %s:%s in zone %s",
             record.type,
@@ -49,7 +56,7 @@ class Migration(migrations.Migration):
             field=models.OneToOneField(
                 blank=True,
                 null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
+                on_delete=deletion.SET_NULL,
                 related_name="address_record",
                 to="netbox_dns.record",
             ),
@@ -58,9 +65,9 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="record",
             constraint=models.UniqueConstraint(
-                condition=models.Q(
-                    models.Q(("disable_ptr", False)),
-                    models.Q(
+                condition=Q(
+                    Q(("disable_ptr", False)),
+                    Q(
                         ("type", RecordTypeChoices.A),
                         ("type", RecordTypeChoices.AAAA),
                         _connector="OR",

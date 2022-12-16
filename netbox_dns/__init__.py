@@ -7,7 +7,7 @@ class DNSConfig(PluginConfig):
     name = "netbox_dns"
     verbose_name = "Netbox DNS"
     description = "Netbox DNS"
-    min_version = "3.2.0-beta2"
+    min_version = "3.4.0"
     version = __version__
     author = "Aurora Research Lab"
     author_email = "info@aurorabilisim.com"
@@ -20,6 +20,7 @@ class DNSConfig(PluginConfig):
         "zone_soa_retry": 7200,
         "zone_soa_expire": 2592000,
         "zone_soa_minimum": 3600,
+        "feature_ipam_integration": False,
     }
     base_url = "netbox-dns"
 

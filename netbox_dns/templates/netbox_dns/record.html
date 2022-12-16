@@ -42,9 +42,9 @@
                     <tr>
                         <th scope="row">Zone</th>
                         {% if object.managed %}
-                        <td><a href="{% url 'plugins:netbox_dns:zone_managed_record_list' pk=object.zone.pk %}">{{ object.zone }}</a></td>
+                        <td><a href="{% url 'plugins:netbox_dns:zone_managed_records' pk=object.zone.pk %}">{{ object.zone }}</a></td>
                         {% else %}
-                        <td><a href="{% url 'plugins:netbox_dns:zone_record_list' pk=object.zone.pk %}">{{ object.zone }}</a></td>
+                        <td><a href="{% url 'plugins:netbox_dns:zone_records' pk=object.zone.pk %}">{{ object.zone }}</a></td>
                         {% endif %}
                     </tr>
                     <tr>

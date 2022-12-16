@@ -2,7 +2,7 @@ from netbox.views import generic
 
 from netbox_dns.filters import RecordFilter
 from netbox_dns.forms import (
-    RecordCSVForm,
+    RecordImportForm,
     RecordFilterForm,
     RecordForm,
     RecordBulkEditForm,
@@ -28,7 +28,7 @@ class ManagedRecordListView(generic.ObjectListView):
     filterset_form = RecordFilterForm
     table = ManagedRecordTable
     actions = ("export",)
-    template_name = "netbox_dns/managed_record_list.html"
+    template_name = "netbox_dns/record/managed.html"
 
 
 class RecordView(generic.ObjectView):
@@ -44,6 +44,7 @@ class RecordEditView(generic.ObjectEditView):
         "zone", "ptr_record"
     )
     form = RecordForm
+    default_return_url = "plugins:netbox_dns:record_list"
 
 
 class RecordDeleteView(generic.ObjectDeleteView):
@@ -55,8 +56,9 @@ class RecordBulkImportView(generic.BulkImportView):
     queryset = Record.objects.filter(managed=False).prefetch_related(
         "zone", "ptr_record"
     )
-    model_form = RecordCSVForm
+    model_form = RecordImportForm
     table = RecordTable
+    default_return_url = "plugins:netbox_dns:record_list"
 
 
 class RecordBulkEditView(generic.BulkEditView):

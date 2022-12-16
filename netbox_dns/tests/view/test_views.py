@@ -5,7 +5,7 @@ from netbox_dns.tests.custom import ModelViewTestCase
 from netbox_dns.models import View
 
 
-class NameServerTestCase(
+class ViewTestCase(
     ModelViewTestCase,
     ViewTestCases.GetObjectViewTestCase,
     ViewTestCases.CreateObjectViewTestCase,
@@ -20,12 +20,12 @@ class NameServerTestCase(
 
     @classmethod
     def setUpTestData(cls):
-        View.objects.bulk_create(
-            [
-                View(name="external"),
-                View(name="internal"),
-            ]
-        )
+        cls.views = [
+            View(name="external"),
+            View(name="internal"),
+        ]
+
+        View.objects.bulk_create(cls.views)
 
         tags = create_tags("Alpha", "Bravo", "Charlie")
 
@@ -39,6 +39,12 @@ class NameServerTestCase(
             "test2",
             "test3",
             "test4",
+        )
+
+        cls.csv_update_data = (
+            "id,name,description",
+            f"{cls.views[0].pk},new-internal,test1",
+            f"{cls.views[1].pk},new-external,test2",
         )
 
     maxDiff = None

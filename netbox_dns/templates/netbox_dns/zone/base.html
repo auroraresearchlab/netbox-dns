@@ -1,0 +1,14 @@
+{% extends 'generic/object.html' %}
+{% load helpers %}
+{% load plugins %}
+{% load render_table from django_tables2 %}
+{% load perms %}
+
+{% block extra_controls %}
+{% if perms.netbox_dns.add_record %}
+<a href="{% url 'plugins:netbox_dns:record_add' %}?zone={{ object.id }}&return_url={{ object.get_absolute_url }}" class="btn btn-sm btn-primary" role="button">
+    <i class="mdi mdi-plus-thick"></i> Add Record
+</a>
+{% endif %}
+{{ block.super }}
+{% endblock %}

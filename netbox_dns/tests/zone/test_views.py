@@ -2,7 +2,7 @@ from utilities.testing import ViewTestCases
 from utilities.testing import create_tags
 
 from netbox_dns.tests.custom import ModelViewTestCase
-from netbox_dns.models import NameServer, Zone, ZoneStatusChoices
+from netbox_dns.models import NameServer, View, Zone, ZoneStatusChoices
 
 
 class ZoneTestCase(
@@ -18,17 +18,6 @@ class ZoneTestCase(
     ViewTestCases.BulkDeleteObjectsViewTestCase,
 ):
     model = Zone
-
-    csv_data = (
-        "name,status,soa_mname,soa_rname",
-        "zone4.example.com,active,ns1.example.com,hostmaster.example.com",
-        "zone5.example.com,active,ns1.example.com,hostmaster.example.com",
-        "zone6.example.com,active,ns1.example.com,hostmaster.example.com",
-    )
-
-    bulk_edit_data = {
-        "status": ZoneStatusChoices.STATUS_PARKED,
-    }
 
     zone_data = {
         "default_ttl": 86400,
@@ -50,24 +39,41 @@ class ZoneTestCase(
     def setUpTestData(cls):
         ns1 = NameServer.objects.create(name="ns1.example.com")
 
-        zones = (
+        cls.views = (
+            View(name="internal"),
+            View(name="external"),
+        )
+        View.objects.bulk_create(cls.views)
+
+        cls.zones = (
             Zone(name="zone1.example.com", **cls.zone_data, soa_mname=ns1),
             Zone(name="zone2.example.com", **cls.zone_data, soa_mname=ns1),
             Zone(name="zone3.example.com", **cls.zone_data, soa_mname=ns1),
         )
-        Zone.objects.bulk_create(zones)
+        Zone.objects.bulk_create(cls.zones)
 
         tags = create_tags("Alpha", "Bravo", "Charlie")
 
-        cls.form_data = {
-            "name": "zone4.example.com",
-            "default_ttl": 7200,
-            "tags": [t.pk for t in tags],
+        cls.bulk_edit_data = {
+            "status": ZoneStatusChoices.STATUS_PARKED,
         }
 
         cls.form_data = {
             "name": "zone7.example.com",
-            "status": "parked",
+            "status": ZoneStatusChoices.STATUS_PARKED,
             **cls.zone_data,
             "soa_mname": ns1.pk,
         }
+
+        cls.csv_data = (
+            "name,status,soa_mname,soa_rname",
+            "zone4.example.com,active,ns1.example.com,hostmaster.example.com",
+            "zone5.example.com,active,ns1.example.com,hostmaster.example.com",
+            "zone6.example.com,active,ns1.example.com,hostmaster.example.com",
+        )
+
+        cls.csv_update_data = (
+            "id,name,status,description,view",
+            f"{cls.zones[0].pk},{ZoneStatusChoices.STATUS_PARKED},test-zone1,",
+            f"{cls.zones[1].pk},{ZoneStatusChoices.STATUS_ACTIVE},test-zone2,{cls.views[0].name}",
+        )

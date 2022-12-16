@@ -11,7 +11,7 @@ from django.urls import reverse_lazy
 from netbox.forms import (
     NetBoxModelBulkEditForm,
     NetBoxModelFilterSetForm,
-    NetBoxModelCSVForm,
+    NetBoxModelImportForm,
     NetBoxModelForm,
 )
 from utilities.forms import (
@@ -101,7 +101,7 @@ class RecordFilterForm(NetBoxModelFilterSetForm):
     tag = TagFilterField(Record)
 
 
-class RecordCSVForm(NetBoxModelCSVForm):
+class RecordImportForm(NetBoxModelImportForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

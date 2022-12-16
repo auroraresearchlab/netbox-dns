@@ -3,7 +3,7 @@ from django.forms import CharField
 from netbox.forms import (
     NetBoxModelBulkEditForm,
     NetBoxModelFilterSetForm,
-    NetBoxModelCSVForm,
+    NetBoxModelImportForm,
     NetBoxModelForm,
 )
 from utilities.forms import TagFilterField
@@ -31,7 +31,7 @@ class ViewFilterForm(NetBoxModelFilterSetForm):
     model = View
 
 
-class ViewCSVForm(NetBoxModelCSVForm):
+class ViewImportForm(NetBoxModelImportForm):
     class Meta:
         model = View
         fields = ("name", "description")
