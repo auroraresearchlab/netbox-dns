@@ -59,8 +59,18 @@ class NameServer(NetBoxModel):
 
     def clean(self):
         try:
-            dns_name.from_text(self.name)
+            name = dns_name.from_text(self.name)
         except dns.exception.DNSException as exc:
+            raise ValidationError(
+                {
+                    "name": str(exc),
+                }
+            ) from None
+
+        try:
+            if name.to_text() != name.to_unicode():
+                self.name = name.to_text().rstrip(".")
+        except dns_name.IDNAException as exc:
             raise ValidationError(
                 {
                     "name": str(exc),
@@ -403,8 +413,18 @@ class Zone(NetBoxModel):
         self.check_name_conflict()
 
         try:
-            dns_name.from_text(self.name)
+            name = dns_name.from_text(self.name)
         except dns.exception.DNSException as exc:
+            raise ValidationError(
+                {
+                    "name": str(exc),
+                }
+            ) from None
+
+        try:
+            if name.to_text() != name.to_unicode():
+                self.name = name.to_text().rstrip(".")
+        except dns_name.IDNAException as exc:
             raise ValidationError(
                 {
                     "name": str(exc),
@@ -764,8 +784,8 @@ class Record(NetBoxModel):
         ip_version = None
 
         try:
-            zone_name = dns_name.from_text(self.zone.name)
-            name = dns_name.from_text(self.name, origin=zone_name)
+            zone = dns_name.from_text(self.zone.name)
+            name = dns_name.from_text(self.name, origin=zone)
         except dns.exception.DNSException as exc:
             raise ValidationError(
                 {
@@ -773,12 +793,22 @@ class Record(NetBoxModel):
                 }
             )
 
-        if not name.is_subdomain(zone_name):
+        if not name.is_subdomain(zone):
             raise ValidationError(
                 {
                     "name": f"{self.name} is not a name in {self.zone.name}",
                 }
             )
+
+        try:
+            if name.to_text() != name.to_unicode():
+                self.name = name.relativize(zone).to_text()
+        except dns_name.IDNAException as exc:
+            raise ValidationError(
+                {
+                    "name": str(exc),
+                }
+            ) from None
 
         try:
             if self.is_ipv4_address_record:
