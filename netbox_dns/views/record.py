@@ -1,3 +1,5 @@
+from dns import name as dns_name
+
 from netbox.views import generic
 
 from netbox_dns.filters import RecordFilter
@@ -32,9 +34,16 @@ class ManagedRecordListView(generic.ObjectListView):
 
 
 class RecordView(generic.ObjectView):
-    """Display Record details"""
-
     queryset = Record.objects.all().prefetch_related("zone", "ptr_record")
+
+    def get_extra_context(self, request, instance):
+        name = dns_name.from_text(instance.fqdn)
+        if name.to_text() != name.to_unicode():
+            return {
+                "unicode_name": name.to_unicode().rstrip("."),
+            }
+
+        return {}
 
 
 class RecordEditView(generic.ObjectEditView):
