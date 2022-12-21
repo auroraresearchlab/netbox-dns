@@ -11,6 +11,12 @@
                             <th scope="row">Name</th>
                             <td>{{ object.name }}</td>
                         </tr>
+                        {% if unicode_name %}
+                            <tr>
+                                <th scope="row">IDN</th>
+                                <td>{{ unicode_name }}</td>
+                            </tr>
+                        {% endif %}
                         <tr>
                             <th scope="row">Description</th>
                             <td>{{ object.description }}</td>
