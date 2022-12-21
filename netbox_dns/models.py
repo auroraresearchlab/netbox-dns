@@ -5,6 +5,7 @@ from datetime import datetime
 
 import dns
 from dns import rdata, rdatatype, rdataclass
+from dns import name as dns_name
 from dns.rdtypes.ANY import SOA
 
 from netaddr import IPNetwork, AddrFormatError, IPAddress
@@ -55,6 +56,16 @@ class NameServer(NetBoxModel):
 
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:nameserver", kwargs={"pk": self.pk})
+
+    def clean(self):
+        try:
+            dns_name.from_text(self.name)
+        except dns.exception.DNSException as exc:
+            raise ValidationError(
+                {
+                    "name": str(exc),
+                }
+            ) from None
 
 
 @register_search
@@ -254,7 +265,7 @@ class Zone(NetBoxModel):
     def update_soa_record(self):
         soa_name = "@"
         soa_ttl = self.soa_ttl
-        soa_rdata = dns.rdtypes.ANY.SOA.SOA(
+        soa_rdata = SOA.SOA(
             rdclass=RecordClassChoices.IN,
             rdtype=RecordTypeChoices.SOA,
             mname=self.soa_mname.name,
@@ -313,8 +324,10 @@ class Zone(NetBoxModel):
             ns_errors.append(f"No nameservers are configured for zone {self}")
 
         for nameserver in nameservers:
-            ns_domain = ".".join(nameserver.name.split(".")[1:])
-            if not ns_domain:
+            name = dns_name.from_text(nameserver.name)
+            parent = name.parent()
+
+            if len(parent) < 2:
                 continue
 
             view_condition = (
@@ -322,15 +335,17 @@ class Zone(NetBoxModel):
             )
 
             try:
-                ns_zone = Zone.objects.get(view_condition, name=ns_domain)
+                ns_zone = Zone.objects.get(
+                    view_condition, name=parent.to_text().rstrip(".")
+                )
             except ObjectDoesNotExist:
                 continue
 
-            ns_name = nameserver.name.split(".")[0]
+            relative_name = name.relativize(parent).to_text()
             address_records = Record.objects.filter(
                 Q(zone=ns_zone),
                 Q(status__in=Record.ACTIVE_STATUS_LIST),
-                Q(Q(name=f"{nameserver.name}.") | Q(name=ns_name)),
+                Q(Q(name=f"{nameserver.name}.") | Q(name=relative_name)),
                 Q(Q(type=RecordTypeChoices.A) | Q(type=RecordTypeChoices.AAAA)),
             )
 
@@ -382,6 +397,15 @@ class Zone(NetBoxModel):
 
     def clean(self, *args, **kwargs):
         self.check_name_conflict()
+
+        try:
+            dns_name.from_text(self.name)
+        except dns.exception.DNSException as exc:
+            raise ValidationError(
+                {
+                    "name": str(exc),
+                }
+            ) from None
 
         if self.soa_serial is None and not self.soa_serial_auto:
             raise ValidationError(
@@ -734,6 +758,23 @@ class Record(NetBoxModel):
 
     def clean(self, *args, **kwargs):
         ip_version = None
+
+        try:
+            zone_name = dns_name.from_text(self.zone.name)
+            name = dns_name.from_text(self.name, origin=zone_name)
+        except dns.exception.DNSException as exc:
+            raise ValidationError(
+                {
+                    "name": str(exc),
+                }
+            )
+
+        if not name.is_subdomain(zone_name):
+            raise ValidationError(
+                {
+                    "name": f"{self.name} is not a name in {self.zone.name}",
+                }
+            )
 
         try:
             if self.is_ipv4_address_record:
