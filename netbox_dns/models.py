@@ -67,6 +67,10 @@ class NameServer(NetBoxModel):
                 }
             ) from None
 
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
 
 @register_search
 class NameServerIndex(SearchIndex):
