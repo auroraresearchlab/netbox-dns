@@ -659,10 +659,10 @@ class Record(NetBoxModel):
 
     @property
     def fqdn(self):
-        if self.name == "@":
-            return f"{self.zone.name}."
-        else:
-            return f"{self.name}.{self.zone.name}."
+        zone_name = dns_name.from_text(self.zone.name)
+        name = dns_name.from_text(self.name, origin=zone_name)
+
+        return name.to_text()
 
     @property
     def address_from_name(self):
