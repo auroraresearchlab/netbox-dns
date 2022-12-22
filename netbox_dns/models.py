@@ -34,6 +34,11 @@ from netbox.search import SearchIndex, register_search
 
 from netbox_dns.fields import NetworkField, AddressField
 from netbox_dns.utilities import arpa_to_prefix
+from netbox_dns.validators import (
+    validate_fqdn,
+    validate_domain,
+    validate_extended_hostname,
+)
 
 
 class NameServer(NetBoxModel):
@@ -74,6 +79,15 @@ class NameServer(NetBoxModel):
             raise ValidationError(
                 {
                     "name": str(exc),
+                }
+            ) from None
+
+        try:
+            validate_fqdn(self.name)
+        except ValidationError as exc:
+            raise ValidationError(
+                {
+                    "name": exc,
                 }
             ) from None
 
@@ -428,6 +442,15 @@ class Zone(NetBoxModel):
             raise ValidationError(
                 {
                     "name": str(exc),
+                }
+            ) from None
+
+        try:
+            validate_domain(self.name)
+        except ValidationError as exc:
+            raise ValidationError(
+                {
+                    "name": exc,
                 }
             ) from None
 
@@ -809,6 +832,26 @@ class Record(NetBoxModel):
                     "name": str(exc),
                 }
             ) from None
+
+        if self.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
+            try:
+                validate_extended_hostname(self.name)
+            except ValidationError as exc:
+                raise ValidationError(
+                    {
+                        "name": exc,
+                    }
+                ) from None
+
+        if self.type in (RecordTypeChoices.PTR):
+            try:
+                validate_fqdn(self.value)
+            except ValidationError as exc:
+                raise ValidationError(
+                    {
+                        "value": exc,
+                    }
+                ) from None
 
         try:
             if self.is_ipv4_address_record:
