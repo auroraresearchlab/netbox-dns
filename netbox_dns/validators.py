@@ -4,7 +4,6 @@ from django.core.exceptions import ValidationError
 
 from extras.plugins import get_plugin_config
 
-
 LABEL = r"[a-z0-9][a-z0-9-]*(?<!-)"
 UNDERSCORE_LABEL = r"[a-z0-9][a-z0-9-_]*(?<![-_])"
 LEADING_UNDERSCORE_LABEL = r"[a-z0-9_][a-z0-9-]*(?<!-)"

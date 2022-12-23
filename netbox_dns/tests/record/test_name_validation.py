@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.core.exceptions import ValidationError
 
 from netbox_dns.models import NameServer, Zone, Record
@@ -80,6 +80,36 @@ class NameValidationTest(TestCase):
             {"name": "\\000" * 14, "zone": self.zones[3]},
             {"name": "x" * 64 + f".{self.zones[0].name}.", "zone": self.zones[0]},
             {"name": "x" * 64 + f".{self.zones[1].name}", "zone": self.zones[1]},
+        )
+
+        for record in records:
+            with self.assertRaises(ValidationError):
+                Record.objects.create(
+                    name=record.get("name"), zone=record.get("zone"), **self.record_data
+                )
+
+    @override_settings(
+        PLUGINS_CONFIG={"netbox_dns": {"tolerate_underscores_in_hostnames": True}}
+    )
+    def test_name_validation_tolerant_ok(self):
+        records = (
+            {"name": "name_1", "zone": self.zones[0]},
+            {"name": "name_1.zone1.example.com.", "zone": self.zones[0]},
+        )
+
+        for record in records:
+            record_object = Record.objects.create(
+                name=record.get("name"), zone=record.get("zone"), **self.record_data
+            )
+            self.assertEqual(record_object.name, record.get("name"))
+
+    @override_settings(
+        PLUGINS_CONFIG={"netbox_dns": {"tolerate_underscores_in_hostnames": True}}
+    )
+    def test_name_validation_tolerant_failure(self):
+        records = (
+            {"name": "_name1", "zone": self.zones[0]},
+            {"name": "_name1.zone1.example.com.", "zone": self.zones[0]},
         )
 
         for record in records:
