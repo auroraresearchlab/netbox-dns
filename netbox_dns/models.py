@@ -57,7 +57,10 @@ class NameServer(NetBoxModel):
         ordering = ("name",)
 
     def __str__(self):
-        return str(self.name)
+        try:
+            return dns_name.from_text(self.name).to_unicode().rstrip(".")
+        except dns_name.IDNAException:
+            return self.name
 
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:nameserver", kwargs={"pk": self.pk})
@@ -65,6 +68,7 @@ class NameServer(NetBoxModel):
     def clean(self):
         try:
             name = dns_name.from_text(self.name)
+            name.to_unicode()
         except dns.exception.DNSException as exc:
             raise ValidationError(
                 {
@@ -259,10 +263,15 @@ class Zone(NetBoxModel):
         )
 
     def __str__(self):
-        if self.view:
-            return f"[{self.view}] {self.name}"
+        try:
+            name = dns_name.from_text(self.name).to_unicode().rstrip(".")
+        except dns_name.IDNAException:
+            name = self.name
 
-        return str(self.name)
+        if self.view:
+            return f"[{self.view}] {name}"
+
+        return str(name)
 
     def get_status_color(self):
         return ZoneStatusChoices.colors.get(self.status)
@@ -428,6 +437,7 @@ class Zone(NetBoxModel):
 
         try:
             name = dns_name.from_text(self.name)
+            name.to_unicode()
         except dns.exception.DNSException as exc:
             raise ValidationError(
                 {
@@ -690,13 +700,16 @@ class Record(NetBoxModel):
         ordering = ("zone", "name", "type", "value", "status")
 
     def __str__(self):
-        if self.name == "@":
-            return f"{self.zone.name} [{self.type}]"
+        try:
+            name = (
+                dns_name.from_text(self.name, origin=dns_name.from_text(self.zone.name))
+                .to_unicode()
+                .rstrip(".")
+            )
+        except dns_name.IDNAException:
+            name = self.name
 
-        if self.name.endswith("."):
-            return f"{self.name} [{self.type}]"
-
-        return f"{self.name}.{self.zone.name} [{self.type}]"
+        return f"{name} [{self.type}]"
 
     def get_status_color(self):
         return RecordStatusChoices.colors.get(self.status)
@@ -742,6 +755,7 @@ class Record(NetBoxModel):
     def is_ptr_record(self):
         return self.type == RecordTypeChoices.PTR
 
+    @property
     def ptr_zone(self):
         ptr_zones = Zone.objects.filter(
             self.zone.view_filter, arpa_network__net_contains=self.value
@@ -753,18 +767,23 @@ class Record(NetBoxModel):
         return None
 
     def update_ptr_record(self):
-        ptr_zone = self.ptr_zone()
+        ptr_zone = self.ptr_zone
 
-        if ptr_zone is None or self.disable_ptr or not self.is_active:
+        if (
+            ptr_zone is None
+            or self.disable_ptr
+            or not self.is_active
+            or self.name == "*"
+        ):
             if self.ptr_record is not None:
                 with transaction.atomic():
                     self.ptr_record.delete()
                     self.ptr_record = None
             return
 
-        ptr_name = ipaddress.ip_address(self.value).reverse_pointer.replace(
-            f".{ptr_zone.name}", ""
-        )
+        ptr_name = dns_name.from_text(
+            ipaddress.ip_address(self.value).reverse_pointer
+        ).relativize(dns_name.from_text(ptr_zone.name))
         ptr_value = self.fqdn
         ptr_record = self.ptr_record
 
@@ -808,7 +827,10 @@ class Record(NetBoxModel):
 
         try:
             zone = dns_name.from_text(self.zone.name)
-            name = dns_name.from_text(self.name, origin=zone)
+            name = dns_name.from_text(self.name, origin=None)
+            fqdn = dns_name.from_text(self.name, origin=zone)
+            zone.to_unicode()
+            name.to_unicode()
         except dns.exception.DNSException as exc:
             raise ValidationError(
                 {
@@ -816,7 +838,7 @@ class Record(NetBoxModel):
                 }
             )
 
-        if not name.is_subdomain(zone):
+        if not fqdn.is_subdomain(zone):
             raise ValidationError(
                 {
                     "name": f"{self.name} is not a name in {self.zone.name}",
@@ -825,7 +847,7 @@ class Record(NetBoxModel):
 
         try:
             if name.to_text() != name.to_unicode():
-                self.name = name.relativize(zone).to_text()
+                self.name = name.to_text()
         except dns_name.IDNAException as exc:
             raise ValidationError(
                 {
