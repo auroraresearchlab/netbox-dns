@@ -46,8 +46,10 @@ class NameValidationTest(TestCase):
     def test_name_validation_ok(self):
         records = (
             {"name": "name1", "zone": self.zones[0]},
+            {"name": "@", "zone": self.zones[0]},
             {"name": "name1.zone1.example.com.", "zone": self.zones[0]},
             {"name": "name1", "zone": self.zones[1]},
+            {"name": "@", "zone": self.zones[2]},
             {"name": "name1.zone2.example.com.", "zone": self.zones[1]},
             {"name": "name-1", "zone": self.zones[0]},
             {"name": "name-1.zone1.example.com.", "zone": self.zones[0]},
@@ -68,6 +70,7 @@ class NameValidationTest(TestCase):
     def test_name_validation_failure(self):
         records = (
             {"name": "name1..", "zone": self.zones[0]},
+            {"name": "@.", "zone": self.zones[0]},
             {"name": "name1.zone2.example.com.", "zone": self.zones[0]},
             {"name": "name1.zone1.example.com.", "zone": self.zones[1]},
             {"name": "name_1", "zone": self.zones[0]},
