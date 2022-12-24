@@ -44,7 +44,6 @@ class NameValidationTest(TestCase):
         names = (
             "-zone.example.com",  # leading dash in first label
             "zone1.-example.com",  # leading dash in second label
-            "zone1.example.com-1",  # dash in TLD
             "zone1..example.com",  # empty label
             "-zone1..example.com-1",  # leading dash
             "x" * 64 + ".example.com",  # label too long
@@ -82,7 +81,6 @@ class NameValidationTest(TestCase):
         names = (
             "_zone1.example.com",  # leading underscore in first label
             "zone1._example.com",  # leading underscore in second label
-            "zone1.example.com_1",  # underscore in TLD
             "zone1..example.com",  # empty label
             "x" * 64 + ".example.com",  # label too long
             "12345678" + ".12345678" * 26 + ".example.com",  # 255 octets
