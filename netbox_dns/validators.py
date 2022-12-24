@@ -13,6 +13,15 @@ def has_invalid_double_dash(name):
     return bool(re.findall(r"\b(?!xn)..--", name, re.IGNORECASE))
 
 
+LABEL = r"[a-z0-9][a-z0-9-]*(?<!-)"
+UNDERSCORE_LABEL = r"[a-z0-9][a-z0-9-_]*(?<![-_])"
+LEADING_UNDERSCORE_LABEL = r"[a-z0-9_][a-z0-9-]*(?<!-)"
+
+
+def has_invalid_double_dash(name):
+    return bool(re.findall(r"\b(?!xn)..--", name))
+
+
 def validate_fqdn(name):
     if get_plugin_config("netbox_dns", "tolerate_underscores_in_hostnames"):
         regex = rf"^{UNDERSCORE_LABEL}(\.{UNDERSCORE_LABEL})+\.?$"

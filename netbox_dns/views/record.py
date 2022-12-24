@@ -37,7 +37,8 @@ class RecordView(generic.ObjectView):
     queryset = Record.objects.all().prefetch_related("zone", "ptr_record")
 
     def get_extra_context(self, request, instance):
-        name = dns_name.from_text(instance.fqdn)
+        zone = dns_name.from_text(instance.zone.name)
+        name = dns_name.from_text(instance.name, origin=zone).relativize(zone)
         if name.to_text() != name.to_unicode():
             return {
                 "unicode_name": name.to_unicode().rstrip("."),
