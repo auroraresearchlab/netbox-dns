@@ -40,6 +40,8 @@ from netbox_dns.validators import (
     validate_extended_hostname,
 )
 
+from extras.plugins import get_plugin_config
+
 
 class NameServer(NetBoxModel):
     name = models.CharField(
@@ -855,9 +857,19 @@ class Record(NetBoxModel):
                 }
             ) from None
 
-        if self.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA):
+        if self.type not in get_plugin_config(
+            "netbox_dns", "tolerate_non_rfc1035_types"
+        ):
             try:
-                validate_extended_hostname(self.name)
+                validate_extended_hostname(
+                    self.name,
+                    (
+                        self.type
+                        in get_plugin_config(
+                            "netbox_dns", "tolerate_leading_underscore_types"
+                        )
+                    ),
+                )
             except ValidationError as exc:
                 raise ValidationError(
                     {
