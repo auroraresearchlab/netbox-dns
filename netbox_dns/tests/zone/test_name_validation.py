@@ -60,7 +60,13 @@ class NameValidationTest(TestCase):
                 )
 
     @override_settings(
-        PLUGINS_CONFIG={"netbox_dns": {"tolerate_underscores_in_hostnames": True}}
+        PLUGINS_CONFIG={
+            "netbox_dns": {
+                "tolerate_underscores_in_hostnames": True,
+                "tolerate_leading_underscore_types": ["TXT", "SRV"],
+                "tolerate_non_rfc1035_types": [],
+            }
+        }
     )
     def test_name_validation_tolerant_ok(self):
         names = (
@@ -75,7 +81,13 @@ class NameValidationTest(TestCase):
             self.assertEqual(zone.name, name)
 
     @override_settings(
-        PLUGINS_CONFIG={"netbox_dns": {"tolerate_underscores_in_hostnames": True}}
+        PLUGINS_CONFIG={
+            "netbox_dns": {
+                "tolerate_underscores_in_hostnames": True,
+                "tolerate_leading_underscore_types": ["TXT", "SRV"],
+                "tolerate_non_rfc1035_types": [],
+            }
+        }
     )
     def test_name_validation_tolerant_failure(self):
         names = (

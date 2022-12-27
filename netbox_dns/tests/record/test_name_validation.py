@@ -1,7 +1,7 @@
 from django.test import TestCase, override_settings
 from django.core.exceptions import ValidationError
 
-from netbox_dns.models import NameServer, Zone, Record
+from netbox_dns.models import NameServer, Zone, Record, RecordTypeChoices
 
 
 class NameValidationTest(TestCase):
@@ -18,7 +18,7 @@ class NameValidationTest(TestCase):
     }
 
     record_data = {
-        "type": "AAAA",
+        "type": RecordTypeChoices.AAAA,
         "value": "fe80:dead:beef::",
     }
 
@@ -67,8 +67,27 @@ class NameValidationTest(TestCase):
             )
             self.assertEqual(record_object.name, record.get("name"))
 
+    def test_srv_validation_ok(self):
+        record = Record.objects.create(
+            name="_ldaps._tcp",
+            zone=self.zones[0],
+            type=RecordTypeChoices.SRV,
+            value="10 5 636 server.example.com.",
+        )
+        self.assertEqual(record.name, "_ldaps._tcp")
+
+    def test_txt_validation_ok(self):
+        record = Record.objects.create(
+            name="_dmarc",
+            zone=self.zones[0],
+            type=RecordTypeChoices.TXT,
+            value="v=DMARC1;p=reject",
+        )
+        self.assertEqual(record.name, "_dmarc")
+
     def test_name_validation_failure(self):
         records = (
+            {"name": "_name1", "zone": self.zones[0]},
             {"name": "name1..", "zone": self.zones[0]},
             {"name": "@.", "zone": self.zones[0]},
             {"name": "name1.zone2.example.com.", "zone": self.zones[0]},
@@ -92,7 +111,13 @@ class NameValidationTest(TestCase):
                 )
 
     @override_settings(
-        PLUGINS_CONFIG={"netbox_dns": {"tolerate_underscores_in_hostnames": True}}
+        PLUGINS_CONFIG={
+            "netbox_dns": {
+                "tolerate_underscores_in_hostnames": True,
+                "tolerate_leading_underscore_types": ["TXT", "SRV"],
+                "tolerate_non_rfc1035_types": [],
+            }
+        }
     )
     def test_name_validation_tolerant_ok(self):
         records = (
@@ -107,7 +132,49 @@ class NameValidationTest(TestCase):
             self.assertEqual(record_object.name, record.get("name"))
 
     @override_settings(
-        PLUGINS_CONFIG={"netbox_dns": {"tolerate_underscores_in_hostnames": True}}
+        PLUGINS_CONFIG={
+            "netbox_dns": {
+                "tolerate_underscores_in_hostnames": True,
+                "tolerate_leading_underscore_types": ["TXT", "SRV"],
+                "tolerate_non_rfc1035_types": [],
+            }
+        }
+    )
+    def test_srv_validation_tolerant_ok(self):
+        record = Record.objects.create(
+            name="_ldaps._tcp",
+            zone=self.zones[0],
+            type=RecordTypeChoices.SRV,
+            value="10 5 636 server.example.com.",
+        )
+        self.assertEqual(record.name, "_ldaps._tcp")
+
+    @override_settings(
+        PLUGINS_CONFIG={
+            "netbox_dns": {
+                "tolerate_underscores_in_hostnames": True,
+                "tolerate_leading_underscore_types": ["TXT", "SRV"],
+                "tolerate_non_rfc1035_types": [],
+            }
+        }
+    )
+    def test_txt_validation_tolerant_ok(self):
+        record = Record.objects.create(
+            name="_dmarc",
+            zone=self.zones[0],
+            type=RecordTypeChoices.TXT,
+            value="v=DMARC1;p=reject",
+        )
+        self.assertEqual(record.name, "_dmarc")
+
+    @override_settings(
+        PLUGINS_CONFIG={
+            "netbox_dns": {
+                "tolerate_underscores_in_hostnames": True,
+                "tolerate_leading_underscore_types": ["TXT", "SRV"],
+                "tolerate_non_rfc1035_types": [],
+            }
+        }
     )
     def test_name_validation_tolerant_failure(self):
         records = (
