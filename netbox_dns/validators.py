@@ -19,7 +19,7 @@ LEADING_UNDERSCORE_LABEL = r"[a-z0-9_][a-z0-9-]*(?<!-)"
 
 
 def has_invalid_double_dash(name):
-    return bool(re.findall(r"\b(?!xn)..--", name))
+    return bool(re.findall(r"\b(?!xn)..--", name, re.IGNORECASE))
 
 
 def validate_fqdn(name):
