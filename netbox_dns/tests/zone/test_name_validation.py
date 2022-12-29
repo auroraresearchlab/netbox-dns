@@ -26,6 +26,8 @@ class NameValidationTest(TestCase):
         names = (
             "zone1.example.com",
             "zone2.example.com.",
+            "xn--zne1-5qa.example.com",  # IDN in first label
+            "zone1.xn--exmple-cua.com",  # IDN in second label
             "zone-1.example.com",  # dash in first label
             "zone1.example-1.com",  # dash in second label
             "1234567" + ".12345678" * 26 + ".example.com",  # 254 octets
@@ -44,6 +46,12 @@ class NameValidationTest(TestCase):
         names = (
             "-zone.example.com",  # leading dash in first label
             "zone1.-example.com",  # leading dash in second label
+            "zone1-.example.com",  # trailing dash in first label
+            "zone1.example-.com",  # trailing dash in second label
+            "zo--ne1.example.com",  # dashes in position 3, 4 of first label
+            "zone1.ex--ample.com",  # dashes in position 3, 4 of second label
+            "xn--z.example.com",  # invalid IDN in first label
+            "zone1.xn--e.com",  # invalid IDN in second label
             "zone1..example.com",  # empty label
             "-zone1..example.com-1",  # leading dash
             "x" * 64 + ".example.com",  # label too long
@@ -93,6 +101,8 @@ class NameValidationTest(TestCase):
         names = (
             "_zone1.example.com",  # leading underscore in first label
             "zone1._example.com",  # leading underscore in second label
+            "zone1_.example.com",  # trailing underscore in first label
+            "zone1.example_.com",  # trailing underscore in second label
             "zone1..example.com",  # empty label
             "x" * 64 + ".example.com",  # label too long
             "12345678" + ".12345678" * 26 + ".example.com",  # 255 octets
