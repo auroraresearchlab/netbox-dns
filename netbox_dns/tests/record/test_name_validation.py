@@ -45,11 +45,14 @@ class NameValidationTest(TestCase):
 
     def test_name_validation_ok(self):
         records = (
+            {"name": "*", "zone": self.zones[0]},
             {"name": "name1", "zone": self.zones[0]},
             {"name": "@", "zone": self.zones[0]},
+            {"name": "*", "zone": self.zones[0]},
             {"name": "name1.zone1.example.com.", "zone": self.zones[0]},
             {"name": "name1", "zone": self.zones[1]},
             {"name": "@", "zone": self.zones[2]},
+            {"name": "*", "zone": self.zones[2]},
             {"name": "name1.zone2.example.com.", "zone": self.zones[1]},
             {"name": "name-1", "zone": self.zones[0]},
             {"name": "name-1.zone1.example.com.", "zone": self.zones[0]},
@@ -59,12 +62,15 @@ class NameValidationTest(TestCase):
             {"name": "x" * 13, "zone": self.zones[3]},
             {"name": "x" * 63 + f".{self.zones[0].name}.", "zone": self.zones[0]},
             {"name": "x" * 63 + f".{self.zones[1].name}", "zone": self.zones[1]},
+            {"name": "xn--nme1-loa", "zone": self.zones[0]},
+            {"name": "xn--nme1-loa.zone1.example.com.", "zone": self.zones[0]},
         )
 
         for record in records:
             record_object = Record.objects.create(
                 name=record.get("name"), zone=record.get("zone"), **self.record_data
             )
+
             self.assertEqual(record_object.name, record.get("name"))
 
     def test_srv_validation_ok(self):
@@ -90,18 +96,25 @@ class NameValidationTest(TestCase):
             {"name": "_name1", "zone": self.zones[0]},
             {"name": "name1..", "zone": self.zones[0]},
             {"name": "@.", "zone": self.zones[0]},
+            {"name": "*.", "zone": self.zones[0]},
             {"name": "name1.zone2.example.com.", "zone": self.zones[0]},
             {"name": "name1.zone1.example.com.", "zone": self.zones[1]},
             {"name": "name_1", "zone": self.zones[0]},
             {"name": "name_1.zone1.example.com.", "zone": self.zones[0]},
             {"name": "-name1", "zone": self.zones[0]},
             {"name": "-name1.zone1.example.com.", "zone": self.zones[0]},
+            {"name": "name1-", "zone": self.zones[0]},
+            {"name": "name1-.zone1.example.com.", "zone": self.zones[0]},
+            {"name": "na--me1", "zone": self.zones[0]},
+            {"name": "na--me1.zone1.example.com.", "zone": self.zones[0]},
             {"name": "x" * 14, "zone": self.zones[2]},
             {"name": "x" * 14, "zone": self.zones[3]},
             {"name": "\\000" * 14, "zone": self.zones[2]},
             {"name": "\\000" * 14, "zone": self.zones[3]},
             {"name": "x" * 64 + f".{self.zones[0].name}.", "zone": self.zones[0]},
             {"name": "x" * 64 + f".{self.zones[1].name}", "zone": self.zones[1]},
+            {"name": "xn--n", "zone": self.zones[0]},
+            {"name": "xn--n.zone1.example.com.", "zone": self.zones[0]},
         )
 
         for record in records:
@@ -180,6 +193,8 @@ class NameValidationTest(TestCase):
         records = (
             {"name": "_name1", "zone": self.zones[0]},
             {"name": "_name1.zone1.example.com.", "zone": self.zones[0]},
+            {"name": "name1_", "zone": self.zones[0]},
+            {"name": "name1_.zone1.example.com.", "zone": self.zones[0]},
         )
 
         for record in records:
