@@ -19,7 +19,7 @@ def update_zone_arpa_network(apps, schema_editor):
             try:
                 zone.arpa_network = IPNetwork(f"{address}/{mask}")
             except AddrFormatError:
-                uone.arpa_network = None
+                zone.arpa_network = None
 
         elif name.endswith("ip6.arpa"):
             address = "".join(reversed(name.replace(".ip6.arpa", "").split(".")))
