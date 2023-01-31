@@ -30,6 +30,9 @@ class ZoneTable(NetBoxTable):
         verbose_name="Default TTL",
     )
 
+    def render_name(self, value, record):
+        return record.display_name
+
     class Meta(NetBoxTable.Meta):
         model = Zone
         fields = (

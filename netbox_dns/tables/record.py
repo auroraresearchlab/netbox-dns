@@ -31,6 +31,9 @@ class RecordBaseTable(NetBoxTable):
         verbose_name="Active",
     )
 
+    def render_name(self, value, record):
+        return record.display_name
+
 
 class RecordTable(RecordBaseTable):
     """Table for displaying Record objects."""

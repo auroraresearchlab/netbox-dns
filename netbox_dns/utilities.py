@@ -1,4 +1,5 @@
 from netaddr import IPNetwork, AddrFormatError
+from dns import name as dns_name
 
 
 def arpa_to_prefix(arpa_name):
@@ -27,3 +28,10 @@ def arpa_to_prefix(arpa_name):
 
     else:
         return None
+
+
+def name_to_unicode(name):
+    try:
+        return dns_name.from_text(name, origin=None).to_unicode()
+    except dns_name.IDNAException:
+        return name

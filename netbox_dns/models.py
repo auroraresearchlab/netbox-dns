@@ -33,7 +33,7 @@ from netbox.models import NetBoxModel
 from netbox.search import SearchIndex, register_search
 
 from netbox_dns.fields import NetworkField, AddressField
-from netbox_dns.utilities import arpa_to_prefix
+from netbox_dns.utilities import arpa_to_prefix, name_to_unicode
 from netbox_dns.validators import (
     validate_fqdn,
     validate_domain,
@@ -63,6 +63,10 @@ class NameServer(NetBoxModel):
             return dns_name.from_text(self.name).to_unicode().rstrip(".")
         except dns_name.IDNAException:
             return self.name
+
+    @property
+    def display_name(self):
+        return name_to_unicode(self.name)
 
     def get_absolute_url(self):
         return reverse("plugins:netbox_dns:nameserver", kwargs={"pk": self.pk})
@@ -274,6 +278,10 @@ class Zone(NetBoxModel):
             return f"[{self.view}] {name}"
 
         return str(name)
+
+    @property
+    def display_name(self):
+        return name_to_unicode(self.name)
 
     def get_status_color(self):
         return ZoneStatusChoices.colors.get(self.status)
@@ -712,6 +720,10 @@ class Record(NetBoxModel):
             name = self.name
 
         return f"{name} [{self.type}]"
+
+    @property
+    def display_name(self):
+        return name_to_unicode(self.name)
 
     def get_status_color(self):
         return RecordStatusChoices.colors.get(self.status)

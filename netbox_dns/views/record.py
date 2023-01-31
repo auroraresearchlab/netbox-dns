@@ -38,10 +38,10 @@ class RecordView(generic.ObjectView):
 
     def get_extra_context(self, request, instance):
         zone = dns_name.from_text(instance.zone.name)
-        name = dns_name.from_text(instance.name, origin=zone).relativize(zone)
+        name = dns_name.from_text(instance.name, origin=None)
         if name.to_text() != name.to_unicode():
             return {
-                "unicode_name": name.to_unicode().rstrip("."),
+                "unicode_name": name.to_unicode(),
             }
 
         return {}

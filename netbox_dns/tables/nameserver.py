@@ -15,6 +15,9 @@ class NameServerTable(NetBoxTable):
         url_name="plugins:netbox_dns:nameserver_list",
     )
 
+    def render_name(self, value, record):
+        return record.display_name
+
     class Meta(NetBoxTable.Meta):
         model = NameServer
         fields = (
