@@ -7,7 +7,6 @@ import taggit.managers
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("extras", "0062_clear_secrets_changelog"),
         ("netbox_dns", "0002_zone_default_ttl"),

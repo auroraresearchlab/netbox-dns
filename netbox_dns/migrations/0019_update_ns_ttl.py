@@ -10,7 +10,6 @@ def update_ns_ttl(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("netbox_dns", "0018_zone_arpa_network"),
     ]

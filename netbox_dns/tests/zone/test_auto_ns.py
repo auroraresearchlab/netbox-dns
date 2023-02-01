@@ -4,7 +4,6 @@ from netbox_dns.models import NameServer, Record, RecordTypeChoices, Zone
 
 
 class AutoNSTest(TestCase):
-
     zone_data = {
         "default_ttl": 86400,
         "soa_rname": "hostmaster.example.com",
@@ -18,7 +17,6 @@ class AutoNSTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-
         cls.nameservers = (
             NameServer(name="ns1.example.com"),
             NameServer(name="ns2.example.com"),

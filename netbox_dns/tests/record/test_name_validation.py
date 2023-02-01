@@ -24,7 +24,6 @@ class NameValidationTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-
         cls.nameserver = NameServer.objects.create(name="ns1.example.com")
 
         cls.zones = (

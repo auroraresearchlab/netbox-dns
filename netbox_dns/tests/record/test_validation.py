@@ -5,7 +5,6 @@ from netbox_dns.models import Zone, Record, RecordTypeChoices, NameServer
 
 
 class RecordValidationTest(TestCase):
-
     zone_data = {
         "default_ttl": 86400,
         "soa_rname": "hostmaster.example.com",

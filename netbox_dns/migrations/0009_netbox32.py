@@ -5,7 +5,6 @@ import taggit.managers
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("extras", "0072_created_datetimefield"),
         ("netbox_dns", "0008_zone_status_names"),

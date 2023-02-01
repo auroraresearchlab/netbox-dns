@@ -7,7 +7,6 @@ import taggit.managers
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("extras", "0073_journalentry_tags_custom_fields"),
         ("netbox_dns", "0001_initial"),

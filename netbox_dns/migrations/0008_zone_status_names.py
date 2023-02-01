@@ -12,7 +12,6 @@ def rename_passive_status_to_parked(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("netbox_dns", "0005_update_ns_records"),
     ]
