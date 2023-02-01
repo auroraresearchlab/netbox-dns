@@ -1,3 +1,5 @@
+import re
+
 from netaddr import IPNetwork, AddrFormatError
 from dns import name as dns_name
 
@@ -35,3 +37,12 @@ def name_to_unicode(name):
         return dns_name.from_text(name, origin=None).to_unicode()
     except dns_name.IDNAException:
         return name
+
+
+def value_to_unicode(value):
+    return re.sub(
+        r"xn--[0-9a-z-_.]*",
+        lambda x: name_to_unicode(x.group(0)),
+        value,
+        flags=re.IGNORECASE,
+    )

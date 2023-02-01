@@ -307,6 +307,8 @@ The names of DNS Resource Records are subject to a number of RFCs, most notably 
 
 The names of Name Servers, Zones and Records are all used as RR names in DNS, so all of these are validated for conformity to the mentioned RFCs. When a name does not conform to the RFC rules, NetBox DNS refuses to save the Name Server, Zone or Record with an error message indicating the reason for the refusal.
 
+**Please note that unlike names, values are not validated. While this is theoretically possible and may be implemented at some point, it is not a trivial task as there is a plethora of RR types with even more value formats.**
+
 ![Record Validation Error](images/RecordValidationError.png)
 
 ### Validation options
