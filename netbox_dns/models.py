@@ -110,6 +110,7 @@ class NameServer(NetBoxModel):
 
             super().delete(*args, **kwargs)
 
+
 @register_search
 class NameServerIndex(SearchIndex):
     model = NameServer

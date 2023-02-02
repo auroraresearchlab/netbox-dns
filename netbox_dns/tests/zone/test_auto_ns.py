@@ -179,7 +179,9 @@ class AutoNSTest(TestCase):
 
         zone.nameservers.add(nameserver)
 
-        ns_record = Record.objects.get(name="@", zone=zone, type=RecordTypeChoices.NS, value=f"{nameserver.name}.")
+        ns_record = Record.objects.get(
+            name="@", zone=zone, type=RecordTypeChoices.NS, value=f"{nameserver.name}."
+        )
         self.assertEqual(nameserver.name, ns_record.value.rstrip("."))
 
     def test_zone_remove_ns_ns_record_removed(self):
@@ -188,13 +190,20 @@ class AutoNSTest(TestCase):
 
         zone.nameservers.add(nameserver)
 
-        ns_record = Record.objects.get(name="@", zone=zone, type=RecordTypeChoices.NS, value=f"{nameserver.name}.")
+        ns_record = Record.objects.get(
+            name="@", zone=zone, type=RecordTypeChoices.NS, value=f"{nameserver.name}."
+        )
         self.assertEqual(nameserver.name, ns_record.value.rstrip("."))
 
         zone.nameservers.remove(nameserver)
 
         with self.assertRaises(Record.DoesNotExist):
-            Record.objects.get(name="@", zone=zone, type=RecordTypeChoices.NS, value=f"{nameserver.name}.")
+            Record.objects.get(
+                name="@",
+                zone=zone,
+                type=RecordTypeChoices.NS,
+                value=f"{nameserver.name}.",
+            )
 
     def test_zone_delete_ns_ns_record_removed(self):
         zone = self.zone
@@ -202,21 +211,29 @@ class AutoNSTest(TestCase):
 
         zone.nameservers.add(nameserver)
 
-        ns_record = Record.objects.get(name="@", zone=zone, type=RecordTypeChoices.NS, value=f"{nameserver.name}.")
+        ns_record = Record.objects.get(
+            name="@", zone=zone, type=RecordTypeChoices.NS, value=f"{nameserver.name}."
+        )
         self.assertEqual(nameserver.name, ns_record.value.rstrip("."))
 
         nameserver.delete()
 
         with self.assertRaises(Record.DoesNotExist):
-            Record.objects.get(name="@", zone=zone, type=RecordTypeChoices.NS, value=f"{nameserver.name}.")
+            Record.objects.get(
+                name="@",
+                zone=zone,
+                type=RecordTypeChoices.NS,
+                value=f"{nameserver.name}.",
+            )
 
     def test_zone_delete_soa_ns_exception(self):
         zone = self.zone
         nameserver = self.nameservers[0]
 
-        with self.assertRaisesRegexp(ProtectedError, r"protected foreign keys: 'Zone\.soa_mname'."):
+        with self.assertRaisesRegexp(
+            ProtectedError, r"protected foreign keys: 'Zone\.soa_mname'."
+        ):
             nameserver.delete()
-
 
     def test_zone_delete_soa_ns_exception_ns_record_retained(self):
         zone = self.zone
@@ -224,8 +241,12 @@ class AutoNSTest(TestCase):
 
         zone.nameservers.add(nameserver)
 
-        with self.assertRaisesRegexp(ProtectedError, r"protected foreign keys: 'Zone\.soa_mname'."):
+        with self.assertRaisesRegexp(
+            ProtectedError, r"protected foreign keys: 'Zone\.soa_mname'."
+        ):
             nameserver.delete()
 
-        ns_record = Record.objects.get(name="@", zone=zone, type=RecordTypeChoices.NS, value=f"{nameserver.name}.")
+        ns_record = Record.objects.get(
+            name="@", zone=zone, type=RecordTypeChoices.NS, value=f"{nameserver.name}."
+        )
         self.assertEqual(nameserver.name, ns_record.value.rstrip("."))
