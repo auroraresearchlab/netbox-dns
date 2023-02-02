@@ -46,7 +46,7 @@ def validate_extended_hostname(name, tolerate_leading_underscores=False):
         raise ValidationError(f"Not a valid DNS host name")
 
 
-def validate_domain(name):
+def validate_domain_name(name):
     if get_plugin_config("netbox_dns", "tolerate_underscores_in_hostnames"):
         regex = rf"^{UNDERSCORE_LABEL}(\.{UNDERSCORE_LABEL})*\.?$"
     else:

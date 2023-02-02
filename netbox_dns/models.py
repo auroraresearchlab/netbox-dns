@@ -34,7 +34,7 @@ from netbox_dns.fields import NetworkField, AddressField
 from netbox_dns.utilities import arpa_to_prefix, name_to_unicode
 from netbox_dns.validators import (
     validate_fqdn,
-    validate_domain,
+    validate_domain_name,
     validate_extended_hostname,
 )
 
@@ -464,7 +464,7 @@ class Zone(NetBoxModel):
             ) from None
 
         try:
-            validate_domain(self.name)
+            validate_domain_name(self.name)
         except ValidationError as exc:
             raise ValidationError(
                 {
@@ -874,8 +874,6 @@ class Record(NetBoxModel):
                 ) from None
 
     def validate_value(self):
-        ip_version = None
-
         if self.type in (RecordTypeChoices.PTR):
             try:
                 validate_fqdn(self.value)
