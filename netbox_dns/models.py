@@ -97,6 +97,18 @@ class NameServer(NetBoxModel):
         self.full_clean()
         super().save(*args, **kwargs)
 
+    def delete(self, *args, **kwargs):
+        with transaction.atomic():
+            zones = self.zones.all()
+            for zone in zones:
+                Record.objects.filter(
+                    Q(zone=zone),
+                    Q(managed=True),
+                    Q(value=f"{self.name}."),
+                    Q(type=RecordTypeChoices.NS),
+                ).delete()
+
+            super().delete(*args, **kwargs)
 
 @register_search
 class NameServerIndex(SearchIndex):
