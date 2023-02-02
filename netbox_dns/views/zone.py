@@ -46,7 +46,7 @@ class ZoneView(generic.ObjectView):
 
         name = dns_name.from_text(instance.name)
         if name.to_text() != name.to_unicode():
-            context["unicode_name"] = name.to_unicode().rstrip(".")
+            context["unicode_name"] = name.to_unicode()
 
         return context
 

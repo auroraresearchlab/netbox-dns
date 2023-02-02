@@ -41,6 +41,8 @@ class NameValidationTest(TestCase):
             ),
         )
         Zone.objects.bulk_create(cls.zones)
+        for zone in cls.zones:
+            zone.clean()
 
     def test_name_validation_ok(self):
         records = (

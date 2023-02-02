@@ -31,7 +31,12 @@ from netbox.models import NetBoxModel
 from netbox.search import SearchIndex, register_search
 
 from netbox_dns.fields import NetworkField, AddressField
-from netbox_dns.utilities import arpa_to_prefix, name_to_unicode, normalize_name, NameFormatError
+from netbox_dns.utilities import (
+    arpa_to_prefix,
+    name_to_unicode,
+    normalize_name,
+    NameFormatError,
+)
 from netbox_dns.validators import (
     validate_fqdn,
     validate_domain_name,
@@ -58,7 +63,7 @@ class NameServer(NetBoxModel):
 
     def __str__(self):
         try:
-            return dns_name.from_text(self.name).to_unicode().rstrip(".")
+            return dns_name.from_text(self.name, origin=None).to_unicode()
         except dns_name.IDNAException:
             return self.name
 
@@ -257,7 +262,7 @@ class Zone(NetBoxModel):
 
     def __str__(self):
         try:
-            name = dns_name.from_text(self.name).to_unicode().rstrip(".")
+            name = dns_name.from_text(self.name, origin=None).to_unicode()
         except dns_name.IDNAException:
             name = self.name
 
@@ -358,7 +363,7 @@ class Zone(NetBoxModel):
             ns_errors.append(f"No nameservers are configured for zone {self}")
 
         for nameserver in nameservers:
-            name = dns_name.from_text(nameserver.name)
+            name = dns_name.from_text(nameserver.name, origin=None)
             parent = name.parent()
 
             if len(parent) < 2:
@@ -369,9 +374,7 @@ class Zone(NetBoxModel):
             )
 
             try:
-                ns_zone = Zone.objects.get(
-                    view_condition, name=parent.to_text().rstrip(".")
-                )
+                ns_zone = Zone.objects.get(view_condition, name=parent.to_text())
             except ObjectDoesNotExist:
                 continue
 
@@ -525,7 +528,7 @@ def update_ns_records(**kwargs):
     zone = kwargs.get("instance")
     nameservers = zone.nameservers.all()
 
-    new_nameservers = [f'{ns.name.rstrip(".")}.' for ns in nameservers]
+    new_nameservers = [f"{ns.name}." for ns in nameservers]
 
     zone.update_ns_records(new_nameservers)
 
@@ -688,9 +691,11 @@ class Record(NetBoxModel):
     def __str__(self):
         try:
             name = (
-                dns_name.from_text(self.name, origin=dns_name.from_text(self.zone.name))
+                dns_name.from_text(
+                    self.name, origin=dns_name.from_text(self.zone.name, origin=None)
+                )
+                .relativize(dns_name.root)
                 .to_unicode()
-                .rstrip(".")
             )
         except dns_name.IDNAException:
             name = self.name
@@ -709,8 +714,8 @@ class Record(NetBoxModel):
 
     @property
     def fqdn(self):
-        zone_name = dns_name.from_text(self.zone.name)
-        name = dns_name.from_text(self.name, origin=zone_name)
+        zone = dns_name.from_text(self.zone.name)
+        name = dns_name.from_text(self.name, origin=zone)
 
         return name.to_text()
 
@@ -802,11 +807,15 @@ class Record(NetBoxModel):
 
     def validate_name(self):
         try:
-            zone = dns_name.from_text(self.zone.name)
+            zone = dns_name.from_text(self.zone.name, origin=dns_name.root)
             name = dns_name.from_text(self.name, origin=None)
             fqdn = dns_name.from_text(self.name, origin=zone)
+
             zone.to_unicode()
             name.to_unicode()
+
+            self.name = name.to_text()
+
         except dns.exception.DNSException as exc:
             raise ValidationError(
                 {
@@ -820,16 +829,6 @@ class Record(NetBoxModel):
                     "name": f"{self.name} is not a name in {self.zone.name}",
                 }
             )
-
-        try:
-            if name.to_text() != name.to_unicode():
-                self.name = name.to_text()
-        except dns_name.IDNAException as exc:
-            raise ValidationError(
-                {
-                    "name": str(exc),
-                }
-            ) from None
 
         if self.type not in get_plugin_config(
             "netbox_dns", "tolerate_non_rfc1035_types"
@@ -866,7 +865,9 @@ class Record(NetBoxModel):
             rdata.from_text(RecordClassChoices.IN, self.type, self.value)
         except dns.exception.SyntaxError as exc:
             raise ValidationError(
-                {"value": f"Record value {self.value} is not a valid value for a {self.type} record: {exc}."}
+                {
+                    "value": f"Record value {self.value} is not a valid value for a {self.type} record: {exc}."
+                }
             ) from None
 
     def clean_fields(self, *args, **kwargs):

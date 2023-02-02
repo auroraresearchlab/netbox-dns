@@ -8,7 +8,7 @@ from netbox_dns.models import NameServer, Record, RecordTypeChoices, Zone
 
 def reverse_name(address, reverse_zone):
     reverse_pointer = ipaddress.ip_address(address).reverse_pointer
-    zone_name = f'{reverse_zone.name.rstrip(".")}.'
+    zone_name = f"{reverse_zone.name}."
 
     if reverse_pointer.endswith(reverse_zone.name):
         return reverse_pointer[: -len(zone_name)]
