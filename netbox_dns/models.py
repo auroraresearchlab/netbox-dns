@@ -13,8 +13,6 @@ from netaddr import IPNetwork, AddrFormatError, IPAddress
 from django.core.validators import (
     MinValueValidator,
     MaxValueValidator,
-    validate_ipv6_address,
-    validate_ipv4_address,
 )
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -754,16 +752,8 @@ class Record(NetBoxModel):
         )
 
     @property
-    def is_ipv4_address_record(self):
-        return self.type == RecordTypeChoices.A
-
-    @property
-    def is_ipv6_address_record(self):
-        return self.type == RecordTypeChoices.AAAA
-
-    @property
     def is_address_record(self):
-        return self.is_ipv4_address_record or self.is_ipv6_address_record
+        return self.type in (RecordTypeChoices.A, RecordTypeChoices.AAAA)
 
     @property
     def is_ptr_record(self):
@@ -897,25 +887,10 @@ class Record(NetBoxModel):
                 ) from None
 
         try:
-            if self.is_ipv4_address_record:
-                ip_version = "4"
-                validate_ipv4_address(self.value)
-            elif self.is_ipv6_address_record:
-                ip_version = "6"
-                validate_ipv6_address(self.value)
-            else:
-                rdata.from_text(RecordClassChoices.IN, self.type, self.value)
-
-        except ValidationError:
-            raise ValidationError(
-                {
-                    "value": f"A valid IPv{ip_version} address is required for record type {self.type}."
-                }
-            ) from None
-
+            rdata.from_text(RecordClassChoices.IN, self.type, self.value)
         except dns.exception.SyntaxError as exc:
             raise ValidationError(
-                {"value": f"Record value {self.value} is malformed: {exc}."}
+                {"value": f"Record value {self.value} is not a valid value for a {self.type} record: {exc}."}
             ) from None
 
     def clean_fields(self, *args, **kwargs):
