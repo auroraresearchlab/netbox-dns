@@ -11,15 +11,15 @@ class NameValidationTest(TestCase):
             "ns2.example.com.",
             "ns-1.example.com",  # dash in first label
             "ns1.example-1.com",  # dash in second label
-            "1234567" + ".12345678" * 26 + ".example.com",  # 254 octets
-            "1234567" + ".12345678" * 26 + ".example.com.",  # 255 octets, trailing dot
-            "x" * 63 + ".example.com",  # longest label 63 octets
-            "x" * 63 + ".example.com.",  # longest label 63 octets, trailing dot
+            "123456" + ".12345678" * 26 + ".example1.com",  # 254 octets
+            "123456" + ".12345678" * 26 + ".example2.com.",  # 255 octets, trailing dot
+            "x" * 63 + ".example1.com",  # longest label 63 octets
+            "x" * 63 + ".example2.com.",  # longest label 63 octets, trailing dot
         )
 
         for name in names:
             nameserver = NameServer.objects.create(name=name)
-            self.assertEqual(nameserver.name, name)
+            self.assertEqual(nameserver.name, name.rstrip("."))
 
     def test_name_validation_failure(self):
         names = (
@@ -44,15 +44,15 @@ class NameValidationTest(TestCase):
             "ns2.example.com.",
             "ns_1.example.com",  # underscore in first label
             "ns1.example_1.com",  # undercore in second label
-            "1234567" + ".12345678" * 26 + ".example.com",  # 254 octets
-            "1234567" + ".12345678" * 26 + ".example.com.",  # 255 octets, trailing dot
-            "x" * 63 + ".example.com",  # longest label 63 octets
-            "x" * 63 + ".example.com.",  # longest label 63 octets, trailing dot
+            "123456" + ".12345678" * 26 + ".example1.com",  # 254 octets
+            "123456" + ".12345678" * 26 + ".example2.com.",  # 255 octets, trailing dot
+            "x" * 63 + ".example1.com",  # longest label 63 octets
+            "x" * 63 + ".example2.com.",  # longest label 63 octets, trailing dot
         )
 
         for name in names:
             nameserver = NameServer.objects.create(name=name)
-            self.assertEqual(nameserver.name, name)
+            self.assertEqual(nameserver.name, name.rstrip("."))
 
     def test_name_validation_tolerant_failure(self):
         names = (

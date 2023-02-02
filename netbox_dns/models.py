@@ -31,7 +31,7 @@ from netbox.models import NetBoxModel
 from netbox.search import SearchIndex, register_search
 
 from netbox_dns.fields import NetworkField, AddressField
-from netbox_dns.utilities import arpa_to_prefix, name_to_unicode
+from netbox_dns.utilities import arpa_to_prefix, name_to_unicode, normalize_name, NameFormatError
 from netbox_dns.validators import (
     validate_fqdn,
     validate_domain_name,
@@ -71,19 +71,8 @@ class NameServer(NetBoxModel):
 
     def clean(self):
         try:
-            name = dns_name.from_text(self.name)
-            name.to_unicode()
-        except dns.exception.DNSException as exc:
-            raise ValidationError(
-                {
-                    "name": str(exc),
-                }
-            ) from None
-
-        try:
-            if name.to_text() != name.to_unicode():
-                self.name = name.to_text().rstrip(".")
-        except dns_name.IDNAException as exc:
+            self.name = normalize_name(self.name)
+        except NameFormatError as exc:
             raise ValidationError(
                 {
                     "name": str(exc),
@@ -444,19 +433,8 @@ class Zone(NetBoxModel):
         self.check_name_conflict()
 
         try:
-            name = dns_name.from_text(self.name)
-            name.to_unicode()
-        except dns.exception.DNSException as exc:
-            raise ValidationError(
-                {
-                    "name": str(exc),
-                }
-            ) from None
-
-        try:
-            if name.to_text() != name.to_unicode():
-                self.name = name.to_text().rstrip(".")
-        except dns_name.IDNAException as exc:
+            self.name = normalize_name(self.name)
+        except NameFormatError as exc:
             raise ValidationError(
                 {
                     "name": str(exc),

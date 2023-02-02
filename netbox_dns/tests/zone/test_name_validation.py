@@ -29,17 +29,17 @@ class NameValidationTest(TestCase):
             "zone1.xn--exmple-cua.com",  # IDN in second label
             "zone-1.example.com",  # dash in first label
             "zone1.example-1.com",  # dash in second label
-            "1234567" + ".12345678" * 26 + ".example.com",  # 254 octets
-            "1234567" + ".12345678" * 26 + ".example.com.",  # 255 octets, trailing dot
-            "x" * 63 + ".example.com",  # longest label 63 octets
-            "x" * 63 + ".example.com.",  # longest label 63 octets, trailing dot
+            "123456" + ".12345678" * 26 + ".example1.com",  # 254 octets
+            "123456" + ".12345678" * 26 + ".example2.com.",  # 255 octets, trailing dot
+            "x" * 63 + ".example1.com",  # longest label 63 octets
+            "x" * 63 + ".example2.com.",  # longest label 63 octets, trailing dot
         )
 
         for name in names:
             zone = Zone.objects.create(
                 name=name, **self.zone_data, soa_mname=self.nameserver
             )
-            self.assertEqual(zone.name, name)
+            self.assertEqual(zone.name, name.rstrip("."))
 
     def test_name_validation_failure(self):
         names = (
@@ -85,7 +85,7 @@ class NameValidationTest(TestCase):
             zone = Zone.objects.create(
                 name=name, **self.zone_data, soa_mname=self.nameserver
             )
-            self.assertEqual(zone.name, name)
+            self.assertEqual(zone.name, name.rstrip("."))
 
     @override_settings(
         PLUGINS_CONFIG={
