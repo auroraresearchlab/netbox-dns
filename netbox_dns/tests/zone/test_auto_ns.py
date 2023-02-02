@@ -1,3 +1,5 @@
+from dns import rdata
+
 from django.test import TestCase
 from django.db.models import ProtectedError
 
@@ -205,7 +207,7 @@ class AutoNSTest(TestCase):
                 value=f"{nameserver.name}.",
             )
 
-    def test_zone_delete_ns_ns_record_removed(self):
+    def test_delete_ns_ns_record_removed(self):
         zone = self.zone
         nameserver = self.nameservers[1]
 
@@ -226,7 +228,7 @@ class AutoNSTest(TestCase):
                 value=f"{nameserver.name}.",
             )
 
-    def test_zone_delete_soa_ns_exception(self):
+    def test_delete_soa_ns_exception(self):
         zone = self.zone
         nameserver = self.nameservers[0]
 
@@ -235,7 +237,7 @@ class AutoNSTest(TestCase):
         ):
             nameserver.delete()
 
-    def test_zone_delete_soa_ns_exception_ns_record_retained(self):
+    def test_delete_soa_ns_exception_ns_record_retained(self):
         zone = self.zone
         nameserver = self.nameservers[0]
 
@@ -250,3 +252,29 @@ class AutoNSTest(TestCase):
             name="@", zone=zone, type=RecordTypeChoices.NS, value=f"{nameserver.name}."
         )
         self.assertEqual(nameserver.name, ns_record.value.rstrip("."))
+
+    def test_rename_ns_ns_record_updated(self):
+        zone = self.zone
+        nameserver = self.nameservers[1]
+
+        zone.nameservers.add(nameserver)
+
+        nameserver.name = "test.example.org"
+        nameserver.save()
+
+        ns_record = Record.objects.get(
+            name="@", zone=zone, type=RecordTypeChoices.NS, value=f"{nameserver.name}."
+        )
+        self.assertEqual(nameserver.name, ns_record.value.rstrip("."))
+
+    def test_rename_ns_soa_record_updated(self):
+        zone = self.zone
+        nameserver = self.nameservers[0]
+
+        nameserver.name = "test.example.org"
+        nameserver.save()
+
+        soa_record = Record.objects.get(name="@", zone=zone, type=RecordTypeChoices.SOA)
+        soa_rdata = rdata.from_text("IN", "SOA", soa_record.value)
+
+        self.assertEqual(nameserver.name, soa_rdata.mname.to_text().rstrip("."))
