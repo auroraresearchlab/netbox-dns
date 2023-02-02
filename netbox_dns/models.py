@@ -832,13 +832,7 @@ class Record(NetBoxModel):
         if self.pk:
             super().save()
 
-    def clean_fields(self, *args, **kwargs):
-        self.type = self.type.upper()
-        super().clean_fields(*args, **kwargs)
-
-    def clean(self, *args, **kwargs):
-        ip_version = None
-
+    def validate_name(self):
         try:
             zone = dns_name.from_text(self.zone.name)
             name = dns_name.from_text(self.name, origin=None)
@@ -889,6 +883,9 @@ class Record(NetBoxModel):
                     }
                 ) from None
 
+    def validate_value(self):
+        ip_version = None
+
         if self.type in (RecordTypeChoices.PTR):
             try:
                 validate_fqdn(self.value)
@@ -920,6 +917,14 @@ class Record(NetBoxModel):
             raise ValidationError(
                 {"value": f"Record value {self.value} is malformed: {exc}."}
             ) from None
+
+    def clean_fields(self, *args, **kwargs):
+        self.type = self.type.upper()
+        super().clean_fields(*args, **kwargs)
+
+    def clean(self, *args, **kwargs):
+        self.validate_name()
+        self.validate_value()
 
         if not self.is_active:
             return
