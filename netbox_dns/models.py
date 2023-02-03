@@ -95,7 +95,35 @@ class NameServer(NetBoxModel):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        super().save(*args, **kwargs)
+
+        name_changed = (
+            self.pk is not None and self.name != NameServer.objects.get(pk=self.pk).name
+        )
+
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+
+            if name_changed:
+                soa_zones = self.zones_soa.all()
+                for soa_zone in soa_zones:
+                    soa_zone.update_soa_record()
+
+                zones = self.zones.all()
+                for zone in zones:
+                    zone.update_ns_records()
+
+    def delete(self, *args, **kwargs):
+        with transaction.atomic():
+            zones = self.zones.all()
+            for zone in zones:
+                Record.objects.filter(
+                    Q(zone=zone),
+                    Q(managed=True),
+                    Q(value=f"{self.name}."),
+                    Q(type=RecordTypeChoices.NS),
+                ).delete()
+
+            super().delete(*args, **kwargs)
 
 
 @register_search
@@ -335,14 +363,14 @@ class Zone(NetBoxModel):
                 managed=True,
             )
 
-    def update_ns_records(self, nameservers):
+    def update_ns_records(self):
         ns_name = "@"
 
-        delete_ns = self.record_set.filter(
-            type=RecordTypeChoices.NS, managed=True
-        ).exclude(value__in=nameservers)
-        for record in delete_ns:
-            record.delete()
+        nameservers = [f"{nameserver.name}." for nameserver in self.nameservers.all()]
+
+        self.record_set.filter(type=RecordTypeChoices.NS, managed=True).exclude(
+            value__in=nameservers
+        ).delete()
 
         for ns in nameservers:
             Record.raw_objects.update_or_create(
@@ -504,7 +532,7 @@ class Zone(NetBoxModel):
 
     def delete(self, *args, **kwargs):
         with transaction.atomic():
-            address_records = list(self.record_set.filter(ptr_record__isnull=False))
+            address_records = self.record_set.filter(ptr_record__isnull=False)
             for record in address_records:
                 record.ptr_record.delete()
 
@@ -526,11 +554,7 @@ def update_ns_records(**kwargs):
         return
 
     zone = kwargs.get("instance")
-    nameservers = zone.nameservers.all()
-
-    new_nameservers = [f"{ns.name}." for ns in nameservers]
-
-    zone.update_ns_records(new_nameservers)
+    zone.update_ns_records()
 
 
 @register_search
