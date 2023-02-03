@@ -19,7 +19,6 @@ def reindex(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("extras", "0083_search"),
         ("netbox_dns", "0021_record_ip_address"),
