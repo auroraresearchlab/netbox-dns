@@ -39,6 +39,12 @@
                         <th scope="row">Name</th>
                         <td style="word-break:break-all;">{{ object.name }}</td>
                     </tr>
+                    {% if unicode_name %}
+                    <tr>
+                        <th scope="row">IDN</th>
+                        <td style="word-break:break-all;">{{ unicode_name }}</td>
+                    </tr>
+                    {% endif %}
                     <tr>
                         <th scope="row">Zone</th>
                         {% if object.managed %}
@@ -55,6 +61,12 @@
                         <th scope="row">Value</th>
                         <td style="word-break:break-all;">{{ object.value }}</td>
                     </tr>
+                    {% if unicode_value %}
+                    <tr>
+                        <th scope="row">Unicode Value</th>
+                        <td style="word-break:break-all;">{{ unicode_value }}</td>
+                    </tr>
+                    {% endif %}
                     <tr>
                         <th scope="row">TTL</th>
                         <td>{{ object.ttl }}</td>

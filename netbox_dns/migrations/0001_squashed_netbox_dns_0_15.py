@@ -9,7 +9,6 @@ import taggit.managers
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("netbox_dns", "0001_initial"),
         ("netbox_dns", "0015_add_record_status"),

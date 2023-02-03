@@ -1,4 +1,12 @@
+import re
+
+from dns import name as dns_name
+from dns.exception import DNSException
 from netaddr import IPNetwork, AddrFormatError
+
+
+class NameFormatError(Exception):
+    pass
 
 
 def arpa_to_prefix(arpa_name):
@@ -27,3 +35,31 @@ def arpa_to_prefix(arpa_name):
 
     else:
         return None
+
+
+def name_to_unicode(name):
+    try:
+        return dns_name.from_text(name, origin=None).to_unicode()
+    except dns_name.IDNAException:
+        return name
+
+
+def value_to_unicode(value):
+    return re.sub(
+        r"xn--[0-9a-z-_.]*",
+        lambda x: name_to_unicode(x.group(0)),
+        value,
+        flags=re.IGNORECASE,
+    )
+
+
+def normalize_name(name):
+    try:
+        return (
+            dns_name.from_text(name, origin=dns_name.root)
+            .relativize(dns_name.root)
+            .to_text()
+        )
+
+    except DNSException as exc:
+        raise NameFormatError from exc

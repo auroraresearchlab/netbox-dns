@@ -29,10 +29,18 @@ from utilities.forms import (
 )
 
 from netbox_dns.models import View, Zone, Record, RecordTypeChoices, RecordStatusChoices
+from netbox_dns.utilities import name_to_unicode
 
 
 class RecordForm(NetBoxModelForm):
     """Form for creating a new Record object."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        initial_name = self.initial.get("name")
+        if initial_name:
+            self.initial["name"] = name_to_unicode(initial_name)
 
     disable_ptr = BooleanField(
         label="Disable PTR",

@@ -10,10 +10,18 @@ from netbox.forms import (
 from utilities.forms import TagFilterField
 
 from netbox_dns.models import NameServer
+from netbox_dns.utilities import name_to_unicode
 
 
 class NameServerForm(NetBoxModelForm):
     """Form for creating a new NameServer object."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        initial_name = self.initial.get("name")
+        if initial_name:
+            self.initial["name"] = name_to_unicode(initial_name)
 
     class Meta:
         model = NameServer

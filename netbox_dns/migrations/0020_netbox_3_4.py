@@ -5,7 +5,6 @@ import utilities.json
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("netbox_dns", "0019_update_ns_ttl"),
     ]

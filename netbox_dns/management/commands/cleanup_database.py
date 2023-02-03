@@ -130,7 +130,9 @@ def zone_update_arpa_network(verbose=False):
 
 
 def record_cleanup_disable_ptr(verbose=False):
-    Record.objects.filter(disable_ptr=False,).exclude(
+    Record.objects.filter(
+        disable_ptr=False,
+    ).exclude(
         type__in=(RecordTypeChoices.A, RecordTypeChoices.AAAA)
     ).update(disable_ptr=True)
 

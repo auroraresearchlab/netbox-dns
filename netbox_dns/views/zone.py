@@ -1,3 +1,5 @@
+from dns import name as dns_name
+
 from django.urls import reverse
 
 from netbox.views import generic
@@ -19,8 +21,6 @@ from netbox_dns.tables import (
 
 
 class ZoneListView(generic.ObjectListView):
-    """View for listing all existing Zones."""
-
     queryset = Zone.objects.all().prefetch_related("view", "tags")
     filterset = ZoneFilter
     filterset_form = ZoneFilterForm
@@ -28,8 +28,6 @@ class ZoneListView(generic.ObjectListView):
 
 
 class ZoneView(generic.ObjectView):
-    """Display Zone details"""
-
     queryset = Zone.objects.all().prefetch_related(
         "view",
         "tags",
@@ -41,15 +39,19 @@ class ZoneView(generic.ObjectView):
     def get_extra_context(self, request, instance):
         ns_warnings, ns_errors = instance.check_nameservers()
 
-        return {
+        context = {
             "nameserver_warnings": ns_warnings,
             "nameserver_errors": ns_errors,
         }
 
+        name = dns_name.from_text(instance.name)
+        if name.to_text() != name.to_unicode():
+            context["unicode_name"] = name.to_unicode()
+
+        return context
+
 
 class ZoneEditView(generic.ObjectEditView):
-    """View for editing and creating a Zone instance."""
-
     queryset = Zone.objects.all().prefetch_related(
         "view", "tags", "nameservers", "soa_mname"
     )
@@ -58,8 +60,6 @@ class ZoneEditView(generic.ObjectEditView):
 
 
 class ZoneDeleteView(generic.ObjectDeleteView):
-    """View for deleting a Zone instance"""
-
     queryset = Zone.objects.all()
     default_return_url = "plugins:netbox_dns:zone_list"
 

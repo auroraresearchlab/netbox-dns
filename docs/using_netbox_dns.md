@@ -184,7 +184,7 @@ SOA Field     | Explanation
 
 The zone's SOA record is assembled from these fields by contatenating them and putting them in parentheses. Netbox DNS creates the SOA record automatically from the information entered in the fields above.
 
-All SOA fields are required. Default settings can be configured in the Django configuration file, see [Default Settings](#config)).
+All SOA fields are required. Default settings can be configured in the Django configuration file, see [Zone Default Settings](#zone_defaults)).
 
 #### Automatic SOA SERIAL generation
 SOA SERIAL fields are crucial for the propagation of zone data from primary name servers to secondaries, as the process involves checking the zone's serial number on the secondary against the serial number on the primary and only performing the update when the primary has a higher serial number or the interval specified in the SOA EXPIRE field has passed.
@@ -199,7 +199,7 @@ A zone in detail view:
 
 ![Zone Detail](images/ZoneDetail.png)
 
-#### <a name="config"></a>Default settings
+#### <a name="zone_defaults"></a>Zone Default settings
 Zone default settings can be configured in the plugin configuration of Netbox. The following settings are available:
 
 Setting                 | Variable               | Factory Default
@@ -301,3 +301,57 @@ The list of standard records for a specific zone using the "Records" tab in the 
 The list of managed records for a specific zone using the "Managed Records" tab in the zone detail view:
 
 ![Managed Records per Zone](images/ZoneManagedRecords.png)
+
+## Name validation
+The names of DNS Resource Records are subject to a number of RFCs, most notably [RFC1035, Section 2.3.1](https://www.rfc-editor.org/rfc/rfc1035#section-2.3.1), [RFC2181, Section 11](https://www.rfc-editor.org/rfc/rfc2181#section-11) and [RFC5891, Section 4.2.3](https://www.rfc-editor.org/rfc/rfc5891#section-4.2.3). Although the specifications in the RFCs, especially in RFC2181, are rather permissive, most DNS servers enforce them and refuse to load zones containing non-conforming names. NetBox DNS validates RR names before saving records and refuses to accept records not adhering to the standards.
+
+The names of Name Servers, Zones and Records are all used as RR names in DNS, so all of these are validated for conformity to the mentioned RFCs. When a name does not conform to the RFC rules, NetBox DNS refuses to save the Name Server, Zone or Record with an error message indicating the reason for the refusal.
+
+**Please note that unlike names, values are not validated. While this is theoretically possible and may be implemented at some point, it is not a trivial task as there is a plethora of RR types with even more value formats.**
+
+![Record Validation Error](images/RecordValidationError.png)
+
+### Validation options
+
+There are some special cases that need to be taken care of:
+
+* Some non-free operating systems accept underscores in host names, which are not permitted according to RFC1035 and by default rejected e.g. by BIND.
+* Record types such as SRV and TXT can contain underscores as the first character of a label even in more standard-conforming implementations
+* Given the large number of defined RR types, there might be other exceptions to the rules given in the RFCs
+
+To take care of these cases, there are three configuration variables for NetBox DNS that adjust the validation of record names:
+
+* `allow_underscores_in_hostnames` can be set to allow undercores being used in host names. Normally, underscores are only permitted in certain record types such as SRV, not in normal host names, but at least one operating system's DNS implementation does not follow the standard and allows this.
+* `tolerate_leading_underscore_types` contains a list of RR types that allow an underscore as the first character in a label.
+* `tolerate_non_rfc1035_types` contains a list of RR types that allow characters outside the set defined in RFC1035 to be used in RR names. Record types in this list are exempt from validation altogether.
+
+#### <a name="validation_defaults"></a>Name validation default settings
+
+Variable                                 | Factory Default
+--------                                 | ---------------
+`allow_underscores_in_hostnames `        | False
+`tolerate_leading_underscore_types `     | `["TXT", "SRV"]`
+`tolerate_non_rfc1035_types `            | `[]`
+
+The settings can be set or overridden in the file `/opt/netbox/netbox/netbox/configuration.py` by defining new values in `PLUGINS_CONFIG` as follows:
+
+```
+PLUGINS_CONFIG = {
+    'netbox_dns': {
+        ...
+        'allow_underscores_in_hostnames': True,
+        'tolerate_leading_underscore_types': ["TXT", "SRV", "CNAME"]
+        'tolerate_non_rfc1035_types': `["X25"]`
+    },
+}
+```
+
+## International Domain Names (IDNs)
+
+NetBox DNS supports International Domain Names (IDNs) in resource records. IDNs are domain names containing Unicode characters such as special characters in Latin scripts (e.g. 'ä', 'ö', 'ü', 'ç', 'å'), non-Latin scripts such as Arabic, Kyrillian or Kanji, or even Emoji. Since DNS does not support any of these, [RFC3492](https://www.rfc-editor.org/rfc/rfc3492) defines a mapping to so-called 'Punycode' that allows to translate between the limited character set supported by DNS and Unicode.
+
+For instance, the IDN `exämple.com` is represented in Punycode as `xn--exmple-cua.com`, and `👁🐝m.com` as `xn--m-w22scd.com`. The Punycode representation of these names conforms to the validation rules enforced by NetBox DNS name validation. Since the Punycode representation cannot be parsed by most humans, NetBox DNS displays and accepts the Unicode representation where it is possible and necessary.
+
+![IDN Example](images/IDNExample.png)
+
+Internally, all IDNs are handled in a normalised form as Punycode. This ensures that the data coming from NetBox DNS can be handled by any tool and easily exported to name servers without any need for conversion to the standard format.

@@ -24,7 +24,6 @@ def delete_ptr_records_for_inactive_zones(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("netbox_dns", "0014_add_view_description"),
         ("netbox_dns", "0015_add_record_status"),

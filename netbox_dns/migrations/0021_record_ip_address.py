@@ -40,7 +40,6 @@ def update_ip_addresses(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("extras", "0084_staging"),
         ("netbox_dns", "0020_netbox_3_4"),

@@ -1,3 +1,5 @@
+from dns import name as dns_name
+
 from netbox.views import generic
 
 from netbox_dns.filters import NameServerFilter, ZoneFilter
@@ -22,6 +24,15 @@ class NameServerListView(generic.ObjectListView):
 
 class NameServerView(generic.ObjectView):
     queryset = NameServer.objects.all().prefetch_related("zones")
+
+    def get_extra_context(self, request, instance):
+        name = dns_name.from_text(instance.name)
+        if name.to_text() != name.to_unicode():
+            return {
+                "unicode_name": name.to_unicode(),
+            }
+
+        return {}
 
 
 class NameServerEditView(generic.ObjectEditView):

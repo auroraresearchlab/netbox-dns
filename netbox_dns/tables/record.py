@@ -9,6 +9,7 @@ from netbox.tables import (
 )
 
 from netbox_dns.models import Record
+from netbox_dns.utilities import value_to_unicode
 
 
 class RecordBaseTable(NetBoxTable):
@@ -24,12 +25,23 @@ class RecordBaseTable(NetBoxTable):
     value = tables.TemplateColumn(
         template_code="{{ value|truncatechars:64 }}",
     )
+    unicode_value = tables.TemplateColumn(
+        verbose_name="Unicode Value",
+        template_code="{{ value|truncatechars:64 }}",
+        accessor="value",
+    )
     ttl = tables.Column(
         verbose_name="TTL",
     )
     active = tables.BooleanColumn(
         verbose_name="Active",
     )
+
+    def render_name(self, value, record):
+        return record.display_name
+
+    def render_unicode_value(self, value):
+        return value_to_unicode(value)
 
 
 class RecordTable(RecordBaseTable):
@@ -57,6 +69,7 @@ class RecordTable(RecordBaseTable):
             "ttl",
             "type",
             "value",
+            "unicode_value",
             "status",
             "disable_ptr",
             "ptr_record",
@@ -92,6 +105,7 @@ class ManagedRecordTable(RecordBaseTable):
             "ttl",
             "type",
             "value",
+            "unicode_value",
             "address_record",
             "active",
         )
@@ -115,6 +129,7 @@ class RelatedRecordTable(RecordBaseTable):
             "zone",
             "type",
             "value",
+            "unicode_value",
         )
         default_columns = (
             "name",

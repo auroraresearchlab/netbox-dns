@@ -32,7 +32,6 @@ def create_initial_ns_records(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("netbox_dns", "0007_alter_zone_soa_serial_auto"),
     ]

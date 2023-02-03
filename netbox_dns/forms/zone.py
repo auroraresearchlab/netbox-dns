@@ -29,6 +29,7 @@ from utilities.forms import (
 )
 
 from netbox_dns.models import View, Zone, ZoneStatusChoices, NameServer
+from netbox_dns.utilities import name_to_unicode
 
 
 class ZoneForm(NetBoxModelForm):
@@ -122,6 +123,10 @@ class ZoneForm(NetBoxModelForm):
     def __init__(self, *args, **kwargs):
         """Override the __init__ method in order to provide the initial value for the default fields"""
         super().__init__(*args, **kwargs)
+
+        initial_name = self.initial.get("name")
+        if initial_name:
+            self.initial["name"] = name_to_unicode(initial_name)
 
         defaults = settings.PLUGINS_CONFIG.get("netbox_dns")
 

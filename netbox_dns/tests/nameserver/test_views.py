@@ -20,7 +20,6 @@ class NameServerTestCase(
 
     @classmethod
     def setUpTestData(cls):
-
         cls.nameservers = (
             NameServer(name="ns1.example.com"),
             NameServer(name="ns2.example.com"),
