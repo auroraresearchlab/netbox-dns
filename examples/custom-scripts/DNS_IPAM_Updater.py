@@ -35,16 +35,25 @@ class IPAMHostnameUpdater(Script):
     )
 
     def run(self, data, commit):
-        ip_object_filter = {}
         if data["vrf"] is None:
-            ip_object_filter["vrf__isnull"] = True
+            ip_object_filter = {"vrf__isnull": True}
         else:
-            ip_object_filter["vrf"] = data["vrf"]
+            ip_object_filter = {"vrf": data["vrf"]}
+
+        if data["view"] is None:
+            record_filter = {"zone__view__isnull": True}
+        else:
+            record_filter = {"zone__view": data["view"]}
 
         ip_addresses = IPAddress.objects.filter(**ip_object_filter)
         for ip_address in ip_addresses:
+            if ip_address.address.version == 4:
+                record_type = RecordTypeChoices.A
+            else:
+                record_type = RecordTypeChoices.AAAA
+
             try:
-                address_record = Record.objects.get(ip_address=ip_address.address.ip)
+                address_record = Record.objects.get(type=record_type, ip_address=ip_address.address.ip, **record_filter)
                 hostname = address_record.fqdn.rstrip(".")
             except Record.DoesNotExist:
                 self.log_info(f"No address record found for {ip_address}")
@@ -54,6 +63,12 @@ class IPAMHostnameUpdater(Script):
                 continue
 
             if hostname != ip_address.dns_name:
+                if not data["overwrite"]:
+                    self.log_info(f"Not overwriting exitsing value {ip_address.dns_name} with DNS name {hostname}")
+                    continue
+
+                self.log_info(hostname)
+                self.log_info(ip_address.dns_name)
                 self.log_info(f"Updating DNS name for {ip_address} to {hostname}")
 
                 if hasattr(ip_address, "snapshot"):
