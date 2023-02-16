@@ -40,7 +40,7 @@ jobs:
         with:
           repository: "netbox-community/netbox"
           path: netbox
-          ref: feature
+          ref: develop
 
       - name: install netbox_dns
         working-directory: netbox-dns
