@@ -19,12 +19,10 @@ from utilities.forms import (
     BulkEditNullBooleanSelect,
     DynamicModelMultipleChoiceField,
     TagFilterField,
-    StaticSelect,
     CSVChoiceField,
     CSVModelChoiceField,
     DynamicModelChoiceField,
     APISelect,
-    StaticSelectMultiple,
     add_blank_choice,
 )
 
@@ -66,12 +64,6 @@ class RecordForm(NetBoxModelForm):
             "tags",
         )
 
-        widgets = {
-            "zone": StaticSelect(),
-            "type": StaticSelect(),
-            "status": StaticSelect(),
-        }
-
 
 class RecordFilterForm(NetBoxModelFilterSetForm):
     """Form for filtering Record instances."""
@@ -81,7 +73,6 @@ class RecordFilterForm(NetBoxModelFilterSetForm):
     type = forms.MultipleChoiceField(
         choices=add_blank_choice(RecordTypeChoices),
         required=False,
-        widget=StaticSelectMultiple(),
     )
     name = CharField(
         required=False,
@@ -94,7 +85,6 @@ class RecordFilterForm(NetBoxModelFilterSetForm):
     status = forms.ChoiceField(
         choices=add_blank_choice(RecordStatusChoices),
         required=False,
-        widget=StaticSelect(),
     )
     zone_id = DynamicModelMultipleChoiceField(
         queryset=Zone.objects.all(),
@@ -193,7 +183,6 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
     type = forms.ChoiceField(
         choices=add_blank_choice(RecordTypeChoices),
         required=False,
-        widget=StaticSelect(),
     )
     value = CharField(
         required=False,
@@ -202,7 +191,6 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
     status = forms.ChoiceField(
         choices=add_blank_choice(RecordStatusChoices),
         required=False,
-        widget=StaticSelect(),
     )
     ttl = IntegerField(
         required=False,

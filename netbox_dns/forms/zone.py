@@ -20,7 +20,6 @@ from utilities.forms import (
     BulkEditNullBooleanSelect,
     DynamicModelMultipleChoiceField,
     TagFilterField,
-    StaticSelect,
     CSVChoiceField,
     CSVModelChoiceField,
     DynamicModelChoiceField,
@@ -197,11 +196,6 @@ class ZoneForm(NetBoxModelForm):
             "soa_expire",
             "soa_minimum",
         )
-        widgets = {
-            "view": StaticSelect(),
-            "status": StaticSelect(),
-            "soa_mname": StaticSelect(),
-        }
         help_texts = {
             "view": "View the zone belongs to",
             "soa_mname": "Primary name server for the zone",
@@ -221,7 +215,6 @@ class ZoneFilterForm(NetBoxModelFilterSetForm):
     status = forms.ChoiceField(
         choices=add_blank_choice(ZoneStatusChoices),
         required=False,
-        widget=StaticSelect(),
     )
     name = CharField(
         required=False,
@@ -399,7 +392,6 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
     status = forms.ChoiceField(
         choices=add_blank_choice(ZoneStatusChoices),
         required=False,
-        widget=StaticSelect(),
     )
     nameservers = DynamicModelMultipleChoiceField(
         queryset=NameServer.objects.all(),
