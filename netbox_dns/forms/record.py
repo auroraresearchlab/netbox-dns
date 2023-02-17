@@ -1,11 +1,4 @@
 from django import forms
-
-from django.forms import (
-    CharField,
-    IntegerField,
-    BooleanField,
-    NullBooleanField,
-)
 from django.urls import reverse_lazy
 
 from netbox.forms import (
@@ -40,11 +33,11 @@ class RecordForm(NetBoxModelForm):
         if initial_name:
             self.initial["name"] = name_to_unicode(initial_name)
 
-    disable_ptr = BooleanField(
+    disable_ptr = forms.BooleanField(
         label="Disable PTR",
         required=False,
     )
-    ttl = IntegerField(
+    ttl = forms.IntegerField(
         required=False,
         label="TTL",
     )
@@ -74,11 +67,11 @@ class RecordFilterForm(NetBoxModelFilterSetForm):
         choices=add_blank_choice(RecordTypeChoices),
         required=False,
     )
-    name = CharField(
+    name = forms.CharField(
         required=False,
         label="Name",
     )
-    value = CharField(
+    value = forms.CharField(
         required=False,
         label="Value",
     )
@@ -137,7 +130,7 @@ class RecordImportForm(NetBoxModelImportForm):
         required=False,
         help_text="Record status",
     )
-    ttl = IntegerField(
+    ttl = forms.IntegerField(
         required=False,
         help_text="TTL",
     )
@@ -184,7 +177,7 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
         choices=add_blank_choice(RecordTypeChoices),
         required=False,
     )
-    value = CharField(
+    value = forms.CharField(
         required=False,
         label="Value",
     )
@@ -192,14 +185,14 @@ class RecordBulkEditForm(NetBoxModelBulkEditForm):
         choices=add_blank_choice(RecordStatusChoices),
         required=False,
     )
-    ttl = IntegerField(
+    ttl = forms.IntegerField(
         required=False,
         label="TTL",
     )
-    disable_ptr = NullBooleanField(
+    disable_ptr = forms.NullBooleanField(
         required=False, widget=BulkEditNullBooleanSelect(), label="Disable PTR"
     )
-    description = CharField(max_length=200, required=False)
+    description = forms.CharField(max_length=200, required=False)
 
     fieldsets = (
         (

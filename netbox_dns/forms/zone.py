@@ -2,12 +2,6 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.forms import (
-    CharField,
-    IntegerField,
-    BooleanField,
-    NullBooleanField,
-)
 from django.urls import reverse_lazy
 
 from netbox.forms import (
@@ -38,53 +32,53 @@ class ZoneForm(NetBoxModelForm):
         queryset=NameServer.objects.all(),
         required=False,
     )
-    default_ttl = IntegerField(
+    default_ttl = forms.IntegerField(
         required=False,
         label="Default TTL",
         help_text="Default TTL for new records in this zone",
         validators=[MinValueValidator(1)],
     )
-    soa_ttl = IntegerField(
+    soa_ttl = forms.IntegerField(
         required=True,
         label="SOA TTL",
         help_text="TTL for the SOA record of the zone",
         validators=[MinValueValidator(1)],
     )
-    soa_rname = CharField(
+    soa_rname = forms.CharField(
         required=True,
         label="SOA Responsible",
         help_text="Mailbox of the zone's administrator",
     )
-    soa_serial_auto = BooleanField(
+    soa_serial_auto = forms.BooleanField(
         required=False,
         label="Generate SOA Serial",
         help_text="Automatically generate the SOA Serial",
     )
-    soa_serial = IntegerField(
+    soa_serial = forms.IntegerField(
         required=False,
         label="SOA Serial",
         help_text="Serial number of the current zone data version",
         validators=[MinValueValidator(1)],
     )
-    soa_refresh = IntegerField(
+    soa_refresh = forms.IntegerField(
         required=True,
         label="SOA Refresh",
         help_text="Refresh interval for secondary name servers",
         validators=[MinValueValidator(1)],
     )
-    soa_retry = IntegerField(
+    soa_retry = forms.IntegerField(
         required=True,
         label="SOA Retry",
         help_text="Retry interval for secondary name servers",
         validators=[MinValueValidator(1)],
     )
-    soa_expire = IntegerField(
+    soa_expire = forms.IntegerField(
         required=True,
         label="SOA Expire",
         help_text="Expire time after which the zone is considered unavailable",
         validators=[MinValueValidator(1)],
     )
-    soa_minimum = IntegerField(
+    soa_minimum = forms.IntegerField(
         required=True,
         label="SOA Minimum TTL",
         help_text="Minimum TTL for negative results, e.g. NXRRSET",
@@ -216,7 +210,7 @@ class ZoneFilterForm(NetBoxModelFilterSetForm):
         choices=add_blank_choice(ZoneStatusChoices),
         required=False,
     )
-    name = CharField(
+    name = forms.CharField(
         required=False,
         label="Name",
     )
@@ -242,11 +236,11 @@ class ZoneImportForm(NetBoxModelImportForm):
         required=False,
         help_text="Zone status",
     )
-    default_ttl = IntegerField(
+    default_ttl = forms.IntegerField(
         required=False,
         help_text="Default TTL",
     )
-    soa_ttl = IntegerField(
+    soa_ttl = forms.IntegerField(
         required=False,
         help_text="TTL for the SOA record of the zone",
     )
@@ -259,31 +253,31 @@ class ZoneImportForm(NetBoxModelImportForm):
             "invalid_choice": "Nameserver not found.",
         },
     )
-    soa_rname = CharField(
+    soa_rname = forms.CharField(
         required=False,
         help_text="Mailbox of the zone's administrator",
     )
-    soa_serial_auto = BooleanField(
+    soa_serial_auto = forms.BooleanField(
         required=False,
         help_text="Generate the SOA serial",
     )
-    soa_serial = IntegerField(
+    soa_serial = forms.IntegerField(
         required=False,
         help_text="Serial number of the current zone data version",
     )
-    soa_refresh = IntegerField(
+    soa_refresh = forms.IntegerField(
         required=False,
         help_text="Refresh interval for secondary name servers",
     )
-    soa_retry = IntegerField(
+    soa_retry = forms.IntegerField(
         required=False,
         help_text="Retry interval for secondary name servers",
     )
-    soa_expire = IntegerField(
+    soa_expire = forms.IntegerField(
         required=False,
         help_text="Expire time after which the zone is considered unavailable",
     )
-    soa_minimum = IntegerField(
+    soa_minimum = forms.IntegerField(
         required=False,
         help_text="Minimum TTL for negative results, e.g. NXRRSET",
     )
@@ -397,13 +391,13 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
         queryset=NameServer.objects.all(),
         required=False,
     )
-    default_ttl = IntegerField(
+    default_ttl = forms.IntegerField(
         required=False,
         label="Default TTL",
         validators=[MinValueValidator(1)],
     )
-    description = CharField(max_length=200, required=False)
-    soa_ttl = IntegerField(
+    description = forms.CharField(max_length=200, required=False)
+    soa_ttl = forms.IntegerField(
         required=False,
         label="SOA TTL",
         validators=[MinValueValidator(1)],
@@ -418,36 +412,36 @@ class ZoneBulkEditForm(NetBoxModelBulkEditForm):
             }
         ),
     )
-    soa_rname = CharField(
+    soa_rname = forms.CharField(
         required=False,
         label="SOA Responsible",
     )
-    soa_serial_auto = NullBooleanField(
+    soa_serial_auto = forms.NullBooleanField(
         required=False,
         widget=BulkEditNullBooleanSelect(),
         label="Generate SOA Serial",
     )
-    soa_serial = IntegerField(
+    soa_serial = forms.IntegerField(
         required=False,
         label="SOA Serial",
         validators=[MinValueValidator(1), MaxValueValidator(4294967295)],
     )
-    soa_refresh = IntegerField(
+    soa_refresh = forms.IntegerField(
         required=False,
         label="SOA Refresh",
         validators=[MinValueValidator(1)],
     )
-    soa_retry = IntegerField(
+    soa_retry = forms.IntegerField(
         required=False,
         label="SOA Retry",
         validators=[MinValueValidator(1)],
     )
-    soa_expire = IntegerField(
+    soa_expire = forms.IntegerField(
         required=False,
         label="SOA Expire",
         validators=[MinValueValidator(1)],
     )
-    soa_minimum = IntegerField(
+    soa_minimum = forms.IntegerField(
         required=False,
         label="SOA Minimum TTL",
         validators=[MinValueValidator(1)],

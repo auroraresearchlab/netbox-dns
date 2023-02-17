@@ -1,4 +1,4 @@
-from django.forms import CharField
+from django import forms
 
 from netbox.forms import (
     NetBoxModelBulkEditForm,
@@ -33,7 +33,7 @@ class NameServerFilterForm(NetBoxModelFilterSetForm):
 
     model = NameServer
 
-    name = CharField(
+    name = forms.CharField(
         required=False,
         label="Name",
     )
@@ -50,7 +50,7 @@ class NameServerImportForm(NetBoxModelImportForm):
 class NameServerBulkEditForm(NetBoxModelBulkEditForm):
     model = NameServer
 
-    description = CharField(max_length=200, required=False)
+    description = forms.CharField(max_length=200, required=False)
 
     class Meta:
         nullable_fields = ("description",)
