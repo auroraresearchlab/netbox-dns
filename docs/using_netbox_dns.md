@@ -89,7 +89,7 @@ Field           | Required | Explanation
 **Tags**        | No       | Netbox tags assigned to the view. Tags can be used to categorise views by arbitrary criteria such as Production/Test/Development systems
 
 ### Name servers
-Names erver objects correspond to name servers in the DNS infrastructure and are basically fully qualified domain names (FQDN) of hosts running name server instances. 
+Name server objects correspond to name servers in the DNS infrastructure and are basically fully qualified domain names (FQDN) of hosts running name server instances. 
 
 A Name Server object is required for a zones MNAME field in the SOA record, defining the primary server for the zone data, and for NS records inside each zone, defining the name servers that are serving as data sources for a zone's authoritative information. The primary name server is not necessarily one of the authoritative name servers.
 
