@@ -1,3 +1,11 @@
+# NetBox DNS HAS MOVED
+
+NEW HOME: https://github.com/peteeckel/netbox-plugin-dns
+
+Thanks to everyone who contributed to this project.
+
+---
+
 <h1 align="center">NetBox DNS</h1>
 
 <p align="center"><i>NetBox DNS is a NetBox plugin for managing DNS data.</i></p>
